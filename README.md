@@ -45,7 +45,7 @@ Alternatives
 - [xdist][] offers the `--looponfail` (`-f`) option (and distributed testing
   options). This instead re-runs only those tests which have failed until you
   make them pass. This can be a speed advantage when trying to get all tests
-  passing, but leave out the discovery of new failures until they do. It also
+  passing, but leaves out the discovery of new failures until then. It also
   drops the colors outputted by py.test, whereas pytest-watch doesn't.
 - [Nosey][] is the original codebase this was forked from. Nosey runs [nose][]
   instead of pytest.
