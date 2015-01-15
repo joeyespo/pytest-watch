@@ -26,7 +26,7 @@ class ChangeHandler(FileSystemEventHandler):
     def run(self):
         """Called when a file is changed to re-run the tests with nose."""
         if self.auto_clear:
-            os.system('cls' if os.name == 'nt' else 'auto_clear')
+            os.system('cls' if os.name == 'nt' else 'clear')
         else:
             print
         print 'Running unit tests...'
