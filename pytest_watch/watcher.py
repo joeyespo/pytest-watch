@@ -15,6 +15,8 @@ class ChangeHandler(FileSystemEventHandler):
         self.directory = os.path.abspath(directory or '.')
         self.auto_clear = auto_clear
         self.extensions = extensions or default_extensions
+        self.is_osx = os.uname()[0].startswith('Darwin')
+        self.prev_returncode = 0
 
     def on_any_event(self, event):
         if event.is_directory:
@@ -32,7 +34,11 @@ class ChangeHandler(FileSystemEventHandler):
         print 'Running unit tests...'
         if self.auto_clear:
             print
-        subprocess.call('py.test', cwd=self.directory, shell=True)
+        returncode = subprocess.call('py.test', cwd=self.directory, shell=True)
+        if self.is_osx and returncode != self.prev_returncode:
+            result = 'pass' if returncode == 0 else 'fail'
+            os.system('say %s' % result)
+            self.prev_returncode = returncode
 
 
 def watch(directory=None, auto_clear=False, extensions=[]):
