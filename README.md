@@ -1,6 +1,9 @@
 pytest-watch -- Continuous pytest runner
 ========================================
 
+[![Downloads/month on PyPI](http://img.shields.io/pypi/dm/pytest-watch.svg)][pypi]
+[![Current version on PyPI](http://img.shields.io/pypi/v/pytest-watch.svg)][pypi]
+
 **pytest-watch** a zero-config CLI tool that runs [pytest][], and reruns it
 when a file in your project changes.
 
@@ -79,7 +82,13 @@ Contributing
 2. Fork the repository
 3. Send a pull request
 
+Use this software often? Please consider supporting me on
+<a href="http://gratipay.com/joeyespo" title="Thank you!">
+  <img align="center" style="margin-bottom:1px" src="http://joeyespo.com/images/gratipay-button.png" alt="Gratipay">
+</a>
 
+
+[pypi]: http://pypi.python.org/pypi/pytest-watch/
 [pytest]: http://pytest.org/
 [watchdog]: http://packages.python.org/watchdog
 [console flash]: http://github.com/joeyespo/console-flash
