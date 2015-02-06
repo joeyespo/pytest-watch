@@ -36,7 +36,27 @@ $ ptw
 It can also be run using the longhand, `py.test.watch`.
 
 Now develop normally and check the terminal every now and then to see if any
-tests are broken.
+tests are broken. Alternatively, pytest-watch can **notify you** when tests
+pass or fail:
+
+- **OSX**
+
+  `$ ptw --onpass "say passed" --onpass "say failed"`
+
+  ```bash
+  $ ptw --onpass "growlnotify -m \"All tests passed!\"" \
+        --onfail "growlnotify -m \"Tests failed\""
+  ```
+
+- **Windows**
+
+  `> ptw --onfail "echo <Ctrl+G>"` replacing `<Ctrl+G>` with the actual keystrokes
+
+  `> ptw --onfail flash` using [Console Flash][]
+
+- **Linux**
+
+  `$ ptw --onfail beep`
 
 
 Alternatives
@@ -62,6 +82,7 @@ Contributing
 
 [pytest]: http://pytest.org/
 [watchdog]: http://packages.python.org/watchdog
+[console flash]: http://github.com/joeyespo/console-flash
 [xdist]: http://pypi.python.org/pypi/pytest-xdist
 [nosey]: http://github.com/joeyespo/nosey
 [nose]: http://nose.readthedocs.org/en/latest/
