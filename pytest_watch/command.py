@@ -12,6 +12,8 @@ Options:
   -h --help         Show this help.
   --version         Show version.
   -c --clear        Automatically clear the screen before each run.
+  --onpass=<cmd>    Run arbitrary programs on pass.
+  --onfail=<cmd>    Run arbitrary programs on failure.
 """
 
 import sys
@@ -30,5 +32,11 @@ def main(argv=None):
     # Parse options
     args = docopt(usage, argv=argv, version=version)
 
+    # Get triggers from options
+    triggers = dict(
+      onpass=args['--onpass'],
+      onfail=args['--onfail'],
+    )
+
     # Execute
-    return watch(args['<directory>'], args['--clear'])
+    return watch(args['<directory>'], args['--clear'], triggers)
