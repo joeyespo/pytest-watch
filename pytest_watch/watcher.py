@@ -10,10 +10,11 @@ default_extensions = ['.py']
 
 class ChangeHandler(FileSystemEventHandler):
     """Listens for changes to files and re-runs tests after each change."""
-    def __init__(self, directory=None, auto_clear=False, extensions=[]):
+    def __init__(self, directory=None, auto_clear=False, triggers={}, extensions=[]):
         super(ChangeHandler, self).__init__()
         self.directory = os.path.abspath(directory or '.')
         self.auto_clear = auto_clear
+        self.triggers = triggers
         self.extensions = extensions or default_extensions
 
     def on_any_event(self, event):
@@ -32,17 +33,25 @@ class ChangeHandler(FileSystemEventHandler):
         print 'Running unit tests...'
         if self.auto_clear:
             print
-        subprocess.call('py.test', cwd=self.directory, shell=True)
+        returncode = subprocess.call('py.test', cwd=self.directory, shell=True)
+        passed = (returncode == 0)
+
+        onpass = self.triggers.get('onpass')
+        onfail = self.triggers.get('onfail')
+        if passed and onpass:
+            os.system(onpass)
+        elif not passed and onfail:
+            os.system(onfail)
 
 
-def watch(directory=None, auto_clear=False, extensions=[]):
+def watch(directory=None, auto_clear=False, triggers={}, extensions=[]):
     """Starts a server to render the specified file or directory containing a README."""
     if directory and not os.path.isdir(directory):
         raise ValueError('Directory not found: ' + directory)
     directory = os.path.abspath(directory or '')
 
     # Initial run
-    event_handler = ChangeHandler(directory, auto_clear, extensions)
+    event_handler = ChangeHandler(directory, auto_clear, triggers, extensions)
     event_handler.run()
 
     # Setup watchdog
