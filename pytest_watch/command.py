@@ -21,6 +21,7 @@ Options:
 
 import sys
 
+import colorama
 from docopt import docopt
 
 from .watcher import watch
@@ -29,6 +30,8 @@ from . import __version__
 
 def main(argv=None):
     """The entry point of the application."""
+    colorama.init()
+
     if argv is None:
         argv = sys.argv[1:]
     usage = '\n\n\n'.join(__doc__.split('\n\n\n')[1:])

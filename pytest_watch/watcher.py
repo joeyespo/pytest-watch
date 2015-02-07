@@ -4,6 +4,7 @@ import os
 import time
 import subprocess
 
+from colorama import Fore
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
@@ -30,14 +31,16 @@ class ChangeHandler(FileSystemEventHandler):
             return
         ext = os.path.splitext(event.src_path)[1].lower()
         if ext in self.extensions:
-            self.run()
+            self.run(event.src_path)
 
-    def run(self):
+    def run(self, filename=None):
         """Called when a file is changed to re-run the tests with nose."""
         if self.auto_clear:
             subprocess.call(CLEAR_COMMAND, cwd=self.directory, shell=True)
-        else:
+        elif filename:
             print()
+            print(Fore.CYAN + 'Change detected in ' + filename + Fore.RESET)
+        print()
         print('Running unit tests...')
         if self.auto_clear:
             print()
