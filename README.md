@@ -5,7 +5,8 @@ pytest-watch -- Continuous pytest runner
 [![Current version on PyPI](http://img.shields.io/pypi/v/pytest-watch.svg)][pypi]
 
 **pytest-watch** a zero-config CLI tool that runs [pytest][], and reruns it
-when a file in your project changes.
+when a file in your project changes. It beeps on failures and can run arbitrary
+commands on each passing and failing test run.
 
 
 Motivation
@@ -15,8 +16,8 @@ Whether or not you use the test-driven development method, running tests
 continuously is far more productive than waiting until you're finished
 programming to test your code. Additionally, manually running `py.test` each
 time you want to see if any tests were broken has more wait-time and cognitive
-overhead than merely checking the terminal here and there. This could be a
-crucial difference when debugging a complex problem or on a tight deadline.
+overhead than merely listening for a notification. This could be a crucial
+difference when debugging a complex problem or on a tight deadline.
 
 
 Installation
@@ -51,15 +52,11 @@ pass or fail:
         --onfail "growlnotify -m \"Tests failed\""
   ```
 
+  using [GrowlNotify][]
+
 - **Windows**
 
-  `> ptw --onfail "echo <Ctrl+G>"` replacing `<Ctrl+G>` with the actual keystrokes
-
   `> ptw --onfail flash` using [Console Flash][]
-
-- **Linux**
-
-  `$ ptw --onfail beep`
 
 
 Alternatives
@@ -91,6 +88,7 @@ Use this software often? Please consider supporting me on
 [pypi]: http://pypi.python.org/pypi/pytest-watch/
 [pytest]: http://pytest.org/
 [watchdog]: http://packages.python.org/watchdog
+[growlnotify]: http://growl.info/downloads#generaldownloads
 [console flash]: http://github.com/joeyespo/console-flash
 [xdist]: http://pypi.python.org/pypi/pytest-xdist
 [nosey]: http://github.com/joeyespo/nosey
