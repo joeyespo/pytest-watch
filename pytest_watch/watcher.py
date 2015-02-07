@@ -39,8 +39,8 @@ class ChangeHandler(FileSystemEventHandler):
         print('Running unit tests...')
         if self.auto_clear:
             print()
-        returncode = subprocess.call('py.test', cwd=self.directory, shell=True)
-        passed = (returncode == 0)
+        exit_code = subprocess.call('py.test', cwd=self.directory, shell=True)
+        passed = exit_code == 0
 
         if passed and self.onpass:
             os.system(self.onpass)
