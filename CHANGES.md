@@ -2,6 +2,15 @@ pytest-watch Changelog
 ======================
 
 
+Version 2.0.0 (2015-02-06)
+--------------------------
+
+- Enhancement: Show the detected change, unless `--clear` is given.
+- Enhancement: Beep by default, unless `--nobeep` is given.
+- Enhancement: Add `--ext` to override the list of extensions that trigger re-runs.
+- Cleanup
+
+
 Version 1.0.0 (2015-02-06)
 --------------------------
 
