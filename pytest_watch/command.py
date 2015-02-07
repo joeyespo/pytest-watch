@@ -17,7 +17,9 @@ Options:
 """
 
 import sys
+
 from docopt import docopt
+
 from .watcher import watch
 from . import __version__
 
@@ -33,4 +35,5 @@ def main(argv=None):
     args = docopt(usage, argv=argv, version=version)
 
     # Execute
-    return watch(args['<directory>'], args['--clear'], args['--onpass'], args['--onfail'])
+    return watch(args['<directory>'], args['--clear'],
+                 args['--onpass'], args['--onfail'])
