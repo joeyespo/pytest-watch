@@ -32,11 +32,5 @@ def main(argv=None):
     # Parse options
     args = docopt(usage, argv=argv, version=version)
 
-    # Get triggers from options
-    triggers = dict(
-      onpass=args['--onpass'],
-      onfail=args['--onfail'],
-    )
-
     # Execute
-    return watch(args['<directory>'], args['--clear'], triggers)
+    return watch(args['<directory>'], args['--clear'], args['--onpass'], args['--onfail'])

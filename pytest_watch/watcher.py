@@ -10,11 +10,12 @@ default_extensions = ['.py']
 
 class ChangeHandler(FileSystemEventHandler):
     """Listens for changes to files and re-runs tests after each change."""
-    def __init__(self, directory=None, auto_clear=False, triggers={}, extensions=[]):
+    def __init__(self, directory=None, auto_clear=False, onpass=None, onfail=None, extensions=[]):
         super(ChangeHandler, self).__init__()
         self.directory = os.path.abspath(directory or '.')
         self.auto_clear = auto_clear
-        self.triggers = triggers
+        self.onpass = onpass
+        self.onfail = onfail
         self.extensions = extensions or default_extensions
 
     def on_any_event(self, event):
@@ -36,22 +37,20 @@ class ChangeHandler(FileSystemEventHandler):
         returncode = subprocess.call('py.test', cwd=self.directory, shell=True)
         passed = (returncode == 0)
 
-        onpass = self.triggers.get('onpass')
-        onfail = self.triggers.get('onfail')
-        if passed and onpass:
-            os.system(onpass)
-        elif not passed and onfail:
-            os.system(onfail)
+        if passed and self.onpass:
+            os.system(self.onpass)
+        elif not passed and self.onfail:
+            os.system(self.onfail)
 
 
-def watch(directory=None, auto_clear=False, triggers={}, extensions=[]):
+def watch(directory=None, auto_clear=False, onpass=None, onfail=None, extensions=[]):
     """Starts a server to render the specified file or directory containing a README."""
     if directory and not os.path.isdir(directory):
         raise ValueError('Directory not found: ' + directory)
     directory = os.path.abspath(directory or '')
 
     # Initial run
-    event_handler = ChangeHandler(directory, auto_clear, triggers, extensions)
+    event_handler = ChangeHandler(directory, auto_clear, onpass, onfail, extensions)
     event_handler.run()
 
     # Setup watchdog
