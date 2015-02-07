@@ -9,6 +9,7 @@ from watchdog.events import FileSystemEventHandler
 
 
 DEFAULT_EXTENSIONS = ['.py']
+CLEAR_COMMAND = 'cls' if os.name == 'nt' else 'clear'
 
 
 class ChangeHandler(FileSystemEventHandler):
@@ -32,7 +33,7 @@ class ChangeHandler(FileSystemEventHandler):
     def run(self):
         """Called when a file is changed to re-run the tests with nose."""
         if self.auto_clear:
-            os.system('cls' if os.name == 'nt' else 'clear')
+            subprocess.call(CLEAR_COMMAND, cwd=self.directory, shell=True)
         else:
             print()
         print('Running unit tests...')
