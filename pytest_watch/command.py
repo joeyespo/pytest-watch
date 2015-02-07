@@ -14,6 +14,8 @@ Options:
   -c --clear        Automatically clear the screen before each run.
   --onpass=<cmd>    Run arbitrary programs on pass.
   --onfail=<cmd>    Run arbitrary programs on failure.
+  --ext=<exts>      Comma-separated list of file extensions that trigger a
+                    new test run when changed (default: .py)
 """
 
 import sys
@@ -31,9 +33,8 @@ def main(argv=None):
     usage = '\n\n\n'.join(__doc__.split('\n\n\n')[1:])
     version = 'pytest-watch ' + __version__
 
-    # Parse options
     args = docopt(usage, argv=argv, version=version)
 
-    # Execute
+    extensions = args['--ext'].split(',') if args['--ext'] else []
     return watch(args['<directory>'], args['--clear'],
-                 args['--onpass'], args['--onfail'])
+                 args['--onpass'], args['--onfail'], extensions)
