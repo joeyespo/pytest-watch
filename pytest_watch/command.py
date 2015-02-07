@@ -14,6 +14,7 @@ Options:
   -c --clear        Automatically clear the screen before each run.
   --onpass=<cmd>    Run arbitrary programs on pass.
   --onfail=<cmd>    Run arbitrary programs on failure.
+  --nobeep          Do not beep on failure.
   --ext=<exts>      Comma-separated list of file extensions that trigger a
                     new test run when changed (default: .py)
 """
@@ -36,5 +37,5 @@ def main(argv=None):
     args = docopt(usage, argv=argv, version=version)
 
     extensions = args['--ext'].split(',') if args['--ext'] else []
-    return watch(args['<directory>'], args['--clear'],
+    return watch(args['<directory>'], args['--clear'], not args['--nobeep'],
                  args['--onpass'], args['--onfail'], extensions)

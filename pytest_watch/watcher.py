@@ -10,15 +10,17 @@ from watchdog.events import FileSystemEventHandler
 
 DEFAULT_EXTENSIONS = ['.py']
 CLEAR_COMMAND = 'cls' if os.name == 'nt' else 'clear'
+BEEP_CHARACTER = '\a'
 
 
 class ChangeHandler(FileSystemEventHandler):
     """Listens for changes to files and re-runs tests after each change."""
-    def __init__(self, directory=None, auto_clear=False,
+    def __init__(self, directory=None, auto_clear=False, beep_on_failure=True,
                  onpass=None, onfail=None, extensions=[]):
         super(ChangeHandler, self).__init__()
         self.directory = os.path.abspath(directory or '.')
         self.auto_clear = auto_clear
+        self.beep_on_failure = beep_on_failure
         self.onpass = onpass
         self.onfail = onfail
         self.extensions = extensions or DEFAULT_EXTENSIONS
@@ -42,13 +44,18 @@ class ChangeHandler(FileSystemEventHandler):
         exit_code = subprocess.call('py.test', cwd=self.directory, shell=True)
         passed = exit_code == 0
 
+        # Beep if failed
+        if not passed and self.beep_on_failure:
+            print(BEEP_CHARACTER, end='')
+
+        # Run custom commands
         if passed and self.onpass:
             os.system(self.onpass)
         elif not passed and self.onfail:
             os.system(self.onfail)
 
 
-def watch(directory=None, auto_clear=False,
+def watch(directory=None, auto_clear=False, beep_on_failure=True,
           onpass=None, onfail=None, extensions=[]):
     """
     Starts a server to render the specified file or directory
@@ -59,7 +66,7 @@ def watch(directory=None, auto_clear=False,
     directory = os.path.abspath(directory or '')
 
     # Initial run
-    event_handler = ChangeHandler(directory, auto_clear,
+    event_handler = ChangeHandler(directory, auto_clear, beep_on_failure,
                                   onpass, onfail, extensions)
     event_handler.run()
 
