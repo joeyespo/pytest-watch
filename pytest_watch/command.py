@@ -9,14 +9,17 @@ Usage:
   ptw [options] [<directory>]
 
 Options:
-  -h --help         Show this help.
-  --version         Show version.
-  -c --clear        Automatically clear the screen before each run.
-  --onpass=<cmd>    Run arbitrary programs on pass.
-  --onfail=<cmd>    Run arbitrary programs on failure.
-  --nobeep          Do not beep on failure.
-  --ext=<exts>      Comma-separated list of file extensions that trigger a
-                    new test run when changed (default: .py)
+  -h --help                 Show this help.
+  --version                 Show version.
+  -c --clear                Automatically clear the screen before each run.
+  --onpass=<cmd>            Run arbitrary programs on pass.
+  --onfail=<cmd>            Run arbitrary programs on failure.
+  --nobeep                  Do not beep on failure.
+  --nowatchdirs=<fnmatch>   Do not watch any directory basename which matches one 
+                            of the patterns supplied
+                            (similar to pytest's norecursedirs)
+  --ext=<exts>              Comma-separated list of file extensions that trigger a
+                            new test run when changed (default: .py)
 """
 
 import sys
@@ -41,4 +44,5 @@ def main(argv=None):
 
     extensions = args['--ext'].split(',') if args['--ext'] else []
     return watch(args['<directory>'], args['--clear'], not args['--nobeep'],
-                 args['--onpass'], args['--onfail'], extensions)
+                 args['--onpass'], args['--onfail'], args['--nowatchdirs'], 
+                 extensions)
