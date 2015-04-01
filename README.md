@@ -45,11 +45,12 @@ pass or fail:
 
 - **OSX**
 
-  `$ ptw --onpass "say passed" --onpass "say failed"`
+  `$ ptw --onpass "say passed" --onpass "say failed" --nowatchdirs ".dont_look_here"`
 
   ```bash
   $ ptw --onpass "growlnotify -m \"All tests passed!\"" \
         --onfail "growlnotify -m \"Tests failed\""
+        --nowatchdirs ".dont_look_here"
   ```
 
   using [GrowlNotify][]
