@@ -6,6 +6,7 @@ import subprocess
 
 from colorama import Fore
 from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 
 
@@ -59,7 +60,7 @@ class ChangeHandler(FileSystemEventHandler):
 
 
 def watch(directory=None, auto_clear=False, beep_on_failure=True,
-          onpass=None, onfail=None, extensions=[]):
+          onpass=None, onfail=None, poll=False, extensions=[]):
     """
     Starts a server to render the specified file or directory
     containing a README.
@@ -74,7 +75,11 @@ def watch(directory=None, auto_clear=False, beep_on_failure=True,
     event_handler.run()
 
     # Setup watchdog
-    observer = Observer()
+    if poll:
+        observer = PollingObserver()
+    else:
+        observer = Observer()
+
     observer.schedule(event_handler, path=directory, recursive=True)
     observer.start()
 
