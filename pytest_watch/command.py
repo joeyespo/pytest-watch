@@ -15,6 +15,7 @@ Options:
   --onpass=<cmd>    Run arbitrary programs on pass.
   --onfail=<cmd>    Run arbitrary programs on failure.
   --nobeep          Do not beep on failure.
+  --poll            Use polling instead of events (useful in VMs)
   --ext=<exts>      Comma-separated list of file extensions that trigger a
                     new test run when changed (default: .py)
 """
@@ -41,4 +42,5 @@ def main(argv=None):
 
     extensions = args['--ext'].split(',') if args['--ext'] else []
     return watch(args['<directory>'], args['--clear'], not args['--nobeep'],
-                 args['--onpass'], args['--onfail'], extensions)
+                 args['--onpass'], args['--onfail'], args['--poll'],
+                 extensions)
