@@ -61,10 +61,6 @@ class ChangeHandler(FileSystemEventHandler):
 
 def watch(directory=None, auto_clear=False, beep_on_failure=True,
           onpass=None, onfail=None, poll=False, extensions=[]):
-    """
-    Starts a server to render the specified file or directory
-    containing a README.
-    """
     if directory and not os.path.isdir(directory):
         raise ValueError('Directory not found: ' + directory)
     directory = os.path.abspath(directory or '')
