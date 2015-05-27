@@ -46,7 +46,7 @@ class ChangeHandler(FileSystemEventHandler):
         print(Fore.CYAN + msg.format(Fore.LIGHTCYAN_EX + arg + Fore.CYAN) + Fore.RESET)
         if self.auto_clear:
             print()
-        exit_code = subprocess.call(command, shell=True)
+        exit_code = subprocess.call(['py.test'] + self.args, shell=False)
         passed = exit_code == 0
 
         # Beep if failed
