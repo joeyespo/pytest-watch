@@ -7,10 +7,11 @@ import subprocess
 from colorama import Fore
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
-from watchdog.events import FileSystemEventHandler, FileModifiedEvent, FileCreatedEvent
+from watchdog.events import (FileSystemEventHandler, FileModifiedEvent,
+                             FileCreatedEvent, FileMovedEvent)
 
 
-WATCHED_EVENTS = [FileModifiedEvent, FileCreatedEvent]
+WATCHED_EVENTS = [FileModifiedEvent, FileCreatedEvent, FileMovedEvent]
 DEFAULT_EXTENSIONS = ['.py']
 CLEAR_COMMAND = 'cls' if os.name == 'nt' else 'clear'
 BEEP_CHARACTER = '\a'
@@ -30,9 +31,10 @@ class ChangeHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):
         if isinstance(event, tuple(WATCHED_EVENTS)):
-            ext = os.path.splitext(event.src_path)[1].lower()
+            dest = event.dest_path if isinstance(event, FileMovedEvent) else event.src_path
+            ext = os.path.splitext(dest)[1].lower()
             if ext in self.extensions:
-                self.run(event.src_path)
+                self.run(dest)
 
     def run(self, filename=None):
         """Called when a file is changed to re-run the tests with py.test."""
