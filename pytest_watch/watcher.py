@@ -81,12 +81,12 @@ def watch(directory=None, auto_clear=False, beep_on_failure=True,
         observer = Observer()
 
     observer.schedule(event_handler, path=directory, recursive=True)
-    observer.start()
 
     # Watch and run tests until interrupted by user
     try:
+        observer.start()
         while True:
             time.sleep(1)
+        observer.join()
     except KeyboardInterrupt:
         observer.stop()
-    observer.join()
