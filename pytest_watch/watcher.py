@@ -38,11 +38,12 @@ class ChangeHandler(FileSystemEventHandler):
         """Called when a file is changed to re-run the tests with py.test."""
         if self.auto_clear:
             subprocess.call(CLEAR_COMMAND, shell=True)
-        elif filename:
-            print()
-            print(Fore.CYAN + 'Change detected in ' + filename + Fore.RESET)
+        command = ' '.join(['py.test'] + self.args)
+        msg, arg = 'Running pytest command: {}', command
+        if filename:
+            msg, arg = 'Change detected in {}, rerunning pytest command...', filename
         print()
-        print('Running unit tests...')
+        print(Fore.CYAN + msg.format(Fore.LIGHTCYAN_EX + arg + Fore.CYAN) + Fore.RESET)
         if self.auto_clear:
             print()
         command = ' '.join(['py.test'] + self.args)
