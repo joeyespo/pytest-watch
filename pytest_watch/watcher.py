@@ -7,9 +7,10 @@ import subprocess
 from colorama import Fore
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import FileSystemEventHandler, FileModifiedEvent, FileCreatedEvent
 
 
+WATCHED_EVENTS = [FileModifiedEvent, FileCreatedEvent]
 DEFAULT_EXTENSIONS = ['.py']
 CLEAR_COMMAND = 'cls' if os.name == 'nt' else 'clear'
 BEEP_CHARACTER = '\a'
@@ -28,11 +29,10 @@ class ChangeHandler(FileSystemEventHandler):
         self.extensions = extensions or DEFAULT_EXTENSIONS
 
     def on_any_event(self, event):
-        if event.is_directory:
-            return
-        ext = os.path.splitext(event.src_path)[1].lower()
-        if ext in self.extensions:
-            self.run(event.src_path)
+        if isinstance(event, tuple(WATCHED_EVENTS)):
+            ext = os.path.splitext(event.src_path)[1].lower()
+            if ext in self.extensions:
+                self.run(event.src_path)
 
     def run(self, filename=None):
         """Called when a file is changed to re-run the tests with nose."""
