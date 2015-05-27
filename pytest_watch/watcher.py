@@ -18,15 +18,15 @@ BEEP_CHARACTER = '\a'
 
 class ChangeHandler(FileSystemEventHandler):
     """Listens for changes to files and re-runs tests after each change."""
-    def __init__(self, directory=None, auto_clear=False, beep_on_failure=True,
-                 onpass=None, onfail=None, extensions=[]):
+    def __init__(self, auto_clear=False, beep_on_failure=True,
+                 onpass=None, onfail=None, extensions=[], args=None):
         super(ChangeHandler, self).__init__()
-        self.directory = os.path.abspath(directory or '.')
         self.auto_clear = auto_clear
         self.beep_on_failure = beep_on_failure
         self.onpass = onpass
         self.onfail = onfail
         self.extensions = extensions or DEFAULT_EXTENSIONS
+        self.args = args or []
 
     def on_any_event(self, event):
         if isinstance(event, tuple(WATCHED_EVENTS)):
@@ -35,9 +35,9 @@ class ChangeHandler(FileSystemEventHandler):
                 self.run(event.src_path)
 
     def run(self, filename=None):
-        """Called when a file is changed to re-run the tests with nose."""
+        """Called when a file is changed to re-run the tests with py.test."""
         if self.auto_clear:
-            subprocess.call(CLEAR_COMMAND, cwd=self.directory, shell=True)
+            subprocess.call(CLEAR_COMMAND, shell=True)
         elif filename:
             print()
             print(Fore.CYAN + 'Change detected in ' + filename + Fore.RESET)
@@ -45,7 +45,8 @@ class ChangeHandler(FileSystemEventHandler):
         print('Running unit tests...')
         if self.auto_clear:
             print()
-        exit_code = subprocess.call('py.test', cwd=self.directory, shell=True)
+        command = ' '.join(['py.test'] + self.args)
+        exit_code = subprocess.call(command, shell=True)
         passed = exit_code == 0
 
         # Beep if failed
@@ -59,15 +60,18 @@ class ChangeHandler(FileSystemEventHandler):
             os.system(self.onfail)
 
 
-def watch(directory=None, auto_clear=False, beep_on_failure=True,
-          onpass=None, onfail=None, poll=False, extensions=[]):
-    if directory and not os.path.isdir(directory):
-        raise ValueError('Directory not found: ' + directory)
-    directory = os.path.abspath(directory or '')
+def watch(directories=[], auto_clear=False, beep_on_failure=True,
+          onpass=None, onfail=None, poll=False, extensions=[], args=[]):
+    if not directories:
+        directories = ['.']
+    directories = [os.path.abspath(directory) for directory in directories]
+    for directory in directories:
+        if not os.path.isdir(directory):
+            raise ValueError('Directory not found: ' + directory)
 
     # Initial run
-    event_handler = ChangeHandler(directory, auto_clear, beep_on_failure,
-                                  onpass, onfail, extensions)
+    event_handler = ChangeHandler(auto_clear, beep_on_failure,
+                                  onpass, onfail, extensions, args)
     event_handler.run()
 
     # Setup watchdog
@@ -76,7 +80,8 @@ def watch(directory=None, auto_clear=False, beep_on_failure=True,
     else:
         observer = Observer()
 
-    observer.schedule(event_handler, path=directory, recursive=True)
+    for directory in directories:
+        observer.schedule(event_handler, path=directory, recursive=True)
 
     # Watch and run tests until interrupted by user
     try:

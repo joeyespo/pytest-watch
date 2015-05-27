@@ -4,20 +4,24 @@ pytest_watch.command
 
 Implements the command-line interface for pytest-watch.
 
+All positional arguments are passed directly to py.test executable.
+
 
 Usage:
-  ptw [options] [<directory>]
+  ptw [options] [--] [<args>...]
 
 Options:
   -h --help         Show this help.
   --version         Show version.
+  --watch=<dirs>    Command-separated list of directories to watch
+                    (default: current directory).
   -c --clear        Automatically clear the screen before each run.
-  --onpass=<cmd>    Run arbitrary programs on pass.
-  --onfail=<cmd>    Run arbitrary programs on failure.
+  --onpass=<cmd>    Run arbitrary command on pass.
+  --onfail=<cmd>    Run arbitrary command on failure.
   --nobeep          Do not beep on failure.
-  --poll            Use polling instead of events (useful in VMs)
+  -p --poll         Use polling instead of events (useful in VMs).
   --ext=<exts>      Comma-separated list of file extensions that trigger a
-                    new test run when changed (default: .py)
+                    new test run when changed (default: .py).
 """
 
 import sys
@@ -41,6 +45,13 @@ def main(argv=None):
     args = docopt(usage, argv=argv, version=version)
 
     extensions = args['--ext'].split(',') if args['--ext'] else []
-    return watch(args['<directory>'], args['--clear'], not args['--nobeep'],
-                 args['--onpass'], args['--onfail'], args['--poll'],
-                 extensions)
+    directories = args['--watch'].split(',') if args['--watch'] else []
+
+    return watch(directories=directories,
+                 auto_clear=args['--clear'],
+                 beep_on_failure=not args['--nobeep'],
+                 onpass=args['--onpass'],
+                 onfail=args['--onfail'],
+                 poll=args['--poll'],
+                 extensions=extensions,
+                 args=args['<args>'])
