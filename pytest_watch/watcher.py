@@ -60,7 +60,7 @@ class ChangeHandler(FileSystemEventHandler):
             os.system(self.onfail)
 
 
-def watch(directories=[], auto_clear=False, beep_on_failure=True,
+def watch(directories=[], norecursedirs=[], auto_clear=False, beep_on_failure=True,
           onpass=None, onfail=None, poll=False, extensions=[], args=[]):
     if not directories:
         directories = ['.']
@@ -68,6 +68,30 @@ def watch(directories=[], auto_clear=False, beep_on_failure=True,
     for directory in directories:
         if not os.path.isdir(directory):
             raise ValueError('Directory not found: ' + directory)
+    recursive_dirs = directories
+    non_recursive_dirs = []
+    if norecursedirs:
+        non_recursive_dirs = []
+        recursive_dirs = []
+        for directory in directories:
+            subdirs = [
+                os.path.join(directory, d)
+                for d in os.listdir(directory)
+                if os.path.isdir(d)
+            ]
+            ok_subdirs = [
+                subd for subd in subdirs
+                if not any(os.path.samefile(os.path.join(directory, nrd), subd)
+                           for nrd in norecursedirs)
+            ]
+            if len(subdirs) == len(ok_subdirs):
+                recursive_dirs.append(directory)
+            else:
+                non_recursive_dirs.append(directory)
+                recursive_dirs.extend(ok_subdirs)
+
+    recursive_dirs = sorted(set(recursive_dirs))
+    non_recursive_dirs = sorted(set(non_recursive_dirs))
 
     # Initial run
     event_handler = ChangeHandler(auto_clear, beep_on_failure,
@@ -80,8 +104,10 @@ def watch(directories=[], auto_clear=False, beep_on_failure=True,
     else:
         observer = Observer()
 
-    for directory in directories:
+    for directory in recursive_dirs:
         observer.schedule(event_handler, path=directory, recursive=True)
+    for directory in non_recursive_dirs:
+        observer.schedule(event_handler, path=directory, recursive=False)
 
     # Watch and run tests until interrupted by user
     try:
