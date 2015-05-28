@@ -62,7 +62,7 @@ class ChangeHandler(FileSystemEventHandler):
             os.system(self.onfail)
 
 
-def watch(directories=[], norecursedirs=[], auto_clear=False, beep_on_failure=True,
+def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
           onpass=None, onfail=None, poll=False, extensions=[], args=[]):
     if not directories:
         directories = ['.']
@@ -72,7 +72,7 @@ def watch(directories=[], norecursedirs=[], auto_clear=False, beep_on_failure=Tr
             raise ValueError('Directory not found: ' + directory)
     recursive_dirs = directories
     non_recursive_dirs = []
-    if norecursedirs:
+    if ignore:
         non_recursive_dirs = []
         recursive_dirs = []
         for directory in directories:
@@ -83,8 +83,8 @@ def watch(directories=[], norecursedirs=[], auto_clear=False, beep_on_failure=Tr
             ]
             ok_subdirs = [
                 subd for subd in subdirs
-                if not any(os.path.samefile(os.path.join(directory, nrd), subd)
-                           for nrd in norecursedirs)
+                if not any(os.path.samefile(os.path.join(directory, d), subd)
+                           for d in ignore)
             ]
             if len(subdirs) == len(ok_subdirs):
                 recursive_dirs.append(directory)

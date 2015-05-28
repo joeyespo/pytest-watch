@@ -11,19 +11,19 @@ Usage:
   ptw [options] [--] [<args>...]
 
 Options:
-  -h --help               Show this help.
-  --version               Show version.
-  --watch=<dirs>          Command-separated list of directories to watch recursively
-                          (default: current directory).
-  --norecursedirs=<dirs>  Command-separated list of directories to not recurse to
-                          (if relative: starting from the root of each watched dir).
-  -c --clear              Automatically clear the screen before each run.
-  --onpass=<cmd>          Run arbitrary command on pass.
-  --onfail=<cmd>          Run arbitrary command on failure.
-  --nobeep                Do not beep on failure.
-  -p --poll               Use polling instead of events (useful in VMs).
-  --ext=<exts>            Comma-separated list of file extensions that trigger a
-                          new test run when changed (default: .py).
+  -h --help         Show this help.
+  --version         Show version.
+  --watch=<dirs>    Command-separated list of directories to be watched recursively
+                    (default: current directory).
+  --ignore=<dirs>   Command-separated list of directories to ignore when descending
+                    (if relative: starting from the root of each watched dir).
+  -c --clear        Automatically clear the screen before each run.
+  --onpass=<cmd>    Run arbitrary command on pass.
+  --onfail=<cmd>    Run arbitrary command on failure.
+  --nobeep          Do not beep on failure.
+  -p --poll         Use polling instead of events (useful in VMs).
+  --ext=<exts>      Comma-separated list of file extensions that trigger a
+                    new test run when changed (default: .py).
 """
 
 import sys
@@ -46,7 +46,7 @@ def main(argv=None):
 
     args = docopt(usage, argv=argv, version=version)
     return watch(directories=(args['--watch'] or '').split(','),
-                 norecursedirs=(args['--norecursedirs'] or '').split(','),
+                 ignore=(args['--ignore'] or '').split(','),
                  auto_clear=args['--clear'],
                  beep_on_failure=not args['--nobeep'],
                  onpass=args['--onpass'],
