@@ -39,7 +39,7 @@ class ChangeHandler(FileSystemEventHandler):
     def run(self, filename=None):
         """Called when a file is changed to re-run the tests with py.test."""
         if self.auto_clear:
-            subprocess.call(CLEAR_COMMAND, shell=True)
+            subprocess.call(CLEAR_COMMAND)
         command = ' '.join(['py.test'] + self.args)
         msg, arg = 'Running pytest command: {}', command
         if filename:
@@ -48,7 +48,7 @@ class ChangeHandler(FileSystemEventHandler):
         print(Fore.CYAN + msg.format(Fore.LIGHTCYAN_EX + arg + Fore.CYAN) + Fore.RESET)
         if self.auto_clear:
             print()
-        exit_code = subprocess.call(['py.test'] + self.args, shell=False)
+        exit_code = subprocess.call(['py.test'] + self.args)
         passed = exit_code == 0
 
         # Beep if failed
