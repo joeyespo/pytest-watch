@@ -8,7 +8,7 @@ All positional arguments after `--` are passed directly to py.test executable.
 
 
 Usage:
-  ptw [options] [<directories>...] [-- <args>...]
+  ptw [options] [-v | -q] [<directories>...] [-- <args>...]
 
 Options:
   -h --help         Show this help.
@@ -23,6 +23,8 @@ Options:
   --ext=<exts>      Comma-separated list of file extensions that trigger a
                     new test run when changed (default: .py).
   --no-spool        Disable event spooling (default: 200ms cooldown).
+  -v --verbose      Increase verbosity of the output.
+  -q --quiet        Decrease verbosity of the output.
 """
 
 import sys
@@ -63,4 +65,5 @@ def main(argv=None):
                  poll=args['--poll'],
                  extensions=extensions,
                  args=pytest_args,
-                 spool=not args['--no-spool'])
+                 spool=not args['--no-spool'],
+                 verbose=1 - bool(args['--quiet']) + bool(args['--verbose']))
