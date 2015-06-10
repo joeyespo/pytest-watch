@@ -22,6 +22,7 @@ Options:
   -p --poll         Use polling instead of events (useful in VMs).
   --ext=<exts>      Comma-separated list of file extensions that trigger a
                     new test run when changed (default: .py).
+  --no-spool        Disable event spooling (default: 200ms cooldown).
 """
 
 import sys
@@ -61,4 +62,5 @@ def main(argv=None):
                  onfail=args['--onfail'],
                  poll=args['--poll'],
                  extensions=extensions,
-                 args=pytest_args)
+                 args=pytest_args,
+                 spool=not args['--no-spool'])

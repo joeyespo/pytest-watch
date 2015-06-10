@@ -30,7 +30,7 @@ STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
 class ChangeHandler(FileSystemEventHandler):
     """Listens for changes to files and re-runs tests after each change."""
     def __init__(self, auto_clear=False, beep_on_failure=True,
-                 onpass=None, onfail=None, extensions=[], args=None):
+                 onpass=None, onfail=None, extensions=[], args=None, spool=True):
         super(ChangeHandler, self).__init__()
         self.auto_clear = auto_clear
         self.beep_on_failure = beep_on_failure
@@ -38,7 +38,9 @@ class ChangeHandler(FileSystemEventHandler):
         self.onfail = onfail
         self.extensions = extensions or DEFAULT_EXTENSIONS
         self.args = args or []
-        self.spooler = EventSpooler(0.2, self.on_queued_events)
+        self.spooler = None
+        if spool:
+            self.spooler = EventSpooler(0.2, self.on_queued_events)
 
     def on_queued_events(self, events):
         summary = []
@@ -55,7 +57,10 @@ class ChangeHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):
         if isinstance(event, tuple(WATCHED_EVENTS)):
-            self.spooler.enqueue(event)
+            if self.spooler is not None:
+                self.spooler.enqueue(event)
+            else:
+                self.on_queued_events([event])
 
     def run(self, summary=None):
         """Called when a file is changed to re-run the tests with py.test."""
@@ -90,7 +95,7 @@ class ChangeHandler(FileSystemEventHandler):
 
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
-          onpass=None, onfail=None, poll=False, extensions=[], args=[]):
+          onpass=None, onfail=None, poll=False, extensions=[], args=[], spool=True):
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
@@ -124,7 +129,7 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
 
     # Initial run
     event_handler = ChangeHandler(auto_clear, beep_on_failure,
-                                  onpass, onfail, extensions, args)
+                                  onpass, onfail, extensions, args, spool)
     event_handler.run()
 
     # Setup watchdog
