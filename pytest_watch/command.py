@@ -52,7 +52,6 @@ def main(argv=None):
         '.' * (not ext.startswith('.')) + ext
         for ext in (args['--ext'] or '.py').split(',')
     ]
-    print(ignore, extensions)
 
     return watch(directories=directories,
                  ignore=ignore,
