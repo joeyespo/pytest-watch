@@ -36,4 +36,7 @@ class EventSpooler(object):
     def process(self):
         self.outbox.put(self.inbox.get())
         if self.inbox.empty():
-            self.callback([self.outbox.get() for _ in range(self.outbox.qsize())])
+            events = []
+            while not self.outbox.empty():
+                events.append(self.outbox.get())
+            self.callback(events)
