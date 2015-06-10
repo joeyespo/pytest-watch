@@ -4,14 +4,22 @@ import os
 import time
 import subprocess
 
+from .spooler import EventSpooler
+
 from colorama import Fore
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import (FileSystemEventHandler, FileModifiedEvent,
-                             FileCreatedEvent, FileMovedEvent)
+                             FileCreatedEvent, FileMovedEvent, FileDeletedEvent)
 
 
-WATCHED_EVENTS = [FileModifiedEvent, FileCreatedEvent, FileMovedEvent]
+EVENT_NAMES = {
+    FileModifiedEvent: 'modified',
+    FileCreatedEvent: 'created',
+    FileMovedEvent: 'moved',
+    FileDeletedEvent: 'deleted',
+}
+WATCHED_EVENTS = list(EVENT_NAMES)
 DEFAULT_EXTENSIONS = ['.py']
 CLEAR_COMMAND = 'cls' if os.name == 'nt' else 'clear'
 BEEP_CHARACTER = '\a'
@@ -28,24 +36,41 @@ class ChangeHandler(FileSystemEventHandler):
         self.onfail = onfail
         self.extensions = extensions or DEFAULT_EXTENSIONS
         self.args = args or []
+        self.spooler = EventSpooler(0.2, self.on_queued_events)
+
+    def on_queued_events(self, events):
+        summary = []
+        for event in events:
+            paths = [event.src_path]
+            if isinstance(event, FileMovedEvent):
+                paths.append(event.dest_path)
+            event_name = EVENT_NAMES[type(event)]
+            paths = tuple(map(os.path.relpath, paths))
+            if any(os.path.splitext(path)[1].lower() in self.extensions for path in paths):
+                summary.append((event_name, paths))
+        if summary:
+            self.run(sorted(set(summary)))
 
     def on_any_event(self, event):
         if isinstance(event, tuple(WATCHED_EVENTS)):
-            dest = event.dest_path if isinstance(event, FileMovedEvent) else event.src_path
-            ext = os.path.splitext(dest)[1].lower()
-            if ext in self.extensions:
-                self.run(dest)
+            self.spooler.enqueue(event)
 
-    def run(self, filename=None):
+    def run(self, summary=None):
         """Called when a file is changed to re-run the tests with py.test."""
         if self.auto_clear:
             subprocess.call(CLEAR_COMMAND)
         command = ' '.join(['py.test'] + self.args)
-        msg, arg = 'Running pytest command: {}', command
-        if filename:
-            msg, arg = 'Change detected in {}, rerunning pytest command...', filename
+        highlight = lambda arg: Fore.LIGHTWHITE_EX + arg + Fore.CYAN
+        msg = 'Running pytest command: {}'.format(highlight(command))
+        if summary:
+            msg = 'Changes detected in files:\n{}\n\nRerunning pytest command: {}'.format(
+                '\n'.join('    {:9s}'.format(event_name + ':') + ' ' +
+                          ' -> '.join(map(highlight, paths))
+                          for event_name, paths in summary),
+                highlight(command)
+            )
         print()
-        print(Fore.CYAN + msg.format(Fore.LIGHTCYAN_EX + arg + Fore.CYAN) + Fore.RESET)
+        print(Fore.CYAN + msg + Fore.RESET)
         if self.auto_clear:
             print()
         exit_code = subprocess.call(['py.test'] + self.args)
