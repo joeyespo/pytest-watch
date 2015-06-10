@@ -6,7 +6,7 @@ import subprocess
 
 from .spooler import EventSpooler
 
-from colorama import Fore
+from colorama import Fore, Style
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import (FileSystemEventHandler, FileModifiedEvent,
@@ -23,6 +23,8 @@ WATCHED_EVENTS = list(EVENT_NAMES)
 DEFAULT_EXTENSIONS = ['.py']
 CLEAR_COMMAND = 'cls' if os.name == 'nt' else 'clear'
 BEEP_CHARACTER = '\a'
+STYLE_NORMAL = Fore.WHITE + Style.NORMAL + Style.DIM
+STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
 
 
 class ChangeHandler(FileSystemEventHandler):
@@ -60,7 +62,7 @@ class ChangeHandler(FileSystemEventHandler):
         if self.auto_clear:
             subprocess.call(CLEAR_COMMAND)
         command = ' '.join(['py.test'] + self.args)
-        highlight = lambda arg: Fore.LIGHTWHITE_EX + arg + Fore.CYAN
+        highlight = lambda arg: STYLE_HIGHLIGHT + arg + STYLE_NORMAL
         msg = 'Running pytest command: {}'.format(highlight(command))
         if summary:
             msg = 'Changes detected in files:\n{}\n\nRerunning pytest command: {}'.format(
@@ -69,8 +71,8 @@ class ChangeHandler(FileSystemEventHandler):
                           for event_name, paths in summary),
                 highlight(command)
             )
-        print()
-        print(Fore.CYAN + msg + Fore.RESET)
+            print()
+        print(STYLE_NORMAL + msg + Fore.RESET + Style.NORMAL)
         if self.auto_clear:
             print()
         exit_code = subprocess.call(['py.test'] + self.args)
