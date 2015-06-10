@@ -4,7 +4,7 @@ pytest_watch.command
 
 Implements the command-line interface for pytest-watch.
 
-All positional arguments are passed directly to py.test executable.
+All positional arguments after `--` are passed directly to py.test executable.
 
 
 Usage:
