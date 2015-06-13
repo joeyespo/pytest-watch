@@ -31,7 +31,7 @@ class ChangeHandler(FileSystemEventHandler):
     """Listens for changes to files and re-runs tests after each change."""
     def __init__(self, auto_clear=False, beep_on_failure=True,
                  onpass=None, onfail=None, extensions=[], args=None,
-                 spool=True, verbose=1):
+                 spool=True, verbose=False, quiet=False):
         super(ChangeHandler, self).__init__()
         self.auto_clear = auto_clear
         self.beep_on_failure = beep_on_failure
@@ -43,6 +43,7 @@ class ChangeHandler(FileSystemEventHandler):
         if spool:
             self.spooler = EventSpooler(0.2, self.on_queued_events)
         self.verbose = verbose
+        self.quiet = quiet
 
     def on_queued_events(self, events):
         summary = []
@@ -71,11 +72,11 @@ class ChangeHandler(FileSystemEventHandler):
         command = ' '.join(['py.test'] + self.args)
         if summary and not self.auto_clear:
             print()
-        if self.verbose:
+        if not self.quiet:
             highlight = lambda arg: STYLE_HIGHLIGHT + arg + STYLE_NORMAL
             msg = 'Running: {}'.format(highlight(command))
             if summary:
-                if self.verbose > 1:
+                if self.verbose:
                     msg = 'Changes detected in files:\n{}\n\nRerunning: {}'.format(
                         '\n'.join('    {:9s}'.format(event_name + ':') + ' ' +
                                   ' -> '.join(map(highlight, paths))
@@ -83,7 +84,8 @@ class ChangeHandler(FileSystemEventHandler):
                         highlight(command)
                     )
                 else:
-                    msg = 'Changes detected, rerunning: {}'.format(highlight(command))
+                    msg = ('Changes detected, rerunning: {}'
+                           .format(highlight(command)))
             print(STYLE_NORMAL + msg + Fore.RESET + Style.NORMAL)
         exit_code = subprocess.call(['py.test'] + self.args)
         passed = exit_code == 0
@@ -101,7 +103,7 @@ class ChangeHandler(FileSystemEventHandler):
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
           onpass=None, onfail=None, poll=False, extensions=[], args=[],
-          spool=True, verbose=1):
+          spool=True, verbose=False, quiet=False):
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
@@ -136,7 +138,7 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
     # Initial run
     event_handler = ChangeHandler(auto_clear, beep_on_failure,
                                   onpass, onfail, extensions, args,
-                                  spool, verbose)
+                                  spool, verbose, quiet)
     event_handler.run()
 
     # Setup watchdog
