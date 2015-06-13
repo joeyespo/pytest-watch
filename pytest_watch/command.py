@@ -13,7 +13,7 @@ Usage:
 Options:
   -h --help         Show this help.
   --version         Show version.
-  --ignore=<dirs>   Command-separated list of directories to ignore when descending
+  --ignore=<dirs>   Comma-separated list of directories to ignore
                     (if relative: starting from the root of each watched dir).
   -c --clear        Automatically clear the screen before each run.
   --onpass=<cmd>    Run arbitrary command on pass.
@@ -37,7 +37,9 @@ from . import __version__
 
 
 def main(argv=None):
-    """The entry point of the application."""
+    """
+    The entry point of the application.
+    """
     colorama.init()
 
     usage = __doc__[__doc__.find('Usage:'):]
@@ -45,16 +47,15 @@ def main(argv=None):
     argv = argv if argv is not None else sys.argv[1:]
     args = docopt(usage, argv=argv, version=version)
 
-    directories, pytest_args = args['<directories>'], []
+    pytest_args = []
+    directories = args['<directories>']
     if '--' in directories:
-        ix = directories.index('--')
-        directories, pytest_args = directories[:ix], directories[(ix + 1):]
-
+        index = directories.index('--')
+        pytest_args = directories[index + 1:]
+        directories = directories[:index]
     ignore = (args['--ignore'] or '').split(',')
-    extensions = [
-        '.' * (not ext.startswith('.')) + ext
-        for ext in (args['--ext'] or '.py').split(',')
-    ]
+    extensions = [('.' if not ext.startswith('.') else '') + ext
+                  for ext in (args['--ext'] or '.py').split(',')]
 
     return watch(directories=directories,
                  ignore=ignore,
