@@ -2,12 +2,27 @@ pytest-watch Changelog
 ======================
 
 
+Version 3.0.0 (2015-06-14)
+--------------------------
+
+- Enhancement: Add `--poll` to work with remote file systems ([#11](https://github.com/joeyespo/pytest-watch/pull/11) - thanks, [@aldanor][]!)
+- Enhancement: Add ability to have multiple watch directories ([#11](https://github.com/joeyespo/pytest-watch/pull/11) - thanks, [@aldanor][]!)
+- Enhancement: Show pytest command being run ([#11](https://github.com/joeyespo/pytest-watch/pull/11) - thanks, [@aldanor][]!)
+- Enhancement: Show command and filenames in color ([#11](https://github.com/joeyespo/pytest-watch/pull/11) - thanks, [@aldanor][]!)
+- Enhancement: Add `--ignore` to ignore directories from being watched (initial attempt) ([#11](https://github.com/joeyespo/pytest-watch/pull/11) - thanks, [@aldanor][]!)
+- Enhancement: Add ability to forward arguments to pytest with `--` ([#11](https://github.com/joeyespo/pytest-watch/pull/11) - thanks, [@aldanor][]!)
+- Enhancement: Add spooling for the case where multiple watch events are triggered simultaneously ([#11](https://github.com/joeyespo/pytest-watch/pull/11) - thanks, [@aldanor][]!)
+- Enhancement: Add `--verbose` and `--quiet` for controlling the verbosity ([#11](https://github.com/joeyespo/pytest-watch/pull/11) - thanks, [@aldanor][]!)
+- Bugfix: Exit gracefully when `KeyboardInterrupt` occurs after the first test run ([#10](https://github.com/joeyespo/pytest-watch/pull/10) - thanks, [@carsongee][]!)
+
+
 Version 2.0.0 (2015-02-06)
 --------------------------
 
 - Enhancement: Show the detected change, unless `--clear` is given.
 - Enhancement: Beep by default, unless `--nobeep` is given.
 - Enhancement: Add `--ext` to override the list of extensions that trigger re-runs.
+- Bugfix: Unpin requirements
 - Cleanup
 
 
@@ -32,4 +47,6 @@ First public preview release.
 
 
 [@casio]: https://github.com/casio
-[@rakjin](https://github.com/rakjin)
+[@rakjin]: https://github.com/rakjin
+[@carsongee]: https://github.com/carsongee
+[@aldanor]: https://github.com/aldanor
