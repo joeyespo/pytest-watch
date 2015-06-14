@@ -1,9 +1,12 @@
-# -*- coding: utf-8
+from threading import Thread, Event
 
-from multiprocessing import Queue, Process, Event
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 
 
-class Timer(Process):
+class Timer(Thread):
     def __init__(self, interval, function, args=[], kwargs={}):
         super(Timer, self).__init__()
         self.interval = interval
