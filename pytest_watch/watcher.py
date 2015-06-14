@@ -4,13 +4,14 @@ import os
 import time
 import subprocess
 
-from .spooler import EventSpooler
-
 from colorama import Fore, Style
+from watchdog.events import (
+    FileSystemEventHandler, FileModifiedEvent, FileCreatedEvent,
+    FileMovedEvent, FileDeletedEvent)
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
-from watchdog.events import (FileSystemEventHandler, FileModifiedEvent,
-                             FileCreatedEvent, FileMovedEvent, FileDeletedEvent)
+
+from .spooler import EventSpooler
 
 
 EVENT_NAMES = {
@@ -53,7 +54,8 @@ class ChangeHandler(FileSystemEventHandler):
                 paths.append(event.dest_path)
             event_name = EVENT_NAMES[type(event)]
             paths = tuple(map(os.path.relpath, paths))
-            if any(os.path.splitext(path)[1].lower() in self.extensions for path in paths):
+            if any(os.path.splitext(path)[1].lower() in self.extensions
+                   for path in paths):
                 summary.append((event_name, paths))
         if summary:
             self.run(sorted(set(summary)))
@@ -77,12 +79,11 @@ class ChangeHandler(FileSystemEventHandler):
             msg = 'Running: {}'.format(highlight(command))
             if summary:
                 if self.verbose:
-                    msg = 'Changes detected in files:\n{}\n\nRerunning: {}'.format(
-                        '\n'.join('    {:9s}'.format(event_name + ':') + ' ' +
+                    file_lines = ['    {:9s}'.format(event_name + ':') + ' ' +
                                   ' -> '.join(map(highlight, paths))
-                                  for event_name, paths in summary),
-                        highlight(command)
-                    )
+                                  for event_name, paths in summary]
+                    msg = ('Changes detected in files:\n{}\n\nRerunning: {}'
+                           .format('\n'.join(file_lines), highlight(command)))
                 else:
                     msg = ('Changes detected, rerunning: {}'
                            .format(highlight(command)))
@@ -110,30 +111,13 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
     for directory in directories:
         if not os.path.isdir(directory):
             raise ValueError('Directory not found: ' + directory)
-    recursive_dirs = directories
-    non_recursive_dirs = []
-    if ignore:
-        non_recursive_dirs = []
-        recursive_dirs = []
-        for directory in directories:
-            subdirs = [
-                os.path.join(directory, d)
-                for d in os.listdir(directory)
-                if os.path.isdir(d)
-            ]
-            ok_subdirs = [
-                subd for subd in subdirs
-                if not any(os.path.samefile(os.path.join(directory, d), subd)
-                           for d in ignore)
-            ]
-            if len(subdirs) == len(ok_subdirs):
-                recursive_dirs.append(directory)
-            else:
-                non_recursive_dirs.append(directory)
-                recursive_dirs.extend(ok_subdirs)
 
-    recursive_dirs = sorted(set(recursive_dirs))
-    non_recursive_dirs = sorted(set(non_recursive_dirs))
+    if ignore:
+        recursive_dirs, non_recursive_dirs = split_recursive(
+            directories, ignore)
+    else:
+        recursive_dirs = directories
+        non_recursive_dirs = []
 
     # Initial run
     event_handler = ChangeHandler(auto_clear, beep_on_failure,
@@ -142,11 +126,7 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
     event_handler.run()
 
     # Setup watchdog
-    if poll:
-        observer = PollingObserver()
-    else:
-        observer = Observer()
-
+    observer = PollingObserver() if poll else Observer()
     for directory in recursive_dirs:
         observer.schedule(event_handler, path=directory, recursive=True)
     for directory in non_recursive_dirs:
@@ -160,3 +140,27 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         observer.join()
     except KeyboardInterrupt:
         observer.stop()
+
+
+def samepath(left, right):
+    return (os.path.abspath(os.path.normcase(left)) ==
+            os.path.abspath(os.path.normcase(right)))
+
+
+def split_recursive(directories, ignore):
+    non_recursive_dirs = []
+    recursive_dirs = []
+    for directory in directories:
+        subdirs = [os.path.join(directory, d)
+                   for d in os.listdir(directory)
+                   if os.path.isdir(d)]
+        filtered = [subdir for subdir in subdirs
+                    if not any(samepath(os.path.join(directory, d), subdir)
+                               for d in ignore)]
+        if len(subdirs) == len(filtered):
+            recursive_dirs.append(directory)
+        else:
+            non_recursive_dirs.append(directory)
+            recursive_dirs.extend(filtered)
+
+    return sorted(set(recursive_dirs)), sorted(set(non_recursive_dirs))
