@@ -22,6 +22,7 @@ setup(
     entry_points={
         'console_scripts': [
             'py.test.watch = pytest_watch.command:main',
+            'pytest-watch = pytest_watch.command:main',
             'ptw = pytest_watch.command:main',
         ]
     },
