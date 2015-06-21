@@ -3,6 +3,7 @@
 dist
 
 # Environment files
+site-packages
 build
 env
 *.so
