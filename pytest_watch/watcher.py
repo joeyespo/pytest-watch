@@ -4,7 +4,6 @@ import os
 import time
 import subprocess
 
-import pytest
 from colorama import Fore, Style
 from watchdog.events import (
     FileSystemEventHandler, FileModifiedEvent, FileCreatedEvent,
@@ -89,7 +88,7 @@ class ChangeHandler(FileSystemEventHandler):
                     msg = ('Changes detected, rerunning: {}'
                            .format(highlight(command)))
             print(STYLE_NORMAL + msg + Fore.RESET + Style.NORMAL)
-        exit_code = pytest.main(self.args)
+        exit_code = subprocess.call(['py.test'] + self.args, shell=True)
         passed = exit_code == 0
 
         # Beep if failed
