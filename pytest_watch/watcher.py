@@ -88,7 +88,7 @@ class ChangeHandler(FileSystemEventHandler):
                     msg = ('Changes detected, rerunning: {}'
                            .format(highlight(command)))
             print(STYLE_NORMAL + msg + Fore.RESET + Style.NORMAL)
-        exit_code = subprocess.call(['py.test'] + self.args, shell=True)
+        exit_code = subprocess.call(command, shell=True)
         passed = exit_code == 0
 
         # Beep if failed
