@@ -45,7 +45,7 @@ pass or fail:
 
 - **OSX**
 
-  `$ ptw --onpass "say passed" --onpass "say failed"`
+  `$ ptw --onpass "say passed" --onfail "say failed"`
 
   ```bash
   $ ptw --onpass "growlnotify -m \"All tests passed!\"" \
