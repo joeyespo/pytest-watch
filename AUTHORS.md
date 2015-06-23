@@ -5,7 +5,7 @@ Authors
 along with the following contributors:
 
 - Carsten Kraus ([@casio](https://github.com/casio))
-- [@rakjin](https://github.com/rakjin)
+- Rakjin Hwang ([@rakjin](https://github.com/rakjin))
 - Carson Gee ([@carsongee](https://github.com/carsongee))
 - Ivan Smirnov ([@aldanor](https://github.com/aldanor))
 
