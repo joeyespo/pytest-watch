@@ -24,7 +24,7 @@ WATCHED_EVENTS = list(EVENT_NAMES)
 DEFAULT_EXTENSIONS = ['.py']
 CLEAR_COMMAND = 'cls' if os.name == 'nt' else 'clear'
 BEEP_CHARACTER = '\a'
-STYLE_NORMAL = Fore.WHITE + Style.NORMAL + Style.DIM
+STYLE_NORMAL = Fore.RESET
 STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
 
 
