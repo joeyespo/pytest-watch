@@ -5,7 +5,7 @@ pytest-watch Changelog
 Version 3.1.0 (2015-06-20)
 --------------------------
 
-- Enhancement: Add ability to run with `python -m pytest_watch`
+- Enhancement: Add ability to run with `python -m pytest_watch`.
 - Bugfix: Revert using `pytest` directly (abfd40209a124e1555e94dcf03eeb8644465ea62) until it can handle running multiple times ([#15](https://github.com/joeyespo/pytest-watch/issues/15))
 
 
