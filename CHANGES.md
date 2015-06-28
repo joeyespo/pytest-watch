@@ -2,6 +2,14 @@ pytest-watch Changelog
 ======================
 
 
+Version 3.2.0 (2015-06-28)
+--------------------------
+
+- Enhancement: Add `pytest-watch` to console scripts to match the name.
+- Bugfix: Use `shell=True` only for MS Windows when executing `py.test` ([#18](https://github.com/joeyespo/pytest-watch/pull/18) - thanks, [@blueyed][]!)
+- Bugfix: Use the default fg for `STYLE_NORMAL` ([#19](https://github.com/joeyespo/pytest-watch/pull/19) - thanks, [@blueyed][]!)
+
+
 Version 3.1.0 (2015-06-20)
 --------------------------
 
@@ -57,3 +65,4 @@ First public preview release.
 [@rakjin]: https://github.com/rakjin
 [@carsongee]: https://github.com/carsongee
 [@aldanor]: https://github.com/aldanor
+[@blueyed]: https://github.com/blueyed

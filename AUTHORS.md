@@ -8,6 +8,6 @@ along with the following contributors:
 - Rakjin Hwang ([@rakjin](https://github.com/rakjin))
 - Carson Gee ([@carsongee](https://github.com/carsongee))
 - Ivan Smirnov ([@aldanor](https://github.com/aldanor))
-
+- Daniel Hahler ([@blueyed](https://github.com/blueyed))
 
 [home]: README.md
