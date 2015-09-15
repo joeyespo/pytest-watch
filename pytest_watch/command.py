@@ -18,6 +18,7 @@ Options:
   -c --clear        Automatically clear the screen before each run.
   --onpass=<cmd>    Run arbitrary command on pass.
   --onfail=<cmd>    Run arbitrary command on failure.
+  --beforerun=<cmd> Run arbitrary command before tests are run.
   --nobeep          Do not beep on failure.
   -p --poll         Use polling instead of events (useful in VMs).
   --ext=<exts>      Comma-separated list of file extensions that trigger a
@@ -64,6 +65,7 @@ def main(argv=None):
                  beep_on_failure=not args['--nobeep'],
                  onpass=args['--onpass'],
                  onfail=args['--onfail'],
+                 beforerun=args['--beforerun'],
                  poll=args['--poll'],
                  extensions=extensions,
                  args=pytest_args,
