@@ -16,9 +16,9 @@ Options:
   --ignore=<dirs>   Comma-separated list of directories to ignore
                     (if relative: starting from the root of each watched dir).
   -c --clear        Automatically clear the screen before each run.
+  --beforerun=<cmd> Run arbitrary command before tests are run.
   --onpass=<cmd>    Run arbitrary command on pass.
   --onfail=<cmd>    Run arbitrary command on failure.
-  --beforerun=<cmd> Run arbitrary command before tests are run.
   --nobeep          Do not beep on failure.
   -p --poll         Use polling instead of events (useful in VMs).
   --ext=<exts>      Comma-separated list of file extensions that trigger a
