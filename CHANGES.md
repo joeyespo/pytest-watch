@@ -2,6 +2,12 @@ pytest-watch Changelog
 ======================
 
 
+Version 3.3.0 (2015-09-16)
+--------------------------
+
+- Enhancement: Add `--beforerun` CLI argument ([#25](https://github.com/joeyespo/pytest-watch/pull/25) - thanks, [@blueyed][]!)
+
+
 Version 3.2.0 (2015-06-28)
 --------------------------
 
