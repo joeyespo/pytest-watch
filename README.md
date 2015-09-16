@@ -58,6 +58,10 @@ pass or fail:
 
   `> ptw --onfail flash` using [Console Flash][]
 
+You can also run a command before the tests, e.g. resetting your test database:
+
+`$ ptw --beforerun reset_db.py`
+
 
 Alternatives
 ------------
