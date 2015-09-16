@@ -31,13 +31,14 @@ STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
 class ChangeHandler(FileSystemEventHandler):
     """Listens for changes to files and re-runs tests after each change."""
     def __init__(self, auto_clear=False, beep_on_failure=True,
-                 onpass=None, onfail=None, extensions=[], args=None,
-                 spool=True, verbose=False, quiet=False):
+                 onpass=None, onfail=None, beforerun=None, extensions=[],
+                 args=None, spool=True, verbose=False, quiet=False):
         super(ChangeHandler, self).__init__()
         self.auto_clear = auto_clear
         self.beep_on_failure = beep_on_failure
         self.onpass = onpass
         self.onfail = onfail
+        self.beforerun = beforerun
         self.extensions = extensions or DEFAULT_EXTENSIONS
         self.args = args or []
         self.spooler = None
@@ -88,6 +89,8 @@ class ChangeHandler(FileSystemEventHandler):
                     msg = ('Changes detected, rerunning: {}'
                            .format(highlight(command)))
             print(STYLE_NORMAL + msg + Fore.RESET + Style.NORMAL)
+        if self.beforerun:
+            os.system(self.beforerun)
         exit_code = subprocess.call(['py.test'] + self.args,
                                     shell=subprocess.mswindows)
         passed = exit_code == 0
@@ -104,8 +107,8 @@ class ChangeHandler(FileSystemEventHandler):
 
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
-          onpass=None, onfail=None, poll=False, extensions=[], args=[],
-          spool=True, verbose=False, quiet=False):
+          onpass=None, onfail=None, beforerun=None, poll=False, extensions=[],
+          args=[], spool=True, verbose=False, quiet=False):
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
@@ -122,7 +125,7 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
 
     # Initial run
     event_handler = ChangeHandler(auto_clear, beep_on_failure,
-                                  onpass, onfail, extensions, args,
+                                  onpass, onfail, beforerun, extensions, args,
                                   spool, verbose, quiet)
     event_handler.run()
 
