@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import time
 import subprocess
+import sys
 
 from colorama import Fore, Style
 from watchdog.events import (
@@ -92,7 +93,7 @@ class ChangeHandler(FileSystemEventHandler):
         if self.beforerun:
             os.system(self.beforerun)
         exit_code = subprocess.call(['py.test'] + self.args,
-                                    shell=subprocess.mswindows)
+                                    shell=(sys.platform == 'win32'))
         passed = exit_code == 0
 
         # Beep if failed
