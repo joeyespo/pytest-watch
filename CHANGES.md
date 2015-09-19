@@ -2,6 +2,12 @@ pytest-watch Changelog
 ======================
 
 
+Version 3.5.0 (2015-09-19)
+--------------------------
+
+- Python 3.5.0 compatibility ([#26](https://github.com/joeyespo/pytest-watch/pull/26) - thanks, [@ColtonProvias][]!)
+
+
 Version 3.3.0 (2015-09-16)
 --------------------------
 
@@ -72,3 +78,4 @@ First public preview release.
 [@carsongee]: https://github.com/carsongee
 [@aldanor]: https://github.com/aldanor
 [@blueyed]: https://github.com/blueyed
+[@ColtonProvias]: https://github.com/ColtonProvias

@@ -9,5 +9,6 @@ along with the following contributors:
 - Carson Gee ([@carsongee](https://github.com/carsongee))
 - Ivan Smirnov ([@aldanor](https://github.com/aldanor))
 - Daniel Hahler ([@blueyed](https://github.com/blueyed))
+- Colton J. Provias ([@ColtonProvias](https://github.com/ColtonProvias))
 
 [home]: README.md
