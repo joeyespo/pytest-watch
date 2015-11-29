@@ -98,7 +98,8 @@ class ChangeHandler(FileSystemEventHandler):
 
         # Beep if failed
         if not passed and self.beep_on_failure:
-            print(BEEP_CHARACTER, end='')
+            sys.stdout.write(BEEP_CHARACTER)
+            sys.stdout.flush()
 
         # Run custom commands
         if passed and self.onpass:
