@@ -7,8 +7,7 @@ Implements the command-line interface for pytest-watch.
 All positional arguments after `--` are passed directly to py.test executable.
 
 
-Usage:
-  ptw [options] [<directories>...] [-- <args>...]
+Usage: ptw [options] [<directories>...] [-- <args>...]
 
 Options:
   -h --help         Show this help.
