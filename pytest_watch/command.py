@@ -19,6 +19,7 @@ Options:
   --beforerun=<cmd> Run arbitrary command before tests are run.
   --onpass=<cmd>    Run arbitrary command on pass.
   --onfail=<cmd>    Run arbitrary command on failure.
+  --onexit=<cmd>    Run arbitrary command when exiting.
   --nobeep          Do not beep on failure.
   -p --poll         Use polling instead of events (useful in VMs).
   --ext=<exts>      Comma-separated list of file extensions that trigger a
@@ -66,6 +67,7 @@ def main(argv=None):
                  onpass=args['--onpass'],
                  onfail=args['--onfail'],
                  beforerun=args['--beforerun'],
+                 onexit=args['--onexit'],
                  poll=args['--poll'],
                  extensions=extensions,
                  args=pytest_args,

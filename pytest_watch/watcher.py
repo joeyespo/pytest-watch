@@ -108,8 +108,8 @@ class ChangeHandler(FileSystemEventHandler):
 
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
-          onpass=None, onfail=None, beforerun=None, poll=False, extensions=[],
-          args=[], spool=True, verbose=False, quiet=False):
+          onpass=None, onfail=None, beforerun=None, onexit=None, poll=False,
+          extensions=[], args=[], spool=True, verbose=False, quiet=False):
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
@@ -145,6 +145,8 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         observer.join()
     except KeyboardInterrupt:
         observer.stop()
+    if onexit:
+        os.system(onexit)
 
 
 def samepath(left, right):
