@@ -2,6 +2,13 @@ pytest-watch Changelog
 ======================
 
 
+Version 3.6.0 (2015-11-29)
+--------------------------
+
+- Enhancement: Add `--onexit` option ([#28](https://github.com/joeyespo/pytest-watch/pull/28) - thanks, [@blueyed][]!)
+- Bugfix: Fix beep on Python 3.x by manually flushing the output buffer ([#27](https://github.com/joeyespo/pytest-watch/pull/27) - thanks, [@blueyed][]!)
+
+
 Version 3.5.0 (2015-09-19)
 --------------------------
 
