@@ -137,7 +137,7 @@ def main(argv=None):
 class CollectIniPathPlugin(object):
 
     def pytest_cmdline_main(self, config):
-        CollectorIniPath.pytest_ini_path = str(config.inifile.realpath())
+        CollectorIniPath.pytest_ini_path = config.inifile.realpath().strpath
 
 
 class CollectorIniPath(object):
