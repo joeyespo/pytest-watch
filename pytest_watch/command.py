@@ -103,6 +103,8 @@ def main(argv=None):
     args = {}
     for arg_key in args_cmd:
         args[arg_key] = args_cmd[arg_key] or args_ini.get(arg_key)
+    if args["--verbose"]:
+        print("pytest-watch args: " + str(args))
 
     pytest_args = []
     directories = args['<directories>']
