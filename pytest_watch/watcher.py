@@ -95,6 +95,7 @@ class ChangeHandler(FileSystemEventHandler):
         if self.beforerun:
             os.system(self.beforerun)
         exit_code = pytest.main(self.args, plugins=[ReportCollectorPlugin()])
+        os.environ["PYTEST_EXIT_CODE"] = exit_code
         passed = exit_code == 0
 
         # Beep if failed
