@@ -2,6 +2,13 @@ pytest-watch Changelog
 ======================
 
 
+Version 3.7.0 (2015-12-02)
+--------------------------
+
+- Enhancement: Add `--runner` option
+- Cleanup
+
+
 Version 3.6.0 (2015-11-29)
 --------------------------
 
