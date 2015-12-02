@@ -62,6 +62,10 @@ You can also run a command before the tests, e.g. resetting your test database:
 
 `$ ptw --beforerun reset_db.py`
 
+Or run a custom script:
+
+`$ ptw --runner "python custom_pytest_runner.py"`
+
 
 Alternatives
 ------------
