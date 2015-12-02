@@ -20,10 +20,14 @@ setup(
     packages=find_packages(),
     install_requires=read('requirements.txt').splitlines(),
     entry_points={
+        'pytest11': [
+            'pytest_report_collector_in_env = pytest_watch.report_collector_plugin',
+        ],
         'console_scripts': [
             'py.test.watch = pytest_watch.command:main',
             'pytest-watch = pytest_watch.command:main',
             'ptw = pytest_watch.command:main',
+            "sample_onpass_onfail = pytest_watch.sample_onpass_onfail:main"
         ]
     },
 )
