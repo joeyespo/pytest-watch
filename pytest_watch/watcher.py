@@ -34,13 +34,15 @@ class ChangeHandler(FileSystemEventHandler):
     Listens for changes to files and re-runs tests after each change.
     """
     def __init__(self, auto_clear=False, beep_on_failure=True,
-                 onpass=None, onfail=None, beforerun=None, extensions=[],
-                 args=None, spool=True, verbose=False, quiet=False):
+                 onpass=None, onfail=None, runner=None, beforerun=None,
+                 extensions=[], args=None, spool=True, verbose=False,
+                 quiet=False):
         super(ChangeHandler, self).__init__()
         self.auto_clear = auto_clear
         self.beep_on_failure = beep_on_failure
         self.onpass = onpass
         self.onfail = onfail
+        self.runner = runner
         self.beforerun = beforerun
         self.extensions = extensions or DEFAULT_EXTENSIONS
         self.args = args or []
@@ -75,7 +77,8 @@ class ChangeHandler(FileSystemEventHandler):
         """
         Called when a file is changed to re-run the tests with py.test.
         """
-        argv = ['py.test'] + self.args
+        runner = self.runner or 'py.test'
+        argv = runner.split(' ') + self.args
 
         # Prepare status update
         if self.auto_clear:
@@ -121,8 +124,9 @@ class ChangeHandler(FileSystemEventHandler):
 
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
-          onpass=None, onfail=None, beforerun=None, onexit=None, poll=False,
-          extensions=[], args=[], spool=True, verbose=False, quiet=False):
+          onpass=None, onfail=None, runner=None, beforerun=None, onexit=None,
+          poll=False, extensions=[], args=[], spool=True, verbose=False,
+          quiet=False):
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
@@ -138,9 +142,9 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         non_recursive_dirs = []
 
     # Initial run
-    event_handler = ChangeHandler(auto_clear, beep_on_failure,
-                                  onpass, onfail, beforerun, extensions, args,
-                                  spool, verbose, quiet)
+    event_handler = ChangeHandler(
+        auto_clear, beep_on_failure, onpass, onfail, runner, beforerun,
+        extensions, args, spool, verbose, quiet)
     event_handler.run()
 
     # Setup watchdog

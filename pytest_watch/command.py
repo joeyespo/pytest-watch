@@ -19,6 +19,7 @@ Options:
   --onpass=<cmd>    Run arbitrary command on pass.
   --onfail=<cmd>    Run arbitrary command on failure.
   --onexit=<cmd>    Run arbitrary command when exiting.
+  --runner=<cmd>    Run a custom command instead of py.test.
   --nobeep          Do not beep on failure.
   -p --poll         Use polling instead of events (useful in VMs).
   --ext=<exts>      Comma-separated list of file extensions that trigger a
@@ -65,6 +66,7 @@ def main(argv=None):
                  beep_on_failure=not args['--nobeep'],
                  onpass=args['--onpass'],
                  onfail=args['--onfail'],
+                 runner=args['--runner'],
                  beforerun=args['--beforerun'],
                  onexit=args['--onexit'],
                  poll=args['--poll'],
