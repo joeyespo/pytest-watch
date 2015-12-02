@@ -30,7 +30,9 @@ STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
 
 
 class ChangeHandler(FileSystemEventHandler):
-    """Listens for changes to files and re-runs tests after each change."""
+    """
+    Listens for changes to files and re-runs tests after each change.
+    """
     def __init__(self, auto_clear=False, beep_on_failure=True,
                  onpass=None, onfail=None, beforerun=None, extensions=[],
                  args=None, spool=True, verbose=False, quiet=False):
@@ -70,13 +72,20 @@ class ChangeHandler(FileSystemEventHandler):
                 self.on_queued_events([event])
 
     def run(self, summary=None):
-        """Called when a file is changed to re-run the tests with py.test."""
+        """
+        Called when a file is changed to re-run the tests with py.test.
+        """
+        argv = ['py.test'] + self.args
+
+        # Prepare status update
         if self.auto_clear:
             subprocess.call(CLEAR_COMMAND, shell=True)
-        command = ' '.join(['py.test'] + self.args)
-        if summary and not self.auto_clear:
+        elif summary:
             print()
+
+        # Print status
         if not self.quiet:
+            command = ' '.join(argv)
             highlight = lambda arg: STYLE_HIGHLIGHT + arg + STYLE_NORMAL
             msg = 'Running: {}'.format(highlight(command))
             if summary:
@@ -90,10 +99,13 @@ class ChangeHandler(FileSystemEventHandler):
                     msg = ('Changes detected, rerunning: {}'
                            .format(highlight(command)))
             print(STYLE_NORMAL + msg + Fore.RESET + Style.NORMAL)
+
+        # Run custom command
         if self.beforerun:
             os.system(self.beforerun)
-        exit_code = subprocess.call(['py.test'] + self.args,
-                                    shell=(sys.platform == 'win32'))
+
+        # Run py.test or py.test runner
+        exit_code = subprocess.call(argv, shell=(sys.platform == 'win32'))
         passed = exit_code == 0
 
         # Beep if failed
