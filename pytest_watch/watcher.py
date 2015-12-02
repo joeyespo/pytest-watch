@@ -14,8 +14,8 @@ from watchdog.observers.polling import PollingObserver
 
 from .spooler import EventSpooler
 
-import pytest
-import json
+import tempfile
+
 
 EVENT_NAMES = {
     FileModifiedEvent: 'modified',
@@ -75,7 +75,14 @@ class ChangeHandler(FileSystemEventHandler):
         """Called when a file is changed to re-run the tests with py.test."""
         if self.auto_clear:
             subprocess.call(CLEAR_COMMAND, shell=True)
-        command = ' '.join(['py.test'] + self.args)
+
+        file_for_report_plugin = tempfile.NamedTemporaryFile(delete=False)
+        fname_report = file_for_report_plugin.name
+        file_for_report_plugin.close()
+        arg_report = "--report_collector_filename={fname}".format(fname=fname_report)
+        mod_args = self.args + [arg_report]
+
+        command = ' '.join(['py.test'] + mod_args)
         if summary and not self.auto_clear:
             print()
         if not self.quiet:
@@ -94,9 +101,10 @@ class ChangeHandler(FileSystemEventHandler):
             print(STYLE_NORMAL + msg + Fore.RESET + Style.NORMAL)
         if self.beforerun:
             os.system(self.beforerun)
-        exit_code = pytest.main(self.args, plugins=[ReportCollectorPlugin()])
-        os.environ["PYTEST_EXIT_CODE"] = exit_code
+        exit_code = subprocess.call(['py.test'] + mod_args,
+                                    shell=(sys.platform == 'win32'))
         passed = exit_code == 0
+        os.environ["PYTEST_REPORT_FILEPATH"] = fname_report
 
         # Beep if failed
         if not passed and self.beep_on_failure:
