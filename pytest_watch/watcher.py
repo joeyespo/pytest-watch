@@ -124,9 +124,9 @@ class ChangeHandler(FileSystemEventHandler):
 
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
-          onpass=None, onfail=None, runner=None, beforerun=None, onexit=None,
-          poll=False, extensions=[], args=[], spool=True, verbose=False,
-          quiet=False):
+          onpass=None, onfail=None, runner=None, beforerun=None, onstart=None,
+          onexit=None, poll=False, extensions=[], args=[], spool=True,
+          verbose=False, quiet=False):
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
@@ -155,6 +155,8 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         observer.schedule(event_handler, path=directory, recursive=False)
 
     # Watch and run tests until interrupted by user
+    if onstart:
+        os.system(onstart)
     try:
         observer.start()
         while True:

@@ -18,6 +18,7 @@ Options:
   --beforerun=<cmd> Run arbitrary command before tests are run.
   --onpass=<cmd>    Run arbitrary command on pass.
   --onfail=<cmd>    Run arbitrary command on failure.
+  --onstart=<cmd>    Run arbitrary command when starting.
   --onexit=<cmd>    Run arbitrary command when exiting.
   --runner=<cmd>    Run a custom command instead of py.test.
   --nobeep          Do not beep on failure.
@@ -68,6 +69,7 @@ def main(argv=None):
                  onfail=args['--onfail'],
                  runner=args['--runner'],
                  beforerun=args['--beforerun'],
+                 onstart=args['--onstart'],
                  onexit=args['--onexit'],
                  poll=args['--poll'],
                  extensions=extensions,
