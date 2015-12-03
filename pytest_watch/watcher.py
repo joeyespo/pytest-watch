@@ -145,6 +145,9 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
     event_handler = ChangeHandler(
         auto_clear, beep_on_failure, onpass, onfail, runner, beforerun,
         extensions, args, spool, verbose, quiet)
+
+    if onstart:
+        os.system(onstart)
     event_handler.run()
 
     # Setup watchdog
@@ -155,8 +158,6 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         observer.schedule(event_handler, path=directory, recursive=False)
 
     # Watch and run tests until interrupted by user
-    if onstart:
-        os.system(onstart)
     try:
         observer.start()
         while True:
