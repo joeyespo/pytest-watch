@@ -17,7 +17,8 @@ class CollectConfig(object):
         self.path = None
 
     def pytest_cmdline_main(self, config):
-        self.path = str(config.inifile)
+        if config.inifile:
+            self.path = str(config.inifile)
 
 
 def merge_config(args):
