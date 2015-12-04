@@ -124,9 +124,9 @@ class ChangeHandler(FileSystemEventHandler):
 
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
-          onpass=None, onfail=None, runner=None, beforerun=None, onexit=None,
-          poll=False, extensions=[], args=[], spool=True, verbose=False,
-          quiet=False):
+          onpass=None, onfail=None, runner=None, beforerun=None, onstart=None,
+          onexit=None, poll=False, extensions=[], args=[], spool=True,
+          verbose=False, quiet=False):
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
@@ -145,6 +145,9 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
     event_handler = ChangeHandler(
         auto_clear, beep_on_failure, onpass, onfail, runner, beforerun,
         extensions, args, spool, verbose, quiet)
+
+    if onstart:
+        os.system(onstart)
     event_handler.run()
 
     # Setup watchdog
