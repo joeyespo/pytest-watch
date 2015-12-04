@@ -66,6 +66,9 @@ Or run a custom script:
 
 `$ ptw --runner "python custom_pytest_runner.py"`
 
+CLI arguments can also be added to a `[pytest-watch]` section in your
+[pytest.ini file][pytest.ini] to persist them in your project.
+
 
 Alternatives
 ------------
@@ -98,6 +101,7 @@ Use this software often? Please consider supporting me on
 [watchdog]: http://packages.python.org/watchdog
 [growlnotify]: http://growl.info/downloads#generaldownloads
 [console flash]: http://github.com/joeyespo/console-flash
+[pytest.ini]: https://pytest.org/latest/customize.html
 [xdist]: http://pypi.python.org/pypi/pytest-xdist
 [nosey]: http://github.com/joeyespo/nosey
 [nose]: http://nose.readthedocs.org/en/latest/

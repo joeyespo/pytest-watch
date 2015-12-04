@@ -2,6 +2,12 @@ pytest-watch Changelog
 ======================
 
 
+Version 3.8.0 (2015-12-04)
+--------------------------
+
+- Enhancement: Read configuration from `pytest.ini` ([#30](https://github.com/joeyespo/pytest-watch/pull/30) - thanks, [@bendtherules][]!)
+
+
 Version 3.7.0 (2015-12-02)
 --------------------------
 
@@ -93,3 +99,4 @@ First public preview release.
 [@aldanor]: https://github.com/aldanor
 [@blueyed]: https://github.com/blueyed
 [@ColtonProvias]: https://github.com/ColtonProvias
+[@bendtherules]: https://github.com/bendtherules
