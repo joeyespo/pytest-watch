@@ -9,7 +9,7 @@ def read(filename):
 
 setup(
     name='pytest-watch',
-    version='3.7.0',
+    version='3.8.0',
     description='Local continuous test runner with pytest and watchdog.',
     long_description=read('README.md'),
     author='Joe Esposito',
@@ -21,9 +21,9 @@ setup(
     install_requires=read('requirements.txt').splitlines(),
     entry_points={
         'console_scripts': [
-            'py.test.watch = pytest_watch.command:main',
-            'pytest-watch = pytest_watch.command:main',
-            'ptw = pytest_watch.command:main',
+            'py.test.watch = pytest_watch:main',
+            'pytest-watch = pytest_watch:main',
+            'ptw = pytest_watch:main',
         ]
     },
 )

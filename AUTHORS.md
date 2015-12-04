@@ -10,5 +10,6 @@ along with the following contributors:
 - Ivan Smirnov ([@aldanor](https://github.com/aldanor))
 - Daniel Hahler ([@blueyed](https://github.com/blueyed))
 - Colton J. Provias ([@ColtonProvias](https://github.com/ColtonProvias))
+- Abhas Bhattacharya ([@bendtherules](https://github.com/bendtherules))
 
 [home]: README.md
