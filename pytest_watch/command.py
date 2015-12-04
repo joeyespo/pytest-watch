@@ -38,6 +38,13 @@ from docopt import docopt
 from .watcher import watch
 from . import __version__
 
+from ini_config_helpers import get_ini_option, get_ini_option_boolean, get_pytest_ini_path
+
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser  # ver. < 3.0
+
 
 def main(argv=None):
     """
@@ -48,7 +55,57 @@ def main(argv=None):
     usage = __doc__[__doc__.find('Usage:'):]
     version = 'pytest-watch ' + __version__
     argv = argv if argv is not None else sys.argv[1:]
-    args = docopt(usage, argv=argv, version=version)
+    args_cmd = docopt(usage, argv=argv, version=version)
+
+    config_ini = ConfigParser()
+    pytest_ini_path = get_pytest_ini_path()
+    config_ini.read(pytest_ini_path)
+    args_ini = {}
+
+    # string ini config values
+    args_ini["--onpass"] = get_ini_option(config_ini, "onpass")
+
+    args_ini["--onfail"] = get_ini_option(config_ini, "onfail")
+
+    args_ini["--beforerun"] = get_ini_option(config_ini, "beforerun")
+
+    args_ini["--onexit"] = get_ini_option(config_ini, "onexit")
+
+    args_ini["--ext"] = get_ini_option(config_ini, "ext")
+
+    args_ini["--ignore"] = get_ini_option(config_ini, "ignore")
+
+    # boolean ini config values
+    args_ini["--help"] = get_ini_option_boolean(config_ini, "help")
+
+    args_ini["--version"] = get_ini_option_boolean(config_ini, "version")
+
+    args_ini["--clear"] = get_ini_option_boolean(config_ini, "clear")
+
+    args_ini["--nobeep"] = get_ini_option_boolean(config_ini, "nobeep")
+
+    args_ini["--poll"] = get_ini_option_boolean(config_ini, "poll")
+
+    args_ini["--no-spool"] = get_ini_option_boolean(config_ini, "no-spool")
+
+    args_ini["--verbose"] = get_ini_option_boolean(config_ini, "verbose")
+
+    args_ini["--quiet"] = get_ini_option_boolean(config_ini, "quiet")
+
+    # other config values
+    if config_ini.has_option("pytest-watch", "directories"):
+        args_ini['<directories>'] = config_ini.get("pytest-watch", "directories")
+        args_ini['<directories>'] = args_ini['<directories>'].split(", ")
+    else:
+        args_ini['<directories>'] = []
+
+    args_ini["<args>"] = get_ini_option(config_ini, "addopts")
+
+    args = {}
+    for arg_key in args_cmd:
+        args[arg_key] = args_cmd[arg_key] or args_ini.get(arg_key)
+    if args["--verbose"]:
+        print("pytest-watch args: " + str(args))
 
     pytest_args = []
     directories = args['<directories>']
@@ -75,3 +132,37 @@ def main(argv=None):
                  spool=not args['--no-spool'],
                  verbose=args['--verbose'],
                  quiet=args['--quiet'])
+
+# For collecting path of the ini
+
+
+class CollectIniPathPlugin(object):
+
+    def pytest_cmdline_main(self, config):
+        CollectorIniPath.pytest_ini_path = config.inifile.realpath().strpath
+
+
+class CollectorIniPath(object):
+
+    """ Object for storing the path from CollectIniPathPlugin """
+    pytest_ini_path = None
+
+
+def get_pytest_ini_path():
+
+    pytest.main("--collect-only", plugins=[CollectIniPathPlugin()])
+    return(CollectorIniPath.pytest_ini_path)
+
+
+def get_ini_option(config_parser, option_name):
+    if config_parser.has_option("pytest-watch", option_name):
+        return config_parser.get("pytest-watch", option_name)
+    else:
+        return None
+
+
+def get_ini_option_boolean(config_parser, option_name):
+    if config_parser.has_option("pytest-watch", option_name):
+        return config_parser.getboolean("pytest-watch", option_name)
+    else:
+        return False
