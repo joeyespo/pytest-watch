@@ -11,7 +11,9 @@ class CollectIniPathPlugin(object):
 
 class CollectorIniPath(object):
 
-    """ Object for storing the path from CollectIniPathPlugin """
+    """ Object for storing the path from CollectIniPathPlugin.
+        As things cant be returned from the plugin, a reasonable way is to set \
+        path here and read back later """
     pytest_ini_path = None
 
 
