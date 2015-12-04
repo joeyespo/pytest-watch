@@ -38,7 +38,7 @@ from docopt import docopt
 from .watcher import watch
 from . import __version__
 
-import pytest
+from ini_config_helpers import get_ini_option, get_ini_option_boolean, get_pytest_ini_path
 
 try:
     from configparser import ConfigParser
