@@ -40,14 +40,16 @@ from .watcher import watch
 from .config import merge_config
 
 
+usage = '\n\n\n'.join(__doc__.split('\n\n\n')[1:])
+version = 'pytest-watch ' + __version__
+
+
 def main(argv=None):
     """
     The entry point of the application.
     """
     colorama.init()
 
-    usage = __doc__[__doc__.find('Usage:'):]
-    version = 'pytest-watch ' + __version__
     argv = argv if argv is not None else sys.argv[1:]
     args = docopt(usage, argv=argv, version=version)
 
