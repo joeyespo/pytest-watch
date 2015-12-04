@@ -48,13 +48,19 @@ def main(argv=None):
     """
     The entry point of the application.
     """
+    if argv is None:
+        argv = sys.argv[1:]
+
+    # Initialize terminal colors
     colorama.init()
 
-    argv = argv if argv is not None else sys.argv[1:]
+    # Parse CLI arguments
     args = docopt(usage, argv=argv, version=version)
 
+    # Merge config file options
     merge_config(args)
 
+    # Split paths and pytest arguments
     pytest_args = []
     directories = args['<directories>']
     if '--' in directories:
@@ -65,6 +71,7 @@ def main(argv=None):
     extensions = [('.' if not ext.startswith('.') else '') + ext
                   for ext in (args['--ext'] or '.py').split(',')]
 
+    # Run pytest and watch for changes
     return watch(directories=directories,
                  ignore=ignore,
                  auto_clear=args['--clear'],

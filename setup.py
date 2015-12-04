@@ -21,9 +21,9 @@ setup(
     install_requires=read('requirements.txt').splitlines(),
     entry_points={
         'console_scripts': [
-            'py.test.watch = pytest_watch.command:main',
-            'pytest-watch = pytest_watch.command:main',
-            'ptw = pytest_watch.command:main',
+            'py.test.watch = pytest_watch:main',
+            'pytest-watch = pytest_watch:main',
+            'ptw = pytest_watch:main',
         ]
     },
 )
