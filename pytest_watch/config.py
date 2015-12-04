@@ -5,6 +5,8 @@ except ImportError:
 
 import pytest
 
+from .util import silence
+
 
 CLI_OPTION_PREFIX = '--'
 
@@ -23,7 +25,8 @@ class CollectConfig(object):
 
 def merge_config(args):
     collect_config = CollectConfig()
-    pytest.main(['--collect-only'], plugins=[collect_config])
+    with silence():
+        pytest.main(['--collect-only'], plugins=[collect_config])
     if not collect_config.path:
         return
 
