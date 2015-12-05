@@ -34,32 +34,35 @@ def create_temp_case(case_name):
     return path_tmpdir_case
 
 
-def test_path_collected_1():
-    ''' Check pytest.ini location is correct'''
-    # always reset pwd to cur directory
-    path_case = create_temp_case("case_1")
-    os.chdir(path_case)
+class Test_ini_path_collected(object):
 
-    collect_config = CollectConfig()
-    with silence():
-        pytest.main(['--collect-only'], plugins=[collect_config])
+    """ Check pytest.ini location collected from plugin is correct """
 
-    path_pytest_ini = os.path.join(path_case, "pytest.ini")
-    assert(str(collect_config.path) == path_pytest_ini)
+    def test_basic(self):
+        ''' Check pytest.ini location is correct'''
+        # always reset pwd to cur directory
+        path_case = create_temp_case("case_1")
+        os.chdir(path_case)
 
+        collect_config = CollectConfig()
+        with silence():
+            pytest.main(['--collect-only'], plugins=[collect_config])
 
-def test_path_collected_2():
-    ''' Check pytest.ini location is correct, also from a inner directory'''
-    path_case = create_temp_case("case_1")
-    path_case_inner = os.path.join(path_case, "dir_1")
-    os.chdir(path_case_inner)
+        path_pytest_ini = os.path.join(path_case, "pytest.ini")
+        assert(str(collect_config.path) == path_pytest_ini)
 
-    collect_config = CollectConfig()
-    with silence():
-        pytest.main(['--collect-only'], plugins=[collect_config])
+    def test_from_inner_dir(self):
+        ''' Check pytest.ini location is correct, also from a inner directory'''
+        path_case = create_temp_case("case_1")
+        path_case_inner = os.path.join(path_case, "dir_1")
+        os.chdir(path_case_inner)
 
-    path_pytest_ini = os.path.join(path_case, "pytest.ini")
-    assert(str(collect_config.path) == path_pytest_ini)
+        collect_config = CollectConfig()
+        with silence():
+            pytest.main(['--collect-only'], plugins=[collect_config])
+
+        path_pytest_ini = os.path.join(path_case, "pytest.ini")
+        assert(str(collect_config.path) == path_pytest_ini)
 
 
 class Test_merge_config(object):
