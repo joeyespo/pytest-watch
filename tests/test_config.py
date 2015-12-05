@@ -67,7 +67,12 @@ class Test_merge_config(object):
     """All tests for func merge_config"""
 
     def test_works_alone(self):
-        ''' Check ini config works alone'''
+        '''
+        Check ini config works alone.
+        Set pytest.ini:
+            [pytest-watch]
+            verbose = True
+        '''
         os.chdir(os.path.dirname(__file__))
         path_case = create_temp_case("case_1")
         os.chdir(path_case)
@@ -86,7 +91,7 @@ class Test_merge_config(object):
         Check ini config works alongwith cmdline args.
         Set pytest.ini:
             [pytest-watch]
-            version = True
+            verbose = True
         '''
         path_case = create_temp_case("case_1")
         os.chdir(path_case)
@@ -133,11 +138,13 @@ class Test_merge_config(object):
 
         args = {"--verbose": True,
                 "--help": False,
+                "--onpass": None,
                 "--ignore": "dir_a"}
         merge_config(args)
 
         assert(args["--verbose"] is True)
         assert(args["--help"] is False)
+        assert(args["--onpass"] is None)
         assert(args["--ignore"] is "dir_a")
 
     def test_works_wo_pytest_watch_section(self):
@@ -153,11 +160,41 @@ class Test_merge_config(object):
         os.chdir(path_case)
 
         args = {"--verbose": False,
-                "--help": False,
+                "--help": True,
                 "--onpass": None,
                 "--ignore": "dir_a"}
         merge_config(args)
 
         assert(args["--verbose"] is False)
-        assert(args["--help"] is False)
+        assert(args["--help"] is True)
+        assert(args["--onpass"] is None)
         assert(args["--ignore"] is "dir_a")
+
+    @pytest.mark.xfail
+    def test_works_directories_ini_option(self):
+        '''
+        Currently, "directories" or "<directories>" argument \
+        in pytest.ini is not respected. So, it is marked to xfail.
+
+        When it'll pass, "directories" option should be added to \
+        more test cases.
+        Set pytest.ini:
+            [pytest-watch]
+            directories = dir_c,dir_d
+            <directories> = dir_c,dir_d
+        '''
+        path_case = create_temp_case("case_5")
+        os.chdir(path_case)
+
+        args = {"--verbose": False,
+                "--help": True,
+                "--onpass": None,
+                "<directories>": "dir_a,dir_b"}
+        merge_config(args)
+
+        # main condition
+        assert(args["<directories>"] is ["dir_c", "dir_d"])
+        # auxiliary conditions
+        assert(args["--verbose"] is False)
+        assert(args["--help"] is True)
+        assert(args["--onpass"] is None)
