@@ -109,7 +109,9 @@ class ChangeHandler(FileSystemEventHandler):
 
         # Run py.test or py.test runner
         exit_code = subprocess.call(argv, shell=(sys.platform == 'win32'))
-        passed = exit_code == 0
+        # py.test returns exit code 5 in case no tests are run/collected.
+        # This can happen with tools like pytest-testmon.
+        passed = exit_code == 0 or (runner == 'py.test' and exit_code == 5)
 
         # Beep if failed
         if not passed and self.beep_on_failure:
