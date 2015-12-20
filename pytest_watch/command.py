@@ -62,8 +62,7 @@ def main(argv=None):
     directories = args['<directories>']
     if '--' in directories:
         index = directories.index('--')
-        pytest_args = directories[index + 1:]
-        directories = directories[:index]
+        directories, pytest_args = directories[:index], directories[index + 1:]
 
     # Merge config file options
     merge_config(args, directories)
