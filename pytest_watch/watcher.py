@@ -16,14 +16,21 @@ from .spooler import EventSpooler
 
 
 EVENT_NAMES = {
-    FileModifiedEvent: 'modified',
-    FileCreatedEvent: 'created',
-    FileMovedEvent: 'moved',
-    FileDeletedEvent: 'deleted',
+    FileModifiedEvent: 'Change',
+    FileCreatedEvent: 'New file',
+    FileMovedEvent: 'Move',
+    FileDeletedEvent: 'Deletion',
+}
+VERBOSE_EVENT_NAMES = {
+    FileModifiedEvent: 'Modified:',
+    FileCreatedEvent: 'Created:',
+    FileMovedEvent: 'Moved:',
+    FileDeletedEvent: 'Deleted:',
 }
 WATCHED_EVENTS = tuple(EVENT_NAMES)
 DEFAULT_EXTENSIONS = ['.py']
 STYLE_NORMAL = Fore.RESET
+STYLE_BRIGHT = Fore.WHITE + Style.NORMAL + Style.BRIGHT
 STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
 
 
@@ -59,19 +66,35 @@ class ChangeHandler(FileSystemEventHandler):
         self.verbose = verbose
         self.quiet = quiet
 
-    def on_queued_events(self, events):
-        summary = []
-        for event in events:
-            paths = [event.src_path]
+    def on_queued_events(self, queue):
+        """
+        Called when a file is changed.
+        """
+        events = []
+        for event in queue:
+            event_type = type(event)
+            src_path = os.path.relpath(event.src_path)
             if isinstance(event, FileMovedEvent):
-                paths.append(event.dest_path)
-            event_name = EVENT_NAMES[type(event)]
-            paths = tuple(map(os.path.relpath, paths))
-            if any(os.path.splitext(path)[1].lower() in self.extensions
-                   for path in paths):
-                summary.append((event_name, paths))
-        if summary:
-            self.run(sorted(set(summary)))
+                dest_path = os.path.relpath(event.dest_path)
+            else:
+                dest_path = None
+
+            src_ext = os.path.splitext(src_path)[1].lower()
+            included = src_ext in self.extensions
+
+            if dest_path and not included:
+                dest_ext = os.path.splitext(dest_path)[1].lower()
+                included = dest_ext in self.extensions
+
+            if included:
+                events.append((event_type, src_path, dest_path))
+
+        # Do nothing if all events are filtered out
+        if not events:
+            return
+
+        # Run pytest
+        self.run(events)
 
     def on_any_event(self, event):
         # Filter for watched events
@@ -86,32 +109,78 @@ class ChangeHandler(FileSystemEventHandler):
         # Handle event directly
         self.on_queued_events([event])
 
-    def run(self, summary=None):
+    def reduce_events(self, events):
+        # FUTURE: Reduce ['a -> b', 'b -> c'] renames to ['a -> c']
+
+        creates = []
+        moves = []
+        for event, src, dest in events:
+            if event == FileCreatedEvent:
+                creates.append(dest)
+            if event == FileMovedEvent:
+                moves.append(dest)
+
+        seen = []
+        filtered = []
+        for event, src, dest in events:
+            # Skip 'modified' event during 'created'
+            if src in creates and event != FileCreatedEvent:
+                continue
+
+            # Skip 'modified' event during 'moved'
+            if src in moves:
+                continue
+
+            # Skip duplicate events
+            if src in seen:
+                continue
+            seen.append(src)
+
+            filtered.append((event, src, dest))
+        return filtered
+
+    def show_summary(self, events):
+        command = ' '.join(self.argv)
+        bright = lambda arg: STYLE_BRIGHT + arg + Style.RESET_ALL
+        highlight = lambda arg: STYLE_HIGHLIGHT + arg + Style.RESET_ALL
+        events = self.reduce_events(events)
+
+        if not events:
+            lines = ['Running: {}'.format(highlight(command))]
+        elif self.verbose:
+            lines = ['Changes detected:']
+            m = max(map(len, map(lambda e: VERBOSE_EVENT_NAMES[e[0]], events)))
+            for event, src, dest in events:
+                event = VERBOSE_EVENT_NAMES[event].ljust(m)
+                lines.append('  {} {}'.format(
+                    event,
+                    highlight(src + (' -> ' + dest if dest else ''))))
+            lines.append('')
+            lines.append('Running: {}'.format(highlight(command)))
+        else:
+            lines = []
+            for event, src, dest in events:
+                lines.append('{} detected: {}'.format(
+                    EVENT_NAMES[event],
+                    bright(src + (' -> ' + dest if dest else ''))))
+            lines.append('')
+            lines.append('Running: {}'.format(highlight(command)))
+
+        print(STYLE_NORMAL + '\n'.join(lines) + Fore.RESET + Style.NORMAL)
+
+    def run(self, events=[]):
         """
         Called when a file is changed to re-run the tests with py.test.
         """
         # Prepare status update
         if self.auto_clear:
             clear()
-        elif summary:
+        elif not self.quiet:
             print()
 
-        # Print status
+        # Show event summary
         if not self.quiet:
-            command = ' '.join(self.argv)
-            highlight = lambda arg: STYLE_HIGHLIGHT + arg + STYLE_NORMAL
-            msg = 'Running: {}'.format(highlight(command))
-            if summary:
-                if self.verbose:
-                    file_lines = ['    {:9s}'.format(event_name + ':') + ' ' +
-                                  ' -> '.join(map(highlight, paths))
-                                  for event_name, paths in summary]
-                    msg = ('Changes detected in files:\n{}\n\nRerunning: {}'
-                           .format('\n'.join(file_lines), highlight(command)))
-                else:
-                    msg = ('Changes detected, rerunning: {}'
-                           .format(highlight(command)))
-            print(STYLE_NORMAL + msg + Fore.RESET + Style.NORMAL)
+            self.show_summary(events)
 
         # Run custom command
         run_hook(self.beforerun)
