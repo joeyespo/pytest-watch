@@ -57,9 +57,6 @@ def main(argv=None):
     # Parse CLI arguments
     args = docopt(usage, argv=argv, version=version)
 
-    # Merge config file options
-    merge_config(args)
-
     # Split paths and pytest arguments
     pytest_args = []
     directories = args['<directories>']
@@ -67,6 +64,10 @@ def main(argv=None):
         index = directories.index('--')
         pytest_args = directories[index + 1:]
         directories = directories[:index]
+
+    # Merge config file options
+    merge_config(args, directories)
+
     ignore = (args['--ignore'] or '').split(',')
     extensions = [('.' if not ext.startswith('.') else '') + ext
                   for ext in (args['--ext'] or '.py').split(',')]
