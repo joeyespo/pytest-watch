@@ -1,11 +1,13 @@
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from ConfigParser import ConfigParser
+import sys
 
 import pytest
 
 from .util import silence
+
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
 
 
 CLI_OPTION_PREFIX = '--'
@@ -25,8 +27,14 @@ class CollectConfig(object):
 
 def merge_config(args):
     collect_config = CollectConfig()
-    with silence():
-        pytest.main(['--collect-only'], plugins=[collect_config])
+    try:
+        with silence():
+            pytest.main(['--collect-only'], plugins=[collect_config])
+    except Exception:
+        print('There was an error when collecting tests/config:',
+              file=sys.stderr)
+        raise
+
     if not collect_config.path:
         return
 
