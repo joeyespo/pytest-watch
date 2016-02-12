@@ -9,7 +9,7 @@ def read(filename):
 
 setup(
     name='pytest-watch',
-    version='3.9.0',
+    version='3.10.0',
     description='Local continuous test runner with pytest and watchdog.',
     long_description=read('README.md'),
     author='Joe Esposito',
