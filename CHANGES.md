@@ -2,6 +2,13 @@ pytest-watch Changelog
 ======================
 
 
+Version 3.9.0 (2016-02-12)
+--------------------------
+
+- Bugfix: Handle py.test exit code 5 (no tests are run/collected) as pass ([#42](https://github.com/joeyespo/pytest-watch/pull/42) - thanks, [@blueyed][]!)
+- Bugfix: Show config-related errors instead of silently exiting with code 2 ([#45](https://github.com/joeyespo/pytest-watch/pull/45) - thanks, [@blueyed][]!)
+
+
 Version 3.8.0 (2015-12-04)
 --------------------------
 
