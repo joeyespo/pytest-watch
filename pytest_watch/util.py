@@ -15,9 +15,11 @@ def silence():
     sys.stdout = nullfd
     sys.stderr = nullfd
 
-    # Run in silence
-    yield
-
-    sys.stdout = old_stdout
-    sys.stderr = old_stderr
-    nullfd.close()
+    try:
+        yield
+    except Exception:
+        raise
+    finally:
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
+        nullfd.close()
