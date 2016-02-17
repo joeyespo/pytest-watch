@@ -115,10 +115,9 @@ class ChangeHandler(FileSystemEventHandler):
             # py.test returns exit code 5 in case no tests are run/collected.
             # This can happen with tools like pytest-testmon.
             passed = exit_code in [0, 5]
-            failed = exit_code == 1
         else:
             passed = exit_code == 0
-            failed = not passed
+        failed = not passed
         interrupted = exit_code == 2
 
         # Beep if failed
