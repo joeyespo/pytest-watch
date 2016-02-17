@@ -126,12 +126,12 @@ class ChangeHandler(FileSystemEventHandler):
             sys.stdout.flush()
 
         # Run custom commands
+        if interrupted and self.onsigint:
+            os.system(self.onsigint)
         if passed and self.onpass:
             os.system(self.onpass)
         elif failed and self.onfail:
             os.system(self.onfail)
-        elif interrupted and self.onsigint:
-            os.system(self.onsigint)
 
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
