@@ -3,6 +3,12 @@ from __future__ import print_function
 import os
 import subprocess
 from time import sleep
+from traceback import format_exc
+
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 
 from colorama import Fore, Style
 from watchdog.events import (
@@ -11,8 +17,7 @@ from watchdog.events import (
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
 
-from .helpers import beep, clear, is_windows, samepath
-from .spooler import EventSpooler
+from .helpers import beep, clear, dequeue_all, is_windows, samepath
 
 
 ALL_EXTENSIONS = object()
@@ -32,7 +37,6 @@ VERBOSE_EVENT_NAMES = {
 }
 WATCHED_EVENTS = tuple(EVENT_NAMES)
 DEFAULT_EXTENSIONS = ['.py']
-STYLE_NORMAL = Fore.RESET
 STYLE_BRIGHT = Fore.WHITE + Style.NORMAL + Style.BRIGHT
 STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
 
@@ -44,171 +48,104 @@ EXIT_INTERRUPTED = 2
 EXIT_NOTESTSCOLLECTED = 5
 
 
-class ChangeHandler(FileSystemEventHandler):
+class EventListener(FileSystemEventHandler):
     """
     Listens for changes to files and re-runs tests after each change.
     """
-    def __init__(self, auto_clear=False, beep_on_failure=True, onpass=None,
-                 onfail=None, oninterrupt=None, runner=None, beforerun=None,
-                 extensions=[], args=None, spool=True,
-                 verbose=False, quiet=False):
-        super(ChangeHandler, self).__init__()
-        self.auto_clear = auto_clear
-        self.beep_on_failure = beep_on_failure
-        self.beforerun = beforerun
-        self.onpass = onpass
-        self.onfail = onfail
-        self.oninterrupt = oninterrupt
-        self.runner = runner or 'py.test'
-        self.args = args or []
-        self.argv = self.runner.split(' ') + self.args
+    def __init__(self, extensions=[]):
+        super(EventListener, self).__init__()
+        self.event_queue = Queue()
         self.extensions = extensions or DEFAULT_EXTENSIONS
-        self.spooler = None
-        if spool:
-            self.spooler = EventSpooler(0.2, self.on_queued_events)
-        self.verbose = verbose
-        self.quiet = quiet
-
-    def on_queued_events(self, queue):
-        """
-        Called when a file is changed.
-        """
-        events = []
-        for event in queue:
-            event_type = type(event)
-            src_path = os.path.relpath(event.src_path)
-            if isinstance(event, FileMovedEvent):
-                dest_path = os.path.relpath(event.dest_path)
-            else:
-                dest_path = None
-
-            if self.extensions == ALL_EXTENSIONS or event.is_directory:
-                included = True
-            else:
-                src_ext = os.path.splitext(src_path)[1].lower()
-                included = src_ext in self.extensions
-
-                if dest_path and not included:
-                    dest_ext = os.path.splitext(dest_path)[1].lower()
-                    included = dest_ext in self.extensions
-
-            if included:
-                events.append((event_type, src_path, dest_path))
-
-        # Do nothing if all events are filtered out
-        if not events:
-            return
-
-        # Run pytest
-        self.run(events)
 
     def on_any_event(self, event):
-        # Filter for watched events
+        """
+        Called when a file event occurs.
+        Note that this gets called on a worker thread.
+        """
+        # Filter for allowed event types
         if not isinstance(event, WATCHED_EVENTS):
             return
 
-        # Enqueue event if spooler is available
-        if self.spooler:
-            self.spooler.enqueue(event)
-            return
+        src_path = os.path.relpath(event.src_path)
+        dest_path = None
+        if isinstance(event, FileMovedEvent):
+            dest_path = os.path.relpath(event.dest_path)
 
-        # Handle event directly
-        self.on_queued_events([event])
+        # Filter files that don't match the allowed extensions
+        if not event.is_directory and self.extensions != ALL_EXTENSIONS:
+            src_ext = os.path.splitext(src_path)[1].lower()
+            src_included = src_ext in self.extensions
+            dest_included = False
+            if dest_path:
+                dest_ext = os.path.splitext(dest_path)[1].lower()
+                dest_included = dest_ext in self.extensions
+            if not src_included and not dest_included:
+                return
 
-    def reduce_events(self, events):
-        # FUTURE: Reduce ['a -> b', 'b -> c'] renames to ['a -> c']
+        self.event_queue.put((type(event), src_path, dest_path))
 
-        creates = []
-        moves = []
+
+def _reduce_events(events):
+    # FUTURE: Reduce ['a -> b', 'b -> c'] renames to ['a -> c']
+
+    creates = []
+    moves = []
+    for event, src, dest in events:
+        if event == FileCreatedEvent:
+            creates.append(dest)
+        if event == FileMovedEvent:
+            moves.append(dest)
+
+    seen = []
+    filtered = []
+    for event, src, dest in events:
+        # Skip 'modified' event during 'created'
+        if src in creates and event != FileCreatedEvent:
+            continue
+
+        # Skip 'modified' event during 'moved'
+        if src in moves:
+            continue
+
+        # Skip duplicate events
+        if src in seen:
+            continue
+        seen.append(src)
+
+        filtered.append((event, src, dest))
+    return filtered
+
+
+def _show_summary(argv, events, verbose=False):
+    command = ' '.join(argv)
+    bright = lambda arg: STYLE_BRIGHT + arg + Style.RESET_ALL
+    highlight = lambda arg: STYLE_HIGHLIGHT + arg + Style.RESET_ALL
+
+    if not events:
+        print('Running: {}'.format(highlight(command)))
+        return
+
+    events = _reduce_events(events)
+    if verbose:
+        lines = ['Changes detected:']
+        m = max(map(len, map(lambda e: VERBOSE_EVENT_NAMES[e[0]], events)))
         for event, src, dest in events:
-            if event == FileCreatedEvent:
-                creates.append(dest)
-            if event == FileMovedEvent:
-                moves.append(dest)
-
-        seen = []
-        filtered = []
+            event = VERBOSE_EVENT_NAMES[event].ljust(m)
+            lines.append('  {} {}'.format(
+                event,
+                highlight(src + (' -> ' + dest if dest else ''))))
+        lines.append('')
+        lines.append('Running: {}'.format(highlight(command)))
+    else:
+        lines = []
         for event, src, dest in events:
-            # Skip 'modified' event during 'created'
-            if src in creates and event != FileCreatedEvent:
-                continue
+            lines.append('{} detected: {}'.format(
+                EVENT_NAMES[event],
+                bright(src + (' -> ' + dest if dest else ''))))
+        lines.append('')
+        lines.append('Running: {}'.format(highlight(command)))
 
-            # Skip 'modified' event during 'moved'
-            if src in moves:
-                continue
-
-            # Skip duplicate events
-            if src in seen:
-                continue
-            seen.append(src)
-
-            filtered.append((event, src, dest))
-        return filtered
-
-    def show_summary(self, events):
-        command = ' '.join(self.argv)
-        bright = lambda arg: STYLE_BRIGHT + arg + Style.RESET_ALL
-        highlight = lambda arg: STYLE_HIGHLIGHT + arg + Style.RESET_ALL
-        events = self.reduce_events(events)
-
-        if not events:
-            lines = ['Running: {}'.format(highlight(command))]
-        elif self.verbose:
-            lines = ['Changes detected:']
-            m = max(map(len, map(lambda e: VERBOSE_EVENT_NAMES[e[0]], events)))
-            for event, src, dest in events:
-                event = VERBOSE_EVENT_NAMES[event].ljust(m)
-                lines.append('  {} {}'.format(
-                    event,
-                    highlight(src + (' -> ' + dest if dest else ''))))
-            lines.append('')
-            lines.append('Running: {}'.format(highlight(command)))
-        else:
-            lines = []
-            for event, src, dest in events:
-                lines.append('{} detected: {}'.format(
-                    EVENT_NAMES[event],
-                    bright(src + (' -> ' + dest if dest else ''))))
-            lines.append('')
-            lines.append('Running: {}'.format(highlight(command)))
-
-        print(STYLE_NORMAL + '\n'.join(lines) + Fore.RESET + Style.NORMAL)
-
-    def run(self, events=[]):
-        """
-        Called when a file is changed to re-run the tests with py.test.
-        """
-        # Prepare status update
-        if self.auto_clear:
-            clear()
-        elif not self.quiet:
-            print()
-
-        # Show event summary
-        if not self.quiet:
-            self.show_summary(events)
-
-        # Run custom command
-        run_hook(self.beforerun)
-
-        # Run py.test or py.test runner
-        exit_code = subprocess.call(self.argv, shell=is_windows)
-
-        # Translate exit codes
-        interrupted = exit_code == EXIT_INTERRUPTED
-        passed = exit_code in [EXIT_OK, EXIT_NOTESTSCOLLECTED]
-
-        # Beep if failed
-        if not passed and self.beep_on_failure:
-            beep()
-
-        # Run custom commands
-        if interrupted:
-            run_hook(self.oninterrupt)
-        elif passed:
-            run_hook(self.onpass)
-        else:
-            run_hook(self.onfail)
+    print('\n'.join(lines))
 
 
 def _split_recursive(directories, ignore):
@@ -244,6 +181,8 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
           onpass=None, onfail=None, runner=None, beforerun=None, onexit=None,
           oninterrupt=None, poll=False, extensions=[], args=[], spool=True,
           verbose=False, quiet=False):
+    argv = (runner or 'py.test').split(' ') + (args or [])
+
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
@@ -251,29 +190,65 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         if not os.path.isdir(directory):
             raise ValueError('Directory not found: ' + directory)
 
-    event_handler = ChangeHandler(
-        auto_clear, beep_on_failure, onpass, onfail, oninterrupt, runner,
-        beforerun, extensions, args, spool, verbose, quiet)
+    # Setup event handler
+    event_listener = EventListener(extensions)
 
     # Setup watchdog
     observer = PollingObserver() if poll else Observer()
     recursedirs, norecursedirs = _split_recursive(directories, ignore)
     for directory in recursedirs:
-        observer.schedule(event_handler, path=directory, recursive=True)
+        observer.schedule(event_listener, path=directory, recursive=True)
     for directory in norecursedirs:
-        observer.schedule(event_handler, path=directory, recursive=False)
+        observer.schedule(event_listener, path=directory, recursive=False)
     observer.start()
 
-    # Initial run
-    event_handler.run()
-
     # Watch and run tests until interrupted by user
-    try:
-        while True:
-            sleep(1)
-        observer.join()
-    except KeyboardInterrupt:
-        observer.stop()
-        run_hook(oninterrupt)
-    else:
-        run_hook(onexit)
+    events = []
+    while True:
+        try:
+            # Prepare next run
+            if auto_clear:
+                clear()
+            elif not quiet:
+                print()
+
+            # Show event summary
+            if not quiet:
+                _show_summary(argv, events, verbose)
+
+            # Run custom command
+            run_hook(beforerun)
+
+            # Run tests
+            p = subprocess.Popen(argv, shell=is_windows)
+            # TODO: Check event_listener, send SIGINT to child process on event
+            exit_code = p.wait()
+
+            # Run custom commands
+            if exit_code == EXIT_INTERRUPTED:
+                run_hook(oninterrupt)
+            elif exit_code in [EXIT_OK, EXIT_NOTESTSCOLLECTED]:
+                run_hook(onpass)
+            else:
+                if beep_on_failure:
+                    beep()
+                run_hook(onfail)
+
+            # Wait for a filesystem event
+            while event_listener.event_queue.empty():
+                sleep(0.1)
+
+            # Collect events for summary of next run
+            events = dequeue_all(event_listener.event_queue, spool)
+        except KeyboardInterrupt:
+            break
+        except Exception as ex:
+            print(format_exc() if verbose else 'Error: {}'.format(ex))
+            break
+
+    # Stop and wait for observer
+    observer.stop()
+    observer.join()
+
+    # Run exit script
+    run_hook(onexit)
