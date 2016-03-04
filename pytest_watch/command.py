@@ -22,7 +22,7 @@ Options:
   --oninterrupt=<cmd>   Run arbitrary command on KeyboardInterrupt.
   --runner=<cmd>        Run a custom command instead of py.test.
   --nobeep              Do not beep on failure.
-  -p --poll             Use polling instead of events (useful in VMs).
+  -p --poll             Use polling instead of OS events (useful in VMs).
   --ext=<exts>          Comma-separated list of file extensions that trigger a
                         new test run when changed (default: .py).
   --no-spool            Disable event spooling (default: 200ms cooldown).
@@ -41,7 +41,7 @@ from .watcher import watch
 from .config import merge_config
 
 
-usage = '\n\n\n'.join(__doc__.split('\n\n\n')[1:])
+doc = '\n\n\n'.join(__doc__.split('\n\n\n')[1:])
 version = 'pytest-watch ' + __version__
 
 
@@ -56,7 +56,7 @@ def main(argv=None):
     colorama.init()
 
     # Parse CLI arguments
-    args = docopt(usage, argv=argv, version=version)
+    args = docopt(doc, argv=argv, version=version)
 
     # Split paths and pytest arguments
     pytest_args = []

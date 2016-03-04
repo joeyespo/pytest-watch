@@ -1,9 +1,8 @@
 from __future__ import print_function
 
 import os
-import time
 import subprocess
-import sys
+from time import sleep
 
 from colorama import Fore, Style
 from watchdog.events import (
@@ -12,6 +11,7 @@ from watchdog.events import (
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
 
+from .helpers import beep, clear, is_windows, samepath
 from .spooler import EventSpooler
 
 
@@ -21,12 +21,17 @@ EVENT_NAMES = {
     FileMovedEvent: 'moved',
     FileDeletedEvent: 'deleted',
 }
-WATCHED_EVENTS = list(EVENT_NAMES)
+WATCHED_EVENTS = tuple(EVENT_NAMES)
 DEFAULT_EXTENSIONS = ['.py']
-CLEAR_COMMAND = 'cls' if os.name == 'nt' else 'clear'
-BEEP_CHARACTER = '\a'
 STYLE_NORMAL = Fore.RESET
 STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
+
+
+# Exit codes from pytest
+# http://pytest.org/latest/_modules/_pytest/main.html
+EXIT_OK = 0
+EXIT_INTERRUPTED = 2
+EXIT_NOTESTSCOLLECTED = 5
 
 
 class ChangeHandler(FileSystemEventHandler):
@@ -40,13 +45,14 @@ class ChangeHandler(FileSystemEventHandler):
         super(ChangeHandler, self).__init__()
         self.auto_clear = auto_clear
         self.beep_on_failure = beep_on_failure
+        self.beforerun = beforerun
         self.onpass = onpass
         self.onfail = onfail
         self.oninterrupt = oninterrupt
-        self.runner = runner
-        self.beforerun = beforerun
-        self.extensions = extensions or DEFAULT_EXTENSIONS
+        self.runner = runner or 'py.test'
         self.args = args or []
+        self.argv = self.runner.split(' ') + self.args
+        self.extensions = extensions or DEFAULT_EXTENSIONS
         self.spooler = None
         if spool:
             self.spooler = EventSpooler(0.2, self.on_queued_events)
@@ -68,28 +74,31 @@ class ChangeHandler(FileSystemEventHandler):
             self.run(sorted(set(summary)))
 
     def on_any_event(self, event):
-        if isinstance(event, tuple(WATCHED_EVENTS)):
-            if self.spooler is not None:
-                self.spooler.enqueue(event)
-            else:
-                self.on_queued_events([event])
+        # Filter for watched events
+        if not isinstance(event, WATCHED_EVENTS):
+            return
+
+        # Enqueue event if spooler is available
+        if self.spooler:
+            self.spooler.enqueue(event)
+            return
+
+        # Handle event directly
+        self.on_queued_events([event])
 
     def run(self, summary=None):
         """
         Called when a file is changed to re-run the tests with py.test.
         """
-        runner = self.runner or 'py.test'
-        argv = runner.split(' ') + self.args
-
         # Prepare status update
         if self.auto_clear:
-            subprocess.call(CLEAR_COMMAND, shell=True)
+            clear()
         elif summary:
             print()
 
         # Print status
         if not self.quiet:
-            command = ' '.join(argv)
+            command = ' '.join(self.argv)
             highlight = lambda arg: STYLE_HIGHLIGHT + arg + STYLE_NORMAL
             msg = 'Running: {}'.format(highlight(command))
             if summary:
@@ -105,33 +114,55 @@ class ChangeHandler(FileSystemEventHandler):
             print(STYLE_NORMAL + msg + Fore.RESET + Style.NORMAL)
 
         # Run custom command
-        if self.beforerun:
-            os.system(self.beforerun)
+        run_hook(self.beforerun)
 
         # Run py.test or py.test runner
-        exit_code = subprocess.call(argv, shell=(sys.platform == 'win32'))
+        exit_code = subprocess.call(self.argv, shell=is_windows)
 
-        if runner == 'py.test':
-            # py.test returns exit code 5 in case no tests are run/collected.
-            # This can happen with tools like pytest-testmon.
-            passed = exit_code in [0, 5]
-        else:
-            passed = exit_code == 0
-        failed = not passed
-        interrupted = exit_code == 2
+        # Translate exit codes
+        interrupted = exit_code == EXIT_INTERRUPTED
+        passed = exit_code in [EXIT_OK, EXIT_NOTESTSCOLLECTED]
 
         # Beep if failed
-        if failed and self.beep_on_failure:
-            sys.stdout.write(BEEP_CHARACTER)
-            sys.stdout.flush()
+        if not passed and self.beep_on_failure:
+            beep()
 
         # Run custom commands
-        if interrupted and self.oninterrupt:
-            os.system(self.oninterrupt)
-        if passed and self.onpass:
-            os.system(self.onpass)
-        elif failed and self.onfail:
-            os.system(self.onfail)
+        if interrupted:
+            run_hook(self.oninterrupt)
+        elif passed:
+            run_hook(self.onpass)
+        else:
+            run_hook(self.onfail)
+
+
+def _split_recursive(directories, ignore):
+    if not ignore:
+        return directories, []
+
+    recursedirs, norecursedirs = [], []
+    for directory in directories:
+        subdirs = [os.path.join(directory, d)
+                   for d in os.listdir(directory)
+                   if os.path.isdir(d)]
+        filtered = [subdir for subdir in subdirs
+                    if not any(samepath(os.path.join(directory, d), subdir)
+                               for d in ignore)]
+        if len(subdirs) == len(filtered):
+            recursedirs.append(directory)
+        else:
+            norecursedirs.append(directory)
+            recursedirs.extend(filtered)
+
+    return sorted(set(recursedirs)), sorted(set(norecursedirs))
+
+
+def run_hook(cmd):
+    """
+    Runs a command hook, if specified.
+    """
+    if cmd:
+        os.system(cmd)
 
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
@@ -145,22 +176,16 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         if not os.path.isdir(directory):
             raise ValueError('Directory not found: ' + directory)
 
-    if ignore:
-        recursive_dirs, non_recursive_dirs = split_recursive(
-            directories, ignore)
-    else:
-        recursive_dirs = directories
-        non_recursive_dirs = []
-
     event_handler = ChangeHandler(
         auto_clear, beep_on_failure, onpass, onfail, oninterrupt, runner,
         beforerun, extensions, args, spool, verbose, quiet)
 
     # Setup watchdog
     observer = PollingObserver() if poll else Observer()
-    for directory in recursive_dirs:
+    recursedirs, norecursedirs = _split_recursive(directories, ignore)
+    for directory in recursedirs:
         observer.schedule(event_handler, path=directory, recursive=True)
-    for directory in non_recursive_dirs:
+    for directory in norecursedirs:
         observer.schedule(event_handler, path=directory, recursive=False)
     observer.start()
 
@@ -170,36 +195,10 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
     # Watch and run tests until interrupted by user
     try:
         while True:
-            time.sleep(1)
+            sleep(1)
         observer.join()
     except KeyboardInterrupt:
         observer.stop()
-        if oninterrupt:
-            os.system(oninterrupt)
+        run_hook(oninterrupt)
     else:
-        if onexit:
-            os.system(onexit)
-
-
-def samepath(left, right):
-    return (os.path.abspath(os.path.normcase(left)) ==
-            os.path.abspath(os.path.normcase(right)))
-
-
-def split_recursive(directories, ignore):
-    non_recursive_dirs = []
-    recursive_dirs = []
-    for directory in directories:
-        subdirs = [os.path.join(directory, d)
-                   for d in os.listdir(directory)
-                   if os.path.isdir(d)]
-        filtered = [subdir for subdir in subdirs
-                    if not any(samepath(os.path.join(directory, d), subdir)
-                               for d in ignore)]
-        if len(subdirs) == len(filtered):
-            recursive_dirs.append(directory)
-        else:
-            non_recursive_dirs.append(directory)
-            recursive_dirs.extend(filtered)
-
-    return sorted(set(recursive_dirs)), sorted(set(non_recursive_dirs))
+        run_hook(onexit)

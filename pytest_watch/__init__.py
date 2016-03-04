@@ -11,8 +11,8 @@ Local continuous test runner with pytest and watchdog.
 __version__ = '3.10.0'
 
 
-from .command import main, usage, version
+from .command import main, doc, version
 from .watcher import watch
 
 
-__all__ = ['main', 'usage', 'version', 'watch']
+__all__ = ['main', 'doc', 'version', 'watch']

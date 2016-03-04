@@ -4,7 +4,7 @@ pytest-watch -- Continuous pytest runner
 [![Current version on PyPI](http://img.shields.io/pypi/v/pytest-watch.svg)][pypi]
 [![Downloads/month on PyPI](http://img.shields.io/pypi/dm/pytest-watch.svg)][pypi]
 
-**pytest-watch** a zero-config CLI tool that runs [pytest][], and reruns it
+**pytest-watch** a zero-config CLI tool that runs [pytest][], and re-runs it
 when a file in your project changes. It beeps on failures and can run arbitrary
 commands on each passing and failing test run.
 
