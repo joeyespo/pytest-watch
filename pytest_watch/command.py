@@ -10,25 +10,25 @@ All positional arguments after `--` are passed directly to py.test executable.
 Usage: ptw [options] [<directories>...] [-- <args>...]
 
 Options:
-  -h --help         Show this help.
-  --version         Show version.
-  --ignore=<dirs>   Comma-separated list of directories to ignore
-                    (if relative: starting from the root of each watched dir).
-  -c --clear        Automatically clear the screen before each run.
-  --beforerun=<cmd> Run arbitrary command before tests are run.
-  --onpass=<cmd>    Run arbitrary command on pass.
-  --onfail=<cmd>    Run arbitrary command on failure.
-  --onexit=<cmd>    Run arbitrary command when exiting.
-  --onsigint=<cmd>  Run arbitrary command on SIGINT / KeyboardInterrupt.
-  --runner=<cmd>    Run a custom command instead of py.test.
-  --nobeep          Do not beep on failure.
-  -p --poll         Use polling instead of events (useful in VMs).
-  --ext=<exts>      Comma-separated list of file extensions that trigger a
-                    new test run when changed (default: .py).
-  --no-spool        Disable event spooling (default: 200ms cooldown).
-  -v --verbose      Increase verbosity of the output.
-  -q --quiet        Decrease verbosity of the output
-                    (takes precedence over verbose).
+  -h --help             Show this help.
+  --version             Show version.
+  --ignore=<dirs>       Comma-separated list of directories to ignore
+                        (if relative, starts from root of each watched dir).
+  -c --clear            Automatically clear the screen before each run.
+  --beforerun=<cmd>     Run arbitrary command before tests are run.
+  --onpass=<cmd>        Run arbitrary command on pass.
+  --onfail=<cmd>        Run arbitrary command on failure.
+  --onexit=<cmd>        Run arbitrary command when exiting.
+  --oninterrupt=<cmd>   Run arbitrary command on KeyboardInterrupt.
+  --runner=<cmd>        Run a custom command instead of py.test.
+  --nobeep              Do not beep on failure.
+  -p --poll             Use polling instead of events (useful in VMs).
+  --ext=<exts>          Comma-separated list of file extensions that trigger a
+                        new test run when changed (default: .py).
+  --no-spool            Disable event spooling (default: 200ms cooldown).
+  -v --verbose          Increase verbosity of the output.
+  -q --quiet            Decrease verbosity of the output
+                        (takes precedence over verbose).
 """
 
 import sys
@@ -82,7 +82,7 @@ def main(argv=None):
                  runner=args['--runner'],
                  beforerun=args['--beforerun'],
                  onexit=args['--onexit'],
-                 onsigint=args['--onsigint'],
+                 oninterrupt=args['--oninterrupt'],
                  poll=args['--poll'],
                  extensions=extensions,
                  args=pytest_args,

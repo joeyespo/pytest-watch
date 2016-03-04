@@ -34,7 +34,7 @@ class ChangeHandler(FileSystemEventHandler):
     Listens for changes to files and re-runs tests after each change.
     """
     def __init__(self, auto_clear=False, beep_on_failure=True, onpass=None,
-                 onfail=None, onsigint=None, runner=None, beforerun=None,
+                 onfail=None, oninterrupt=None, runner=None, beforerun=None,
                  extensions=[], args=None, spool=True, verbose=False,
                  quiet=False):
         super(ChangeHandler, self).__init__()
@@ -42,7 +42,7 @@ class ChangeHandler(FileSystemEventHandler):
         self.beep_on_failure = beep_on_failure
         self.onpass = onpass
         self.onfail = onfail
-        self.onsigint = onsigint
+        self.oninterrupt = oninterrupt
         self.runner = runner
         self.beforerun = beforerun
         self.extensions = extensions or DEFAULT_EXTENSIONS
@@ -126,8 +126,8 @@ class ChangeHandler(FileSystemEventHandler):
             sys.stdout.flush()
 
         # Run custom commands
-        if interrupted and self.onsigint:
-            os.system(self.onsigint)
+        if interrupted and self.oninterrupt:
+            os.system(self.oninterrupt)
         if passed and self.onpass:
             os.system(self.onpass)
         elif failed and self.onfail:
@@ -136,7 +136,7 @@ class ChangeHandler(FileSystemEventHandler):
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
           onpass=None, onfail=None, runner=None, beforerun=None, onexit=None,
-          onsigint=None, poll=False, extensions=[], args=[], spool=True,
+          oninterrupt=None, poll=False, extensions=[], args=[], spool=True,
           verbose=False, quiet=False):
     if not directories:
         directories = ['.']
@@ -154,7 +154,7 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
 
     # Initial run
     event_handler = ChangeHandler(
-        auto_clear, beep_on_failure, onpass, onfail, onsigint, runner,
+        auto_clear, beep_on_failure, onpass, onfail, oninterrupt, runner,
         beforerun, extensions, args, spool, verbose, quiet)
     event_handler.run()
 
@@ -173,8 +173,8 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         observer.join()
     except KeyboardInterrupt:
         observer.stop()
-        if onsigint:
-            os.system(onsigint)
+        if oninterrupt:
+            os.system(oninterrupt)
     else:
         if onexit:
             os.system(onexit)
