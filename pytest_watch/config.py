@@ -23,7 +23,7 @@ class CollectConfig(object):
         self.path = None
 
     def pytest_cmdline_main(self, config):
-        if config.inifile:
+        if getattr(config, 'inifile', None):
             self.path = str(config.inifile)
 
 
