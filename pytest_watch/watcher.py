@@ -79,7 +79,7 @@ class ChangeHandler(FileSystemEventHandler):
             else:
                 dest_path = None
 
-            if not self.extensions:
+            if not self.extensions or event.is_directory:
                 included = True
             else:
                 src_ext = os.path.splitext(src_path)[1].lower()
