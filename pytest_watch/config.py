@@ -23,8 +23,14 @@ class CollectConfig(object):
         self.path = None
 
     def pytest_cmdline_main(self, config):
-        if getattr(config, 'inifile', None):
-            self.path = str(config.inifile)
+        if hasattr(config, 'inifile'):
+            # pytest >= 2.7.0
+            inifile = config.inifile
+        else:
+            # pytest < 2.7.0
+            inifile = config.inicfg.config.path
+        if inifile:
+            self.path = str(inifile)
 
 
 def merge_config(args, directories):
