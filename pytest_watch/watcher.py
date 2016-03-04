@@ -33,8 +33,8 @@ class ChangeHandler(FileSystemEventHandler):
     """
     Listens for changes to files and re-runs tests after each change.
     """
-    def __init__(self, auto_clear=False, beep_on_failure=True,
-                 onpass=None, onfail=None, runner=None, beforerun=None,
+    def __init__(self, auto_clear=False, beep_on_failure=True, onpass=None,
+                 onfail=None, onsigint=None, runner=None, beforerun=None,
                  extensions=[], args=None, spool=True, verbose=False,
                  quiet=False):
         super(ChangeHandler, self).__init__()
@@ -42,6 +42,7 @@ class ChangeHandler(FileSystemEventHandler):
         self.beep_on_failure = beep_on_failure
         self.onpass = onpass
         self.onfail = onfail
+        self.onsigint = onsigint
         self.runner = runner
         self.beforerun = beforerun
         self.extensions = extensions or DEFAULT_EXTENSIONS
@@ -109,26 +110,34 @@ class ChangeHandler(FileSystemEventHandler):
 
         # Run py.test or py.test runner
         exit_code = subprocess.call(argv, shell=(sys.platform == 'win32'))
-        # py.test returns exit code 5 in case no tests are run/collected.
-        # This can happen with tools like pytest-testmon.
-        passed = exit_code == 0 or (runner == 'py.test' and exit_code == 5)
+
+        if runner == 'py.test':
+            # py.test returns exit code 5 in case no tests are run/collected.
+            # This can happen with tools like pytest-testmon.
+            passed = exit_code in [0, 5]
+        else:
+            passed = exit_code == 0
+        failed = not passed
+        interrupted = exit_code == 2
 
         # Beep if failed
-        if not passed and self.beep_on_failure:
+        if failed and self.beep_on_failure:
             sys.stdout.write(BEEP_CHARACTER)
             sys.stdout.flush()
 
         # Run custom commands
+        if interrupted and self.onsigint:
+            os.system(self.onsigint)
         if passed and self.onpass:
             os.system(self.onpass)
-        elif not passed and self.onfail:
+        elif failed and self.onfail:
             os.system(self.onfail)
 
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
           onpass=None, onfail=None, runner=None, beforerun=None, onexit=None,
-          poll=False, extensions=[], args=[], spool=True, verbose=False,
-          quiet=False):
+          onsigint=None, poll=False, extensions=[], args=[], spool=True,
+          verbose=False, quiet=False):
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
@@ -145,8 +154,8 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
 
     # Initial run
     event_handler = ChangeHandler(
-        auto_clear, beep_on_failure, onpass, onfail, runner, beforerun,
-        extensions, args, spool, verbose, quiet)
+        auto_clear, beep_on_failure, onpass, onfail, onsigint, runner,
+        beforerun, extensions, args, spool, verbose, quiet)
     event_handler.run()
 
     # Setup watchdog
@@ -164,8 +173,11 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         observer.join()
     except KeyboardInterrupt:
         observer.stop()
-    if onexit:
-        os.system(onexit)
+        if onsigint:
+            os.system(onsigint)
+    else:
+        if onexit:
+            os.system(onexit)
 
 
 def samepath(left, right):

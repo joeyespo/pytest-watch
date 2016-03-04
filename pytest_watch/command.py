@@ -19,6 +19,7 @@ Options:
   --onpass=<cmd>    Run arbitrary command on pass.
   --onfail=<cmd>    Run arbitrary command on failure.
   --onexit=<cmd>    Run arbitrary command when exiting.
+  --onsigint=<cmd>  Run arbitrary command on SIGINT / KeyboardInterrupt.
   --runner=<cmd>    Run a custom command instead of py.test.
   --nobeep          Do not beep on failure.
   -p --poll         Use polling instead of events (useful in VMs).
@@ -81,6 +82,7 @@ def main(argv=None):
                  runner=args['--runner'],
                  beforerun=args['--beforerun'],
                  onexit=args['--onexit'],
+                 onsigint=args['--onsigint'],
                  poll=args['--poll'],
                  extensions=extensions,
                  args=pytest_args,
