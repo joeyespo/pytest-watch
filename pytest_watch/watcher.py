@@ -47,8 +47,8 @@ class ChangeHandler(FileSystemEventHandler):
     """
     def __init__(self, auto_clear=False, beep_on_failure=True, onpass=None,
                  onfail=None, oninterrupt=None, runner=None, beforerun=None,
-                 extensions=[], args=None, spool=True, verbose=False,
-                 quiet=False):
+                 extensions=DEFAULT_EXTENSIONS, args=None, spool=True,
+                 verbose=False, quiet=False):
         super(ChangeHandler, self).__init__()
         self.auto_clear = auto_clear
         self.beep_on_failure = beep_on_failure
@@ -59,7 +59,7 @@ class ChangeHandler(FileSystemEventHandler):
         self.runner = runner or 'py.test'
         self.args = args or []
         self.argv = self.runner.split(' ') + self.args
-        self.extensions = extensions or DEFAULT_EXTENSIONS
+        self.extensions = extensions
         self.spooler = None
         if spool:
             self.spooler = EventSpooler(0.2, self.on_queued_events)
@@ -79,12 +79,15 @@ class ChangeHandler(FileSystemEventHandler):
             else:
                 dest_path = None
 
-            src_ext = os.path.splitext(src_path)[1].lower()
-            included = src_ext in self.extensions
+            if not self.extensions:
+                included = True
+            else:
+                src_ext = os.path.splitext(src_path)[1].lower()
+                included = src_ext in self.extensions
 
-            if dest_path and not included:
-                dest_ext = os.path.splitext(dest_path)[1].lower()
-                included = dest_ext in self.extensions
+                if dest_path and not included:
+                    dest_ext = os.path.splitext(dest_path)[1].lower()
+                    included = dest_ext in self.extensions
 
             if included:
                 events.append((event_type, src_path, dest_path))

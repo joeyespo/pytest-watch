@@ -25,6 +25,7 @@ Options:
   -p --poll             Use polling instead of OS events (useful in VMs).
   --ext=<exts>          Comma-separated list of file extensions that trigger a
                         new test run when changed (default: .py).
+                        Use --ext=* to run on any file (including .pyc).
   --no-spool            Disable event spooling (default: 200ms cooldown).
   -v --verbose          Increase verbosity of the output.
   -q --quiet            Decrease verbosity of the output
@@ -37,7 +38,7 @@ import colorama
 from docopt import docopt
 
 from . import __version__
-from .watcher import watch
+from .watcher import DEFAULT_EXTENSIONS, watch
 from .config import merge_config
 
 
@@ -69,8 +70,11 @@ def main(argv=None):
     merge_config(args, directories)
 
     ignore = (args['--ignore'] or '').split(',')
-    extensions = [('.' if not ext.startswith('.') else '') + ext
-                  for ext in (args['--ext'] or '.py').split(',')]
+    if args['--ext'] != '*':
+        ext = args['--ext'].split(',') if args['--ext'] else DEFAULT_EXTENSIONS
+        ext = [('.' if not e.startswith('.') else '') + e for e in ext]
+    else:
+        ext = None
 
     # Run pytest and watch for changes
     return watch(directories=directories,
@@ -84,7 +88,7 @@ def main(argv=None):
                  onexit=args['--onexit'],
                  oninterrupt=args['--oninterrupt'],
                  poll=args['--poll'],
-                 extensions=extensions,
+                 extensions=ext,
                  args=pytest_args,
                  spool=not args['--no-spool'],
                  verbose=args['--verbose'],
