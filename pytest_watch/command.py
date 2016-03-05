@@ -38,7 +38,7 @@ import colorama
 from docopt import docopt
 
 from . import __version__
-from .watcher import DEFAULT_EXTENSIONS, watch
+from .watcher import ALL_EXTENSIONS, watch
 from .config import merge_config
 
 
@@ -70,11 +70,13 @@ def main(argv=None):
     merge_config(args, directories)
 
     ignore = (args['--ignore'] or '').split(',')
-    if args['--ext'] != '*':
-        ext = args['--ext'].split(',') if args['--ext'] else DEFAULT_EXTENSIONS
-        ext = [('.' if not e.startswith('.') else '') + e for e in ext]
+    if args['--ext'] == '*':
+        extensions = ALL_EXTENSIONS
+    elif args['--ext']:
+        extensions = [('.' if not e.startswith('.') else '') + e
+                      for e in args['--ext'].split(',')]
     else:
-        ext = None
+        extensions = None
 
     # Run pytest and watch for changes
     return watch(directories=directories,
@@ -88,7 +90,7 @@ def main(argv=None):
                  onexit=args['--onexit'],
                  oninterrupt=args['--oninterrupt'],
                  poll=args['--poll'],
-                 extensions=ext,
+                 extensions=extensions,
                  args=pytest_args,
                  spool=not args['--no-spool'],
                  verbose=args['--verbose'],

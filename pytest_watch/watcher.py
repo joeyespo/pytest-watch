@@ -15,6 +15,9 @@ from .helpers import beep, clear, is_windows, samepath
 from .spooler import EventSpooler
 
 
+ALL_EXTENSIONS = object()
+
+
 EVENT_NAMES = {
     FileModifiedEvent: 'Change',
     FileCreatedEvent: 'New file',
@@ -47,7 +50,7 @@ class ChangeHandler(FileSystemEventHandler):
     """
     def __init__(self, auto_clear=False, beep_on_failure=True, onpass=None,
                  onfail=None, oninterrupt=None, runner=None, beforerun=None,
-                 extensions=DEFAULT_EXTENSIONS, args=None, spool=True,
+                 extensions=[], args=None, spool=True,
                  verbose=False, quiet=False):
         super(ChangeHandler, self).__init__()
         self.auto_clear = auto_clear
@@ -59,7 +62,7 @@ class ChangeHandler(FileSystemEventHandler):
         self.runner = runner or 'py.test'
         self.args = args or []
         self.argv = self.runner.split(' ') + self.args
-        self.extensions = extensions
+        self.extensions = extensions or DEFAULT_EXTENSIONS
         self.spooler = None
         if spool:
             self.spooler = EventSpooler(0.2, self.on_queued_events)
@@ -79,7 +82,7 @@ class ChangeHandler(FileSystemEventHandler):
             else:
                 dest_path = None
 
-            if not self.extensions or event.is_directory:
+            if self.extensions == ALL_EXTENSIONS or event.is_directory:
                 included = True
             else:
                 src_ext = os.path.splitext(src_path)[1].lower()
