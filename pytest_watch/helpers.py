@@ -1,4 +1,5 @@
 import os
+import signal
 import subprocess
 import sys
 from time import sleep
@@ -52,3 +53,25 @@ def samepath(left, right):
     """
     return (os.path.abspath(os.path.normcase(left)) ==
             os.path.abspath(os.path.normcase(right)))
+
+
+def send_keyboard_interrupt(proc):
+    """
+    Sends a KeyboardInterrupt to the specified child process.
+    """
+    if is_windows:
+        try:
+            # Send KeyboardInterrupt to self, and therefore, to child processes
+            try:
+                os.kill(0, signal.CTRL_C_EVENT)
+            except AttributeError:
+                # Python 2.6 and below
+                import ctypes
+                ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, 0)
+            # Immediately throws KeyboardInterrupt from the simulated CTRL-C
+            proc.wait()
+        except KeyboardInterrupt:
+            # Ignore the simulated CTRL-C
+            pass
+    else:
+        os.kill(proc.pid, signal.SIGINT)

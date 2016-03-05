@@ -17,7 +17,8 @@ from watchdog.events import (
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
 
-from .helpers import beep, clear, dequeue_all, is_windows, samepath
+from .helpers import (
+    beep, clear, dequeue_all, is_windows, samepath, send_keyboard_interrupt)
 
 
 ALL_EXTENSIONS = object()
@@ -221,8 +222,25 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
 
             # Run tests
             p = subprocess.Popen(argv, shell=is_windows)
-            # TODO: Check event_listener, send SIGINT to child process on event
-            exit_code = p.wait()
+            try:
+                while True:
+                    # Check for completion
+                    exit_code = p.poll()
+                    if exit_code is not None:
+                        break
+                    # Interrupt the current test run on filesystem event
+                    if not event_listener.event_queue.empty():
+                        send_keyboard_interrupt(p)
+                        exit_code = p.wait()
+                        break
+                    # Allow user to initiate a keyboard interrupt
+                    sleep(0.1)
+            except KeyboardInterrupt:
+                # Wait for current test run cleanup
+                if p.wait() == EXIT_INTERRUPTED:
+                    run_hook(oninterrupt)
+                # Exit, since this keyboard interrupt was user-initiated
+                break
 
             # Run custom commands
             if exit_code == EXIT_INTERRUPTED:
