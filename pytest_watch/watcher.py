@@ -152,11 +152,9 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         recursive_dirs = directories
         non_recursive_dirs = []
 
-    # Initial run
     event_handler = ChangeHandler(
         auto_clear, beep_on_failure, onpass, onfail, oninterrupt, runner,
         beforerun, extensions, args, spool, verbose, quiet)
-    event_handler.run()
 
     # Setup watchdog
     observer = PollingObserver() if poll else Observer()
@@ -164,10 +162,13 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
         observer.schedule(event_handler, path=directory, recursive=True)
     for directory in non_recursive_dirs:
         observer.schedule(event_handler, path=directory, recursive=False)
+    observer.start()
+
+    # Initial run
+    event_handler.run()
 
     # Watch and run tests until interrupted by user
     try:
-        observer.start()
         while True:
             time.sleep(1)
         observer.join()
