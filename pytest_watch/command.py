@@ -23,10 +23,11 @@ Options:
   --runner=<cmd>        Run a custom command instead of py.test.
   --nobeep              Do not beep on failure.
   -p --poll             Use polling instead of OS events (useful in VMs).
+  --spool=<ms>          Re-run only after this delay (in milliseconds) to allow
+                        more file system events to queue up (default: 200 ms).
   --ext=<exts>          Comma-separated list of file extensions that trigger a
                         new test run when changed (default: .py).
                         Use --ext=* to run on any file (including .pyc).
-  --no-spool            Disable event spooling (default: 200ms cooldown).
   -v --verbose          Increase verbosity of the output.
   -q --quiet            Decrease verbosity of the output
                         (takes precedence over verbose).
@@ -78,6 +79,15 @@ def main(argv=None):
     else:
         extensions = None
 
+    # Parse numeric arguments
+    spool = args['--spool']
+    if spool is not None:
+        try:
+            spool = int(spool)
+        except ValueError:
+            sys.stderr.write('Error: Spool must be an integer.\n')
+            return 2
+
     # Run pytest and watch for changes
     return watch(directories=directories,
                  ignore=ignore,
@@ -92,6 +102,6 @@ def main(argv=None):
                  poll=args['--poll'],
                  extensions=extensions,
                  args=pytest_args,
-                 spool=not args['--no-spool'],
+                 spool=spool,
                  verbose=args['--verbose'],
                  quiet=args['--quiet'])

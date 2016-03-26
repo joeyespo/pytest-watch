@@ -28,10 +28,14 @@ def clear():
     subprocess.call('cls' if is_windows else 'clear', shell=True)
 
 
-def dequeue_all(queue, spool=False):
+def dequeue_all(queue, spool=None):
     """
-    Empties the specified queue into a list, optionally with spool time.
+    Empties the specified queue into a list, optionally with spooling.
+
+    Spool default is 200 (ms). Set to 0 to disable.
     """
+    if spool is None:
+        spool = 200
     items = []
     while True:
         try:
@@ -40,7 +44,7 @@ def dequeue_all(queue, spool=False):
         except Empty:
             # If spooling, wait a moment and check for new items
             if spool:
-                sleep(0.2)
+                sleep(spool / 1000.0)
                 if not queue.empty():
                     continue
             break

@@ -180,7 +180,7 @@ def run_hook(cmd):
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
           onpass=None, onfail=None, runner=None, beforerun=None, onexit=None,
-          oninterrupt=None, poll=False, extensions=[], args=[], spool=True,
+          oninterrupt=None, poll=False, extensions=[], args=[], spool=None,
           verbose=False, quiet=False):
     argv = (runner or 'py.test').split(' ') + (args or [])
 
