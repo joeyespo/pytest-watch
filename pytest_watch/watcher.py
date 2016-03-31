@@ -181,7 +181,7 @@ def run_hook(cmd):
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
           onpass=None, onfail=None, runner=None, beforerun=None, onexit=None,
           oninterrupt=None, poll=False, extensions=[], args=[], spool=None,
-          verbose=False, quiet=False):
+          wait=False, verbose=False, quiet=False):
     argv = (runner or 'py.test').split(' ') + (args or [])
 
     if not directories:
@@ -229,7 +229,7 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
                     if exit_code is not None:
                         break
                     # Interrupt the current test run on filesystem event
-                    if not event_listener.event_queue.empty():
+                    if not wait and not event_listener.event_queue.empty():
                         send_keyboard_interrupt(p)
                         exit_code = p.wait()
                         break

@@ -22,6 +22,7 @@ Options:
   --oninterrupt=<cmd>   Run arbitrary command on KeyboardInterrupt.
   --runner=<cmd>        Run a custom command instead of py.test.
   --pdb                 Start the interactive Python debugger on errors.
+                        This also enables --wait to prevent pdb interruption.
   --nobeep              Do not beep on failure.
   -p --poll             Use polling instead of OS events (useful in VMs).
   --spool=<ms>          Re-run only after this delay (in milliseconds) to allow
@@ -29,6 +30,8 @@ Options:
   --ext=<exts>          Comma-separated list of file extensions that trigger a
                         new test run when changed (default: .py).
                         Use --ext=* to run on any file (including .pyc).
+  -w --wait             Waits for all tests to complete before re-running.
+                        Otherwise, tests are interrupted on filesystem events.
   -v --verbose          Increase verbosity of the output.
   -q --quiet            Decrease verbosity of the output
                         (takes precedence over verbose).
@@ -108,5 +111,6 @@ def main(argv=None):
                  extensions=extensions,
                  args=pytest_args,
                  spool=spool,
+                 wait=args['--wait'] or args['--pdb'],
                  verbose=args['--verbose'],
                  quiet=args['--quiet'])
