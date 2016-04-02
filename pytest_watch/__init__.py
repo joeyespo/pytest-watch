@@ -4,7 +4,7 @@ pytest_watch
 
 Local continuous test runner with pytest and watchdog.
 
-:copyright: (c) 2015 by Joe Esposito.
+:copyright: (c) 2014-2016 by Joe Esposito.
 :license: MIT, see LICENSE for more details.
 """
 
