@@ -66,7 +66,9 @@ def merge_config(args, directories):
             continue
 
         # Merge config option using the expected type
-        if isinstance(args[cli_name], bool):
+        if isinstance(args[cli_name], list):
+            args[cli_name].append(config.get('pytest-watch', config_name))
+        elif isinstance(args[cli_name], bool):
             args[cli_name] = config.getboolean('pytest-watch', config_name)
         else:
             args[cli_name] = config.get('pytest-watch', config_name)

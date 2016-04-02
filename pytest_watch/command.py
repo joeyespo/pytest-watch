@@ -7,13 +7,13 @@ Implements the command-line interface for pytest-watch.
 All positional arguments after `--` are passed directly to py.test executable.
 
 
-Usage: ptw [options] [<directories>...] [-- <args>...]
+Usage: ptw [options] [--ignore <dir>...] [<directory>...] [-- <args>...]
 
 Options:
   -h --help             Show this help.
   --version             Show version.
-  --ignore=<dirs>       Comma-separated list of directories to ignore
-                        (if relative, starts from root of each watched dir).
+  --ignore=<dir>        Ignore directory from being watched and during
+                        collection (multi-allowed).
   -c --clear            Automatically clear the screen before each run.
   --beforerun=<cmd>     Run arbitrary command before tests are run.
   --afterrun <cmd>      Run arbitrary command on completion or interruption.
@@ -67,7 +67,7 @@ def main(argv=None):
 
     # Split paths and pytest arguments
     pytest_args = []
-    directories = args['<directories>']
+    directories = args['<directory>']
     if '--' in directories:
         index = directories.index('--')
         directories, pytest_args = directories[:index], directories[index + 1:]
@@ -75,7 +75,6 @@ def main(argv=None):
     # Merge config file options
     merge_config(args, directories)
 
-    ignore = (args['--ignore'] or '').split(',')
     if args['--ext'] == '*':
         extensions = ALL_EXTENSIONS
     elif args['--ext']:
@@ -94,12 +93,14 @@ def main(argv=None):
             return 2
 
     # Adjust pytest args
+    for ignore in args['--ignore']:
+        pytest_args.extend(['--ignore', ignore])
     if args['--pdb']:
         pytest_args.append('--pdb')
 
     # Run pytest and watch for changes
     return watch(directories=directories,
-                 ignore=ignore,
+                 ignore=args['--ignore'],
                  auto_clear=args['--clear'],
                  beep_on_failure=not args['--nobeep'],
                  onpass=args['--onpass'],
