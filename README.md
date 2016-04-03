@@ -3,6 +3,9 @@ pytest-watch -- Continuous pytest runner
 
 [![Current version on PyPI](http://img.shields.io/pypi/v/pytest-watch.svg)][pypi]
 [![Downloads/month on PyPI](http://img.shields.io/pypi/dm/pytest-watch.svg)][pypi]
+<a href="https://gratipay.com/pytest-watch/" title="Thank you!" target="_blank">
+  <img src="https://img.shields.io/gratipay/pytest-watch.svg" alt="Thank you!">
+</a>
 
 **pytest-watch** a zero-config CLI tool that runs [pytest][], and re-runs it
 when a file in your project changes. It beeps on failures and can run arbitrary
