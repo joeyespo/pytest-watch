@@ -21,6 +21,7 @@ Options:
   --onexit=<cmd>        Run arbitrary command when exiting.
   --oninterrupt=<cmd>   Run arbitrary command on KeyboardInterrupt.
   --runner=<cmd>        Run a custom command instead of py.test.
+  --pdb                 Start the interactive Python debugger on errors.
   --nobeep              Do not beep on failure.
   -p --poll             Use polling instead of OS events (useful in VMs).
   --spool=<ms>          Re-run only after this delay (in milliseconds) to allow
@@ -87,6 +88,10 @@ def main(argv=None):
         except ValueError:
             sys.stderr.write('Error: Spool must be an integer.\n')
             return 2
+
+    # Adjust pytest args
+    if args['--pdb']:
+        pytest_args.append('--pdb')
 
     # Run pytest and watch for changes
     return watch(directories=directories,
