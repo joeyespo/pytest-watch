@@ -146,9 +146,10 @@ Contributing
 
 If your PR has been waiting a while, feel free to [ping me on Twitter][twitter].
 
-Use this software often? Please consider supporting me on
-<a href="http://gratipay.com/joeyespo" title="Thank you!">
-  <img align="center" style="margin-bottom:1px" src="http://joeyespo.com/images/gratipay-button.png" alt="Gratipay">
+Use this software often? Please consider [supporting pytest-watch][support].
+
+<a href="https://gratipay.com/pytest-watch/" title="Thank you!" target="_blank">
+  <img src="https://img.shields.io/gratipay/pytest-watch.svg" align="center" alt="Thank you!">
 </a>
 
 
@@ -163,3 +164,4 @@ Use this software often? Please consider supporting me on
 [nose]: http://nose.readthedocs.org/en/latest/
 [authors.md]: ./AUTHORS.md
 [twitter]: https://twitter.com/joeyespo
+[support]: https://gratipay.com/pytest-watch/
