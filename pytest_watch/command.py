@@ -4,38 +4,35 @@ pytest_watch.command
 
 Implements the command-line interface for pytest-watch.
 
-All positional arguments after `--` are passed directly to py.test executable.
 
-
-Usage: ptw [options] [--ignore <dir>...] [<directory>...] [-- <args>...]
+Usage: ptw [options] [--ignore <dir>...] [<directory>...] [-- <pytest-args>...]
 
 Options:
-  -h --help             Show this help.
-  --version             Show version.
-  --ignore=<dir>        Ignore directory from being watched and during
+  --ignore <dir>        Ignore directory from being watched and during
                         collection (multi-allowed).
-  -c --clear            Automatically clear the screen before each run.
-  --beforerun=<cmd>     Run arbitrary command before tests are run.
-  --afterrun <cmd>      Run arbitrary command on completion or interruption.
-                        The exit code of "py.test" is passed as an argument.
-  --onpass=<cmd>        Run arbitrary command on pass.
-  --onfail=<cmd>        Run arbitrary command on failure.
-  --onexit=<cmd>        Run arbitrary command when exiting pytest-watch.
-  --runner=<cmd>        Run a custom command instead of "py.test".
-  --pdb                 Start the interactive Python debugger on errors.
-                        This also enables --wait to prevent pdb interruption.
-  --nobeep              Do not beep on failure.
-  -p --poll             Use polling instead of OS events (useful in VMs).
-  --spool=<ms>          Re-run only after this delay (in milliseconds) to allow
-                        more file system events to queue up (default: 200 ms).
-  --ext=<exts>          Comma-separated list of file extensions that trigger a
-                        new test run when changed (default: .py).
-                        Use --ext=* to run on any file (including .pyc).
+  --ext <exts>          Comma-separated list of file extensions that can
+                        trigger a new test run when changed (default: .py).
+                        Use --ext=* to allow any file (including .pyc).
+  -c --clear            Clear the screen before each run.
+  -n --nobeep           Do not beep on failure.
   -w --wait             Waits for all tests to complete before re-running.
                         Otherwise, tests are interrupted on filesystem events.
+  --beforerun <cmd>     Run arbitrary command before tests are run.
+  --afterrun <cmd>      Run arbitrary command on completion or interruption.
+                        The exit code of "py.test" is passed as an argument.
+  --onpass <cmd>        Run arbitrary command on pass.
+  --onfail <cmd>        Run arbitrary command on failure.
+  --onexit <cmd>        Run arbitrary command when exiting pytest-watch.
+  --runner <cmd>        Run a custom command instead of "py.test".
+  --pdb                 Start the interactive Python debugger on errors.
+                        This also enables --wait to prevent pdb interruption.
+  --spool <delay>       Re-run after a delay (in milliseconds), allowing for
+                        more file system events to queue up (default: 200 ms).
+  -p --poll             Use polling instead of OS events (useful in VMs).
   -v --verbose          Increase verbosity of the output.
-  -q --quiet            Decrease verbosity of the output
-                        (takes precedence over verbose).
+  -q --quiet            Decrease verbosity of the output (precedence over -v).
+  -V --version          Print version and exit.
+  -h --help             Print help and exit.
 """
 
 import sys
@@ -101,18 +98,18 @@ def main(argv=None):
     # Run pytest and watch for changes
     return watch(directories=directories,
                  ignore=args['--ignore'],
-                 auto_clear=args['--clear'],
+                 extensions=extensions,
                  beep_on_failure=not args['--nobeep'],
-                 onpass=args['--onpass'],
-                 onfail=args['--onfail'],
-                 runner=args['--runner'],
+                 auto_clear=args['--clear'],
+                 wait=args['--wait'] or args['--pdb'],
                  beforerun=args['--beforerun'],
                  afterrun=args['--afterrun'],
+                 onpass=args['--onpass'],
+                 onfail=args['--onfail'],
                  onexit=args['--onexit'],
-                 poll=args['--poll'],
-                 extensions=extensions,
-                 args=pytest_args,
+                 runner=args['--runner'],
                  spool=spool,
-                 wait=args['--wait'] or args['--pdb'],
+                 poll=args['--poll'],
                  verbose=args['--verbose'],
-                 quiet=args['--quiet'])
+                 quiet=args['--quiet'],
+                 pytest_args=pytest_args)

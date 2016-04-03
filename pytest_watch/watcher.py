@@ -178,11 +178,11 @@ def run_hook(cmd, *args):
         subprocess.call(command, shell=True)
 
 
-def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
-          onpass=None, onfail=None, runner=None, beforerun=None, afterrun=None,
-          onexit=None, poll=False, extensions=[], args=[], spool=None,
-          wait=False, verbose=False, quiet=False):
-    argv = (runner or 'py.test').split(' ') + (args or [])
+def watch(directories=[], ignore=[], extensions=[],  beep_on_failure=True,
+          auto_clear=False, wait=False, beforerun=None, afterrun=None,
+          onpass=None, onfail=None, onexit=None, runner=None, spool=None,
+          poll=False, verbose=False, quiet=False, pytest_args=[]):
+    argv = (runner or 'py.test').split(' ') + (pytest_args or [])
 
     if not directories:
         directories = ['.']
