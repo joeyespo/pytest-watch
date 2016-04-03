@@ -45,7 +45,6 @@ STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
 # Exit codes from pytest
 # http://pytest.org/latest/_modules/_pytest/main.html
 EXIT_OK = 0
-EXIT_INTERRUPTED = 2
 EXIT_NOTESTSCOLLECTED = 5
 
 
@@ -170,17 +169,18 @@ def _split_recursive(directories, ignore):
     return sorted(set(recursedirs)), sorted(set(norecursedirs))
 
 
-def run_hook(cmd):
+def run_hook(cmd, *args):
     """
     Runs a command hook, if specified.
     """
     if cmd:
-        os.system(cmd)
+        command = ' '.join(map(str, (cmd,) + args))
+        subprocess.call(command, shell=True)
 
 
 def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
-          onpass=None, onfail=None, runner=None, beforerun=None, onexit=None,
-          oninterrupt=None, poll=False, extensions=[], args=[], spool=None,
+          onpass=None, onfail=None, runner=None, beforerun=None, afterrun=None,
+          onexit=None, poll=False, extensions=[], args=[], spool=None,
           wait=False, verbose=False, quiet=False):
     argv = (runner or 'py.test').split(' ') + (args or [])
 
@@ -237,15 +237,15 @@ def watch(directories=[], ignore=[], auto_clear=False, beep_on_failure=True,
                     sleep(0.1)
             except KeyboardInterrupt:
                 # Wait for current test run cleanup
-                if p.wait() == EXIT_INTERRUPTED:
-                    run_hook(oninterrupt)
+                run_hook(afterrun, p.wait())
                 # Exit, since this keyboard interrupt was user-initiated
                 break
 
-            # Run custom commands
-            if exit_code == EXIT_INTERRUPTED:
-                run_hook(oninterrupt)
-            elif exit_code in [EXIT_OK, EXIT_NOTESTSCOLLECTED]:
+            # Run custom command
+            run_hook(afterrun, exit_code)
+
+            # Run dependent commands
+            if exit_code in [EXIT_OK, EXIT_NOTESTSCOLLECTED]:
                 run_hook(onpass)
             else:
                 if beep_on_failure:

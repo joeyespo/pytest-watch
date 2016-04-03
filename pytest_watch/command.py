@@ -16,11 +16,12 @@ Options:
                         (if relative, starts from root of each watched dir).
   -c --clear            Automatically clear the screen before each run.
   --beforerun=<cmd>     Run arbitrary command before tests are run.
+  --afterrun <cmd>      Run arbitrary command on completion or interruption.
+                        The exit code of "py.test" is passed as an argument.
   --onpass=<cmd>        Run arbitrary command on pass.
   --onfail=<cmd>        Run arbitrary command on failure.
-  --onexit=<cmd>        Run arbitrary command when exiting.
-  --oninterrupt=<cmd>   Run arbitrary command on KeyboardInterrupt.
-  --runner=<cmd>        Run a custom command instead of py.test.
+  --onexit=<cmd>        Run arbitrary command when exiting pytest-watch.
+  --runner=<cmd>        Run a custom command instead of "py.test".
   --pdb                 Start the interactive Python debugger on errors.
                         This also enables --wait to prevent pdb interruption.
   --nobeep              Do not beep on failure.
@@ -105,8 +106,8 @@ def main(argv=None):
                  onfail=args['--onfail'],
                  runner=args['--runner'],
                  beforerun=args['--beforerun'],
+                 afterrun=args['--afterrun'],
                  onexit=args['--onexit'],
-                 oninterrupt=args['--oninterrupt'],
                  poll=args['--poll'],
                  extensions=extensions,
                  args=pytest_args,
