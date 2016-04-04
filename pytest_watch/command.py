@@ -62,16 +62,24 @@ def main(argv=None):
     # Parse CLI arguments
     args = docopt(doc, argv=argv, version=version)
 
-    # Split paths and pytest arguments
-    pytest_args = []
+    # Get paths and initial pytest arguments
     directories = args['<directory>']
+    pytest_args = list(directories)
     if '--' in directories:
         index = directories.index('--')
-        directories, pytest_args = directories[:index], directories[index + 1:]
+        directories = directories[:index]
+        del pytest_args[index]
+
+    # Adjust pytest args
+    for ignore in args['--ignore']:
+        pytest_args.extend(['--ignore', ignore])
+    if args['--pdb']:
+        pytest_args.append('--pdb')
 
     # Merge config file options
-    merge_config(args, directories)
+    merge_config(args, pytest_args)
 
+    # Parse extensions
     if args['--ext'] == '*':
         extensions = ALL_EXTENSIONS
     elif args['--ext']:
@@ -88,12 +96,6 @@ def main(argv=None):
         except ValueError:
             sys.stderr.write('Error: Spool must be an integer.\n')
             return 2
-
-    # Adjust pytest args
-    for ignore in args['--ignore']:
-        pytest_args.extend(['--ignore', ignore])
-    if args['--pdb']:
-        pytest_args.append('--pdb')
 
     # Run pytest and watch for changes
     return watch(directories=directories,

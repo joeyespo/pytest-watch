@@ -33,11 +33,11 @@ class CollectConfig(object):
             self.path = str(inifile)
 
 
-def merge_config(args, directories):
+def merge_config(args, pytest_args):
     collect_config = CollectConfig()
     try:
         with silence():
-            pytest.main(directories + ['--collect-only'],
+            pytest.main(pytest_args + ['--collect-only'],
                         plugins=[collect_config])
     except Exception:
         print('There was an error when collecting tests/config:',
