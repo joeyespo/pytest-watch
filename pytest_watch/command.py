@@ -13,6 +13,8 @@ Options:
   --ext <exts>          Comma-separated list of file extensions that can
                         trigger a new test run when changed (default: .py).
                         Use --ext=* to allow any file (including .pyc).
+  --config <file>       Load configuration from `file` instead of trying to
+                        locate one of the implicit configuration files.
   -c --clear            Clear the screen before each run.
   -n --nobeep           Do not beep on failure.
   -w --wait             Waits for all tests to complete before re-running.
@@ -73,6 +75,8 @@ def main(argv=None):
     # Adjust pytest args
     for ignore in args['--ignore']:
         pytest_args.extend(['--ignore', ignore])
+    if args['--config']:
+        pytest_args.extend(['-c', args['--config']])
     if args['--pdb']:
         pytest_args.append('--pdb')
 
