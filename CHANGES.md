@@ -2,6 +2,29 @@ pytest-watch Changelog
 ======================
 
 
+Version 4.0.0 (2016-04-06)
+--------------------------
+
+- Breaking change: Re-order `watch` arguments
+- Breaking change: Add parameterized `--spool` option for finer control and remove `--no-spool`
+- Breaking change: Remove `py.test.watch` console script
+- Enhancement: Report filesystem events on re-run (fixes [#39](https://github.com/joeyespo/pytest-watch/issues/39))
+- Enhancement: Allow `--ext=*` for watching any file type
+- Enhancement: Run pytest from main thread, send `KeyboardInterrupt` on filesystem events, and wait for pytest to terminate before running next iteration (fixes [#36](https://github.com/joeyespo/pytest-watch/issues/36))
+- Enhancement: Add `--pdb` option, forwarding to pytest
+- Enhancement: Add `--wait` option to wait for all tests to complete before re-running on filesystem events (fixes [#21](https://github.com/joeyespo/pytest-watch/issues/21))
+- Enhancement: Add `--afterrun` for running commands after pytest runs, regardless of whether it was interrupted ([#46](https://github.com/joeyespo/pytest-watch/pull/46) - thanks, [@blueyed][]! and fc471a457ae334e24422f939c04be25587d6d357)
+- Enhancement: Allow multiple `--ignore` args instead of one comma-separated list and forward them to pytest (fixes [#48](https://github.com/joeyespo/pytest-watch/issues/48))
+- Enhancement: Add `-V` as short version of `--version`
+- Enhancement: Add `--config` and include `<directory>` list in pytest args (fixes [#40](https://github.com/joeyespo/pytest-watch/issues/40))
+- Enhancement: Improve config collection debuggability
+- Bugfix: Fix config file collection on Python 2.6 and below ([#47](https://github.com/joeyespo/pytest-watch/pull/47) - thanks, [@lukaszb][]! and 7f1508d908a61ade36312219d2414445e5b05686)
+- Bugfix: Re-run on directory changes (fixes [#44](https://github.com/joeyespo/pytest-watch/issues/44))
+- Update LICENSE year
+- Update README
+- Cleanup
+
+
 Version 3.10.0 (2016-02-12)
 ---------------------------
 
@@ -113,3 +136,4 @@ First public preview release.
 [@blueyed]: https://github.com/blueyed
 [@ColtonProvias]: https://github.com/ColtonProvias
 [@bendtherules]: https://github.com/bendtherules
+[@lukaszb]: https://github.com/lukaszb

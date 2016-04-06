@@ -11,5 +11,6 @@ along with the following contributors:
 - Daniel Hahler ([@blueyed](https://github.com/blueyed))
 - Colton J. Provias ([@ColtonProvias](https://github.com/ColtonProvias))
 - Abhas Bhattacharya ([@bendtherules](https://github.com/bendtherules))
+- Lukasz Balcerzak ([@lukaszb](https://github.com/lukaszb))
 
 [home]: README.md
