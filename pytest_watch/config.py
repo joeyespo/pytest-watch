@@ -33,22 +33,37 @@ class CollectConfig(object):
             self.path = str(inifile)
 
 
-def merge_config(args, pytest_args):
+def collect(pytest_args, silent=True):
     collect_config = CollectConfig()
-    try:
-        with silence():
-            pytest.main(pytest_args + ['--collect-only'],
-                        plugins=[collect_config])
-    except Exception:
-        print('There was an error when collecting tests/config:',
-              file=sys.stderr)
-        raise
+    argv = pytest_args + ['--collect-only']
 
-    if not collect_config.path:
+    if silent:
+        try:
+            with silence():
+                exit_code = pytest.main(argv, plugins=[collect_config])
+                if exit_code == 0:
+                    return collect_config.path
+        except Exception:
+            pass
+        # Print message and run again without silencing
+        print('Error: Could not run --collect-only to find the pytest config '
+              'file. Trying again without silencing stdout...',
+              file=sys.stderr)
+
+    status_code = pytest.main(argv, plugins=[collect_config])
+    if not collect_config.path and status_code != 0:
+        print('Could not determine the pytest config file.', file=sys.stderr)
+    return collect_config.path
+
+
+def merge_config(args, pytest_args, silent=True):
+    config_path = collect(pytest_args, silent)
+
+    if not config_path:
         return
 
     config = ConfigParser()
-    config.read(collect_config.path)
+    config.read(config_path)
     if not config.has_section('pytest-watch'):
         return
 

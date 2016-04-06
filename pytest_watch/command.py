@@ -72,16 +72,18 @@ def main(argv=None):
         directories = directories[:index]
         del pytest_args[index]
 
-    # Adjust pytest args
+    # Adjust pytest and --collect-only args
     for ignore in args['--ignore']:
         pytest_args.extend(['--ignore', ignore])
     if args['--config']:
         pytest_args.extend(['-c', args['--config']])
-    if args['--pdb']:
-        pytest_args.append('--pdb')
 
     # Merge config file options
     merge_config(args, pytest_args)
+
+    # Adjust pytest args
+    if args['--pdb']:
+        pytest_args.append('--pdb')
 
     # Parse extensions
     if args['--ext'] == '*':
