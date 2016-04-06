@@ -13,12 +13,12 @@ Version 4.0.0 (2016-04-06)
 - Enhancement: Run pytest from main thread, send `KeyboardInterrupt` on filesystem events, and wait for pytest to terminate before running next iteration (fixes [#36](https://github.com/joeyespo/pytest-watch/issues/36))
 - Enhancement: Add `--pdb` option, forwarding to pytest
 - Enhancement: Add `--wait` option to wait for all tests to complete before re-running on filesystem events (fixes [#21](https://github.com/joeyespo/pytest-watch/issues/21))
-- Enhancement: Add `--afterrun` for running commands after pytest runs, regardless of whether it was interrupted ([#46](https://github.com/joeyespo/pytest-watch/pull/46) - thanks, [@blueyed][]! and fc471a457ae334e24422f939c04be25587d6d357)
+- Enhancement: Add `--afterrun` for running commands after pytest runs, regardless of whether it was interrupted ([#46](https://github.com/joeyespo/pytest-watch/pull/46) - thanks, [@blueyed][]! - and [fc471a457ae334e24422f939c04be25587d6d357](https://github.com/joeyespo/pytest-watch/commit/fc471a457ae334e24422f939c04be25587d6d357))
 - Enhancement: Allow multiple `--ignore` args instead of one comma-separated list and forward them to pytest (fixes [#48](https://github.com/joeyespo/pytest-watch/issues/48))
 - Enhancement: Add `-V` as short version of `--version`
 - Enhancement: Add `--config` and include `<directory>` list in pytest args (fixes [#40](https://github.com/joeyespo/pytest-watch/issues/40))
 - Enhancement: Improve config collection debuggability
-- Bugfix: Fix config file collection on Python 2.6 and below ([#47](https://github.com/joeyespo/pytest-watch/pull/47) - thanks, [@lukaszb][]! and 7f1508d908a61ade36312219d2414445e5b05686)
+- Bugfix: Fix config file collection on Python 2.6 and below ([#47](https://github.com/joeyespo/pytest-watch/pull/47) - thanks, [@lukaszb][]! - and [7f1508d908a61ade36312219d2414445e5b05686](https://github.com/joeyespo/pytest-watch/commit/7f1508d908a61ade36312219d2414445e5b05686))
 - Bugfix: Re-run on directory changes (fixes [#44](https://github.com/joeyespo/pytest-watch/issues/44))
 - Update LICENSE year
 - Update README
