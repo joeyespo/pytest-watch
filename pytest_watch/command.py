@@ -70,7 +70,7 @@ def main(argv=None):
     if '--' in directories:
         index = directories.index('--')
         directories = directories[:index]
-        del pytest_args[index]
+        pytest_args = pytest_args[index+1:]
 
     # Adjust pytest and --collect-only args
     for ignore in args['--ignore']:
