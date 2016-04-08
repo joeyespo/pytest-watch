@@ -2,6 +2,14 @@ pytest-watch Changelog
 ======================
 
 
+Version 4.1.0 (2016-04-08)
+--------------------------
+
+- Enhancement: Speed up config collection
+- Bugfix: Handle `KeyboardInterrupt` during inifile collection (fixes [#52](https://github.com/joeyespo/pytest-watch/issues/52))
+- Cleanup
+
+
 Version 4.0.0 (2016-04-06)
 --------------------------
 
