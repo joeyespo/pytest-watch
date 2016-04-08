@@ -21,6 +21,10 @@ class CollectError(Exception):
     pass
 
 
+class StopCollect(Exception):
+    pass
+
+
 class CollectConfig(object):
     """
     A pytest plugin to gets the configuration file.
@@ -37,13 +41,18 @@ class CollectConfig(object):
             inifile = config.inicfg.config.path
         if inifile:
             self.path = str(inifile)
+            raise StopCollect()
 
 
 def _run_pytest_collect(pytest_args):
     collect_config_plugin = CollectConfig()
     argv = pytest_args + ['--collect-only']
 
-    exit_code = pytest.main(argv, plugins=[collect_config_plugin])
+    try:
+        exit_code = pytest.main(argv, plugins=[collect_config_plugin])
+    except StopCollect:
+        return collect_config_plugin.path
+
     if exit_code == EXIT_INTERRUPTED:
         raise KeyboardInterrupt()
     if exit_code not in [EXIT_OK, EXIT_NOTESTSCOLLECTED]:
