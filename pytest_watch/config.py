@@ -11,8 +11,18 @@ try:
 except ImportError:
     from ConfigParser import ConfigParser
 
+from .constants import EXIT_INTERRUPTED, EXIT_NOTESTSCOLLECTED, EXIT_OK
+
 
 CLI_OPTION_PREFIX = '--'
+
+
+class CollectError(Exception):
+    pass
+
+
+class StopCollect(Exception):
+    pass
 
 
 class CollectConfig(object):
@@ -31,18 +41,33 @@ class CollectConfig(object):
             inifile = config.inicfg.config.path
         if inifile:
             self.path = str(inifile)
+            raise StopCollect()
 
 
-def collect(pytest_args, silent=True):
-    collect_config = CollectConfig()
+def _run_pytest_collect(pytest_args):
+    collect_config_plugin = CollectConfig()
     argv = pytest_args + ['--collect-only']
 
+    try:
+        exit_code = pytest.main(argv, plugins=[collect_config_plugin])
+    except StopCollect:
+        return collect_config_plugin.path
+
+    if exit_code == EXIT_INTERRUPTED:
+        raise KeyboardInterrupt()
+    if exit_code not in [EXIT_OK, EXIT_NOTESTSCOLLECTED]:
+        raise CollectError()
+
+    return collect_config_plugin.path
+
+
+def _collect_config(pytest_args, silent=True):
     if silent:
         try:
             with silence():
-                exit_code = pytest.main(argv, plugins=[collect_config])
-                if exit_code == 0:
-                    return collect_config.path
+                return _run_pytest_collect(pytest_args)
+        except KeyboardInterrupt:
+            raise
         except Exception:
             pass
         # Print message and run again without silencing
@@ -50,22 +75,25 @@ def collect(pytest_args, silent=True):
               'file. Trying again without silencing stdout...',
               file=sys.stderr)
 
-    status_code = pytest.main(argv, plugins=[collect_config])
-    if not collect_config.path and status_code != 0:
-        print('Could not determine the pytest config file.', file=sys.stderr)
-    return collect_config.path
+    return _run_pytest_collect(pytest_args)
 
 
-def merge_config(args, pytest_args, silent=True):
-    config_path = collect(pytest_args, silent)
+def merge_config(args, pytest_args, silent=True, verbose=False):
+    if verbose:
+        print('Locating inifile...')
+
+    try:
+        config_path = _collect_config(pytest_args, silent)
+    except (KeyboardInterrupt, CollectError):
+        return False
 
     if not config_path:
-        return
+        return True
 
     config = ConfigParser()
     config.read(config_path)
     if not config.has_section('pytest-watch'):
-        return
+        return True
 
     for cli_name in args:
         if not cli_name.startswith(CLI_OPTION_PREFIX):
@@ -87,3 +115,5 @@ def merge_config(args, pytest_args, silent=True):
             args[cli_name] = config.getboolean('pytest-watch', config_name)
         else:
             args[cli_name] = config.get('pytest-watch', config_name)
+
+    return True

@@ -43,8 +43,9 @@ import colorama
 from docopt import docopt
 
 from . import __version__
-from .watcher import ALL_EXTENSIONS, watch
 from .config import merge_config
+from .constants import ALL_EXTENSIONS
+from .watcher import watch
 
 
 doc = '\n\n\n'.join(__doc__.split('\n\n\n')[1:])
@@ -79,7 +80,8 @@ def main(argv=None):
         pytest_args.extend(['-c', args['--config']])
 
     # Merge config file options
-    merge_config(args, pytest_args)
+    if not merge_config(args, pytest_args, verbose=args['--verbose']):
+        return 0
 
     # Adjust pytest args
     if args['--pdb']:
