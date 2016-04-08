@@ -69,7 +69,10 @@ def _collect_config(pytest_args, silent=True):
     return _run_pytest_collect(pytest_args)
 
 
-def merge_config(args, pytest_args, silent=True):
+def merge_config(args, pytest_args, silent=True, verbose=False):
+    if verbose:
+        print('Locating inifile...')
+
     try:
         config_path = _collect_config(pytest_args, silent)
     except (KeyboardInterrupt, CollectError):

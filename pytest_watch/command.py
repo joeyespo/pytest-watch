@@ -80,7 +80,7 @@ def main(argv=None):
         pytest_args.extend(['-c', args['--config']])
 
     # Merge config file options
-    if not merge_config(args, pytest_args):
+    if not merge_config(args, pytest_args, verbose=args['--verbose']):
         return 0
 
     # Adjust pytest args
