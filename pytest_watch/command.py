@@ -43,8 +43,9 @@ import colorama
 from docopt import docopt
 
 from . import __version__
-from .watcher import ALL_EXTENSIONS, watch
 from .config import merge_config
+from .constants import ALL_EXTENSIONS
+from .watcher import watch
 
 
 doc = '\n\n\n'.join(__doc__.split('\n\n\n')[1:])

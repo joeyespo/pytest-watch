@@ -17,11 +17,10 @@ from watchdog.events import (
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
 
+from .constants import (
+    ALL_EXTENSIONS, EXIT_NOTESTSCOLLECTED, EXIT_OK, DEFAULT_EXTENSIONS)
 from .helpers import (
     beep, clear, dequeue_all, is_windows, samepath, send_keyboard_interrupt)
-
-
-ALL_EXTENSIONS = object()
 
 
 EVENT_NAMES = {
@@ -37,15 +36,8 @@ VERBOSE_EVENT_NAMES = {
     FileDeletedEvent: 'Deleted:',
 }
 WATCHED_EVENTS = tuple(EVENT_NAMES)
-DEFAULT_EXTENSIONS = ['.py']
 STYLE_BRIGHT = Fore.WHITE + Style.NORMAL + Style.BRIGHT
 STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
-
-
-# Exit codes from pytest
-# http://pytest.org/latest/_modules/_pytest/main.html
-EXIT_OK = 0
-EXIT_NOTESTSCOLLECTED = 5
 
 
 class EventListener(FileSystemEventHandler):
