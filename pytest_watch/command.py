@@ -80,7 +80,8 @@ def main(argv=None):
         pytest_args.extend(['-c', args['--config']])
 
     # Merge config file options
-    merge_config(args, pytest_args)
+    if not merge_config(args, pytest_args):
+        return 0
 
     # Adjust pytest args
     if args['--pdb']:
