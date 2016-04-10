@@ -101,10 +101,40 @@ Need to exclude directories from being observed or collected for tests?
 $ ptw --ignore ./deep-directory --ignore ./integration_tests
 ```
 
-For more information and for the full list of options, run:
+See the full list of options:
 
-```bash
+```
 $ ptw --help
+Usage: ptw [options] [--ignore <dir>...] [<directory>...] [-- <pytest-args>...]
+
+Options:
+  --ignore <dir>        Ignore directory from being watched and during
+                        collection (multi-allowed).
+  --ext <exts>          Comma-separated list of file extensions that can
+                        trigger a new test run when changed (default: .py).
+                        Use --ext=* to allow any file (including .pyc).
+  --config <file>       Load configuration from `file` instead of trying to
+                        locate one of the implicit configuration files.
+  -c --clear            Clear the screen before each run.
+  -n --nobeep           Do not beep on failure.
+  -w --wait             Waits for all tests to complete before re-running.
+                        Otherwise, tests are interrupted on filesystem events.
+  --beforerun <cmd>     Run arbitrary command before tests are run.
+  --afterrun <cmd>      Run arbitrary command on completion or interruption.
+                        The exit code of "py.test" is passed as an argument.
+  --onpass <cmd>        Run arbitrary command on pass.
+  --onfail <cmd>        Run arbitrary command on failure.
+  --onexit <cmd>        Run arbitrary command when exiting pytest-watch.
+  --runner <cmd>        Run a custom command instead of "py.test".
+  --pdb                 Start the interactive Python debugger on errors.
+                        This also enables --wait to prevent pdb interruption.
+  --spool <delay>       Re-run after a delay (in milliseconds), allowing for
+                        more file system events to queue up (default: 200 ms).
+  -p --poll             Use polling instead of OS events (useful in VMs).
+  -v --verbose          Increase verbosity of the output.
+  -q --quiet            Decrease verbosity of the output (precedence over -v).
+  -V --version          Print version and exit.
+  -h --help             Print help and exit.
 ```
 
 
