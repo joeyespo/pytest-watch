@@ -6,6 +6,7 @@ dist
 site-packages
 build
 env
+.cache
 *.so
 *.py[cod]
 
