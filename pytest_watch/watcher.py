@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import os
 import subprocess
-from time import sleep
+import time
 from traceback import format_exc
 
 try:
@@ -113,8 +113,11 @@ def _show_summary(argv, events, verbose=False):
     bright = lambda arg: STYLE_BRIGHT + arg + Style.RESET_ALL
     highlight = lambda arg: STYLE_HIGHLIGHT + arg + Style.RESET_ALL
 
+    time_stamp = time.strftime("%c", time.localtime(time.time()))
+    run_command_info = '[{}] Running: {}'.format(time_stamp,
+                                                 highlight(command))
     if not events:
-        print('Running: {}'.format(highlight(command)))
+        print(run_command_info)
         return
 
     events = _reduce_events(events)
@@ -127,7 +130,7 @@ def _show_summary(argv, events, verbose=False):
                 event,
                 highlight(src + (' -> ' + dest if dest else ''))))
         lines.append('')
-        lines.append('Running: {}'.format(highlight(command)))
+        lines.append(run_command_info)
     else:
         lines = []
         for event, src, dest in events:
@@ -135,7 +138,7 @@ def _show_summary(argv, events, verbose=False):
                 EVENT_NAMES[event],
                 bright(src + (' -> ' + dest if dest else ''))))
         lines.append('')
-        lines.append('Running: {}'.format(highlight(command)))
+        lines.append(run_command_info)
 
     print('\n'.join(lines))
 
@@ -228,7 +231,7 @@ def watch(directories=[], ignore=[], extensions=[],  beep_on_failure=True,
                         exit_code = p.wait()
                         break
                     # Allow user to initiate a keyboard interrupt
-                    sleep(0.1)
+                    time.sleep(0.1)
             except KeyboardInterrupt:
                 # Wait for current test run cleanup
                 run_hook(afterrun, p.wait())
@@ -248,7 +251,7 @@ def watch(directories=[], ignore=[], extensions=[],  beep_on_failure=True,
 
             # Wait for a filesystem event
             while event_listener.event_queue.empty():
-                sleep(0.1)
+                time.sleep(0.1)
 
             # Collect events for summary of next run
             events = dequeue_all(event_listener.event_queue, spool)
