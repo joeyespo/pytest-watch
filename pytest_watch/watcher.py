@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import subprocess
 import time
 from traceback import format_exc
@@ -75,6 +76,14 @@ class EventListener(FileSystemEventHandler):
                 return
 
         self.event_queue.put((type(event), src_path, dest_path))
+
+
+def _get_pytest_runner(custom):
+    if custom:
+        return custom.split(' ')
+    if os.getenv('VIRTUAL_ENV'):
+        return ('py.test',)
+    return (sys.executable, '-m', 'pytest')
 
 
 def _reduce_events(events):
@@ -179,7 +188,7 @@ def watch(directories=[], ignore=[], extensions=[],  beep_on_failure=True,
           auto_clear=False, wait=False, beforerun=None, afterrun=None,
           onpass=None, onfail=None, onexit=None, runner=None, spool=None,
           poll=False, verbose=False, quiet=False, pytest_args=[]):
-    argv = (runner or 'py.test').split(' ') + (pytest_args or [])
+    argv = _get_pytest_runner(runner) + (pytest_args or [])
 
     if not directories:
         directories = ['.']
