@@ -12,5 +12,6 @@ along with the following contributors:
 - Colton J. Provias ([@ColtonProvias](https://github.com/ColtonProvias))
 - Abhas Bhattacharya ([@bendtherules](https://github.com/bendtherules))
 - Lukasz Balcerzak ([@lukaszb](https://github.com/lukaszb))
+- Jace Browning ([@jacebrowning](https://github.com/jacebrowning))
 
 [home]: README.md

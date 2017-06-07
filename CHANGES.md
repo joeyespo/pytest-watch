@@ -1,6 +1,7 @@
 pytest-watch Changelog
 ======================
 
+- Enhancement: Use the same Python interpreter for `py.text` when `ptw` is run outside of an activated virtual environment.
 
 Version 4.1.0 (2016-04-08)
 --------------------------
