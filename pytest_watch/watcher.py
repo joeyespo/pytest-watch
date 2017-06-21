@@ -184,7 +184,7 @@ def run_hook(cmd, *args):
         subprocess.call(command, shell=True)
 
 
-def watch(directories=[], ignore=[], extensions=[],  beep_on_failure=True,
+def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
           auto_clear=False, wait=False, beforerun=None, afterrun=None,
           onpass=None, onfail=None, onexit=None, runner=None, spool=None,
           poll=False, verbose=False, quiet=False, pytest_args=[]):
