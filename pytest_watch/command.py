@@ -74,7 +74,7 @@ def main(argv=None):
         del pytest_args[index]
 
     # Adjust pytest and --collect-only args
-    for ignore in args['--ignore']:
+    for ignore in args['--ignore'] or []:
         pytest_args.extend(['--ignore', ignore])
     if args['--config']:
         pytest_args.extend(['-c', args['--config']])
