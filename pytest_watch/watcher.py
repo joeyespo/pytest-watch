@@ -82,8 +82,8 @@ def _get_pytest_runner(custom):
     if custom:
         return custom.split(' ')
     if os.getenv('VIRTUAL_ENV'):
-        return ('py.test',)
-    return (sys.executable, '-m', 'pytest')
+        return ['py.test']
+    return [sys.executable, '-m', 'pytest']
 
 
 def _reduce_events(events):
