@@ -156,6 +156,69 @@ ignore = ./integration-tests
 nobeep = True
 ```
 
+confwatch: only run tests for modified files
+--------------------------------------------
+
+By default, when any files are modified, `pytest-watch` will re-run *all* of
+your tests. To speed things up, you might only want to test modified files,
+however, in order for `pytest` to know which tests to run for each modified
+file, you need to define a custom callback function which maps modified file
+names to their respective test files.
+
+The function must be named `get_test_filepath_for_modified_filepath`.
+It takes a single string argument (the modified filepath, relative to your
+project root) and should return a filepath to the respective test file, again
+relative to your project root.
+
+For example, given the following directory structure:
+
+```
+$ tree my_project
+my_project/
+├── pytest.ini
+├── pkg_name/
+│   ├── __init__.py
+│   ├── views/
+│   │   ├── __init__.py
+│   │   ├── index.py
+└── tests/
+    └── conftest.py
+    └── confwatch.py
+    └── views/
+        └── test_index.py
+```
+
+Then the following `my_project/tests/confwatch.py` would work:
+
+```python
+import os
+from watchdog.events import FileMovedEvent
+
+
+# optional callback, to ignore events for temporary files created by PyCharm
+def should_ignore_event(event):
+    if not isinstance(event, FileMovedEvent):
+        return False
+
+    return event.src_path.endswith('___jb_tmp___') or \
+           event.dest_path.endswith('___jb_old___')
+
+
+def get_test_filepath_for_modified_filepath(modified_filepath):
+    if modified_filepath.startswith('tests/'):
+        return modified_filepath
+
+    _, filepath = modified_filepath.split(os.sep, maxsplit=1)
+    path, filename = filepath.rsplit(os.sep, maxsplit=1)
+    return os.sep.join(['tests', path, 'test_' + filename])
+```
+
+Specified like so in `my_project/pytest.ini`:
+
+```ini
+[pytest-watch]
+confwatch = tests.confwatch
+```
 
 Alternatives
 ------------

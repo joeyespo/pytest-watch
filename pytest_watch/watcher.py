@@ -22,6 +22,7 @@ from .constants import (
     ALL_EXTENSIONS, EXIT_NOTESTSCOLLECTED, EXIT_OK, DEFAULT_EXTENSIONS)
 from .helpers import (
     beep, clear, dequeue_all, is_windows, samepath, send_keyboard_interrupt)
+from .util import import_function_from_module
 
 
 EVENT_NAMES = {
@@ -45,10 +46,14 @@ class EventListener(FileSystemEventHandler):
     """
     Listens for changes to files and re-runs tests after each change.
     """
-    def __init__(self, extensions=[]):
+    def __init__(self, extensions=[], confwatch=None):
         super(EventListener, self).__init__()
         self.event_queue = Queue()
         self.extensions = extensions or DEFAULT_EXTENSIONS
+        self.should_ignore_event = import_function_from_module(
+            'should_ignore_event',
+            confwatch,
+            default=lambda _: False)
 
     def on_any_event(self, event):
         """
@@ -57,6 +62,9 @@ class EventListener(FileSystemEventHandler):
         """
         # Filter for allowed event types
         if not isinstance(event, WATCHED_EVENTS):
+            return
+
+        if self.should_ignore_event(event):
             return
 
         src_path = os.path.relpath(event.src_path)
@@ -78,12 +86,30 @@ class EventListener(FileSystemEventHandler):
         self.event_queue.put((type(event), src_path, dest_path))
 
 
-def _get_pytest_runner(custom):
+def _get_pytest_runner(custom, pytest_args, events,
+                       get_test_filepath_for_modified_filepath):
     if custom:
-        return custom.split(' ')
-    if os.getenv('VIRTUAL_ENV'):
-        return ['py.test']
-    return [sys.executable, '-m', 'pytest']
+        args = custom.split(' ')
+    elif os.getenv('VIRTUAL_ENV'):
+        args = ['py.test']
+    else:
+        args = [sys.executable, '-m', 'pytest']
+
+    args += (pytest_args or [])
+
+    if not events or not get_test_filepath_for_modified_filepath:
+        return args
+
+    return args + list({get_test_filepath_for_modified_filepath(f)
+                        for f in _get_changed_filepaths_for_events(events)})
+
+
+def _get_changed_filepaths_for_events(events):
+    for event, src_path, dest_path in events:
+        if event in (FileModifiedEvent, FileCreatedEvent):
+            yield src_path
+        elif event == FileMovedEvent:
+            yield dest_path
 
 
 def _reduce_events(events):
@@ -187,8 +213,8 @@ def run_hook(cmd, *args):
 def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
           auto_clear=False, wait=False, beforerun=None, afterrun=None,
           onpass=None, onfail=None, onexit=None, runner=None, spool=None,
-          poll=False, verbose=False, quiet=False, pytest_args=[]):
-    argv = _get_pytest_runner(runner) + (pytest_args or [])
+          poll=False, verbose=False, quiet=False, pytest_args=[],
+          confwatch=None):
 
     if not directories:
         directories = ['.']
@@ -198,7 +224,7 @@ def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
             raise ValueError('Directory not found: ' + directory)
 
     # Setup event handler
-    event_listener = EventListener(extensions)
+    event_listener = EventListener(extensions, confwatch)
 
     # Setup watchdog
     observer = PollingObserver() if poll else Observer()
@@ -209,6 +235,12 @@ def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
         observer.schedule(event_listener, path=directory, recursive=False)
     observer.start()
 
+    # Get user function to determine which tests to run for modified files
+    get_test_filepath_for_modified_filepath = import_function_from_module(
+        'get_test_filepath_for_modified_filepath',
+        confwatch,
+        default=None)
+
     # Watch and run tests until interrupted by user
     events = []
     while True:
@@ -218,6 +250,10 @@ def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
                 clear()
             elif not quiet:
                 print()
+
+            # get pytest args for the queued events
+            argv = _get_pytest_runner(runner, pytest_args, events,
+                                      get_test_filepath_for_modified_filepath)
 
             # Show event summary
             if not quiet:

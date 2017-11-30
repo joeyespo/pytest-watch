@@ -26,6 +26,8 @@ Options:
   --onfail <cmd>        Run arbitrary command on failure.
   --onexit <cmd>        Run arbitrary command when exiting pytest-watch.
   --runner <cmd>        Run a custom command instead of "py.test".
+  --confwatch <module>  Python module (in dot-notation) containing custom
+                        callback functions for pytest-watch
   --pdb                 Start the interactive Python debugger on errors.
                         This also enables --wait to prevent pdb interruption.
   --spool <delay>       Re-run after a delay (in milliseconds), allowing for
@@ -122,4 +124,5 @@ def main(argv=None):
                  poll=args['--poll'],
                  verbose=args['--verbose'],
                  quiet=args['--quiet'],
-                 pytest_args=pytest_args)
+                 pytest_args=pytest_args,
+                 confwatch=args['--confwatch'])
