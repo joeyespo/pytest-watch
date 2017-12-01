@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+import re
 import sys
 import subprocess
 import time
@@ -21,7 +22,9 @@ from watchdog.observers.polling import PollingObserver
 from .constants import (
     ALL_EXTENSIONS, EXIT_NOTESTSCOLLECTED, EXIT_OK, DEFAULT_EXTENSIONS)
 from .helpers import (
-    beep, clear, dequeue_all, is_windows, samepath, send_keyboard_interrupt)
+    beep, clear, dequeue_all, is_test_filepath, is_windows, samepath,
+    send_keyboard_interrupt)
+from .util import import_function_from_module
 
 
 EVENT_NAMES = {
@@ -45,10 +48,14 @@ class EventListener(FileSystemEventHandler):
     """
     Listens for changes to files and re-runs tests after each change.
     """
-    def __init__(self, extensions=[]):
+    def __init__(self, extensions=[], confwatch=None):
         super(EventListener, self).__init__()
         self.event_queue = Queue()
         self.extensions = extensions or DEFAULT_EXTENSIONS
+        self.should_ignore_event = import_function_from_module(
+            'should_ignore_event',
+            confwatch,
+            default=lambda _: False)
 
     def on_any_event(self, event):
         """
@@ -57,6 +64,9 @@ class EventListener(FileSystemEventHandler):
         """
         # Filter for allowed event types
         if not isinstance(event, WATCHED_EVENTS):
+            return
+
+        if self.should_ignore_event(event):
             return
 
         src_path = os.path.relpath(event.src_path)
@@ -78,12 +88,72 @@ class EventListener(FileSystemEventHandler):
         self.event_queue.put((type(event), src_path, dest_path))
 
 
-def _get_pytest_runner(custom):
+def _get_pytest_runner(custom=None, pytest_args=None, events=None,
+                       all_valid_test_filepaths=None,
+                       get_test_filepath_for_modified_filepath=None):
     if custom:
-        return custom.split(' ')
-    if os.getenv('VIRTUAL_ENV'):
-        return ['py.test']
-    return [sys.executable, '-m', 'pytest']
+        args = custom.split(' ')
+    elif os.getenv('VIRTUAL_ENV'):
+        args = ['py.test']
+    else:
+        args = [sys.executable, '-m', 'pytest']
+
+    args += (pytest_args or [])
+
+    if not events or not get_test_filepath_for_modified_filepath:
+        return args
+
+    return args + _get_runner_filepath_args(events, all_valid_test_filepaths,
+                                            get_test_filepath_for_modified_filepath)
+
+
+def _get_runner_filepath_args(events, all_valid_test_filepaths,
+                              get_test_filepath_for_modified_filepath):
+    # convert & filter test file paths from modified file paths
+    test_filepaths = set()
+    for filepath in _get_changed_filepaths_for_events(events):
+        test_filepath = get_test_filepath_for_modified_filepath(filepath)
+        if test_filepath:
+            test_filepaths.add(test_filepath)
+
+    # only run a subset of tests if all the test file paths are valid
+    valid_filepaths = {f for f in test_filepaths if f in all_valid_test_filepaths}
+    if valid_filepaths.issubset(all_valid_test_filepaths):
+        return list(valid_filepaths)
+
+    # otherwise run all tests
+    return []
+
+
+def _get_changed_filepaths_for_events(events):
+    for event, src_path, dest_path in events:
+        if event in (FileModifiedEvent, FileCreatedEvent):
+            yield src_path
+        elif event == FileMovedEvent:
+            yield dest_path
+
+
+def _get_all_valid_test_filepaths(runner):
+    cmd = runner + ['--collect-only']
+    p = subprocess.Popen(cmd, shell=is_windows, stdout=subprocess.PIPE)
+    stdout, _ = p.communicate()
+    lines = stdout.decode('utf-8').splitlines()
+    matcher = re.compile(r"^<Module '(?P<filepath>.+)'>$")
+    matches = [matcher.match(line) for line in lines]
+    return {m.group('filepath') for m in matches if m}
+
+
+def _update_valid_test_filepaths(all_valid_test_filepaths, events):
+    for event, src_path, dest_path in events:
+        is_test = is_test_filepath(src_path)
+        if is_test and event in (FileCreatedEvent, FileModifiedEvent):
+            all_valid_test_filepaths.add(src_path)
+        elif event == FileDeletedEvent and src_path in all_valid_test_filepaths:
+            all_valid_test_filepaths.remove(src_path)
+        elif event == FileMovedEvent and src_path in all_valid_test_filepaths:
+            all_valid_test_filepaths.remove(src_path)
+            all_valid_test_filepaths.add(dest_path)
+    return all_valid_test_filepaths
 
 
 def _reduce_events(events):
@@ -187,8 +257,8 @@ def run_hook(cmd, *args):
 def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
           auto_clear=False, wait=False, beforerun=None, afterrun=None,
           onpass=None, onfail=None, onexit=None, runner=None, spool=None,
-          poll=False, verbose=False, quiet=False, pytest_args=[]):
-    argv = _get_pytest_runner(runner) + (pytest_args or [])
+          poll=False, verbose=False, quiet=False, pytest_args=[],
+          confwatch=None):
 
     if not directories:
         directories = ['.']
@@ -198,7 +268,7 @@ def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
             raise ValueError('Directory not found: ' + directory)
 
     # Setup event handler
-    event_listener = EventListener(extensions)
+    event_listener = EventListener(extensions, confwatch)
 
     # Setup watchdog
     observer = PollingObserver() if poll else Observer()
@@ -209,6 +279,15 @@ def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
         observer.schedule(event_listener, path=directory, recursive=False)
     observer.start()
 
+    # Get user function to determine which tests to run for modified files
+    get_test_filepath_for_modified_filepath = import_function_from_module(
+        'get_test_filepath_for_modified_filepath',
+        confwatch,
+        default=None)
+
+    all_valid_test_filepaths = _get_all_valid_test_filepaths(
+        _get_pytest_runner(runner, pytest_args))
+
     # Watch and run tests until interrupted by user
     events = []
     while True:
@@ -218,6 +297,15 @@ def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
                 clear()
             elif not quiet:
                 print()
+
+            # check if any new test files
+            all_valid_test_filepaths = _update_valid_test_filepaths(
+                all_valid_test_filepaths, events)
+
+            # get pytest args for the queued events
+            argv = _get_pytest_runner(runner, pytest_args, events,
+                                      all_valid_test_filepaths,
+                                      get_test_filepath_for_modified_filepath)
 
             # Show event summary
             if not quiet:

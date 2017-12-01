@@ -1,4 +1,5 @@
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -11,6 +12,7 @@ except ImportError:
 
 
 is_windows = sys.platform == 'win32'
+titlecase_re = re.compile(r'([A-Z]+)(?=[a-z0-9])')
 
 
 def beep():
@@ -79,3 +81,18 @@ def send_keyboard_interrupt(proc):
             pass
     else:
         os.kill(proc.pid, signal.SIGINT)
+
+
+def title_case_to_snake_case(string):
+    def _join(match):
+        word = match.group()
+        if len(word) > 1:
+            return '_%s_%s' % (word[:-1], word[-1])
+        return '_' + word
+    return titlecase_re.sub(_join, string).lstrip('_').lower()
+
+
+def is_test_filepath(filepath):
+    filepath = filepath[:filepath.rfind('.')]
+    parts = map(title_case_to_snake_case, filepath.split(os.sep))
+    return 'test' in [word for part in parts for word in part.split('_')]
