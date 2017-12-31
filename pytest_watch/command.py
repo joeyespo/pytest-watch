@@ -100,12 +100,15 @@ def main(argv=None):
 
     # Parse numeric arguments
     spool = args['--spool']
-    if spool is not None:
-        try:
-            spool = int(spool)
-        except ValueError:
-            sys.stderr.write('Error: Spool must be an integer.\n')
-            return 2
+    try:
+        spool = int(spool)
+    except ValueError:
+        sys.stderr.write('Error: Spool must be an integer.\n')
+        return 2
+
+    if spool < 0:
+        sys.stderr.write("Error: Spool value must be positive integer")
+        return 2
 
     # Run pytest and watch for changes
     return watch(directories=directories,
