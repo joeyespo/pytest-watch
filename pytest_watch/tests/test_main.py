@@ -59,6 +59,13 @@ class TestCLIArguments(unittest.TestCase):
         watch_callee.assert_called_once()
 
     @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+    def test_default_spool_value(self, watch_callee):
+        main([])
+        self.assertIn("spool", watch_callee.call_args[1])
+        self.assertEqual(200, watch_callee.call_args[1]["spool"])
+        watch_callee.assert_called_once()
+
+    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_cause_error_for_negative_spool_values(self, watch_callee):
         self.assertEqual(2, main("--spool -1".split()))
         watch_callee.assert_not_called()
