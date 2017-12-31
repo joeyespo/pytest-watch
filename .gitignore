@@ -14,3 +14,6 @@ env
 .DS_Store
 Desktop.ini
 Thumbs.db
+.coverage
+.coverage.*
+venv
