@@ -76,6 +76,8 @@ def main(argv=None):
     # Adjust pytest and --collect-only args
     for ignore in args['--ignore']:
         pytest_args.extend(['--ignore', ignore])
+
+    # Set pytest config file
     if args['--config']:
         pytest_args.extend(['-c', args['--config']])
 
