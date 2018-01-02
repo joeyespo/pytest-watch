@@ -11,7 +11,7 @@ Options:
   --ignore <dir>        Ignore directory from being watched and during
                         collection (multi-allowed).
   --ext <exts>          Comma-separated list of file extensions that can
-                        trigger a new test run when changed (default: .py).
+                        trigger a new test run when changed [default: .py].
                         Use --ext=* to allow any file (including .pyc).
   --config <file>       Load configuration from `file` instead of trying to
                         locate one of the implicit configuration files.
@@ -44,7 +44,7 @@ from docopt import docopt
 
 from . import __version__
 from .config import merge_config
-from .constants import ALL_EXTENSIONS
+from .constants import ALL_EXTENSIONS, DEFAULT_EXTENSIONS
 from .watcher import watch
 
 
@@ -96,7 +96,7 @@ def main(argv=None):
         extensions = [('.' if not e.startswith('.') else '') + e
                       for e in args['--ext'].split(',')]
     else:
-        extensions = None
+        extensions = DEFAULT_EXTENSIONS
 
     # Parse numeric arguments
     spool = args['--spool']
