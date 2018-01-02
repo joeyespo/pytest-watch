@@ -68,6 +68,8 @@ def main(argv=None):
     # Get paths and initial pytest arguments
     directories = args['<directory>']
     pytest_args = list(directories)
+
+    # Merge pytest arguments and directories
     if '--' in directories:
         index = directories.index('--')
         directories = directories[:index]
