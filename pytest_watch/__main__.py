@@ -8,12 +8,13 @@ Local continuous test runner with pytest and watchdog.
 :license: MIT, see LICENSE for more details.
 """
 
-import os
-import sys
 
-
-if __name__ == '__main__':
+def run_cli():
+    import os
+    import sys
     sys.path.append(os.path.dirname(__file__))
 
     from pytest_watch.command import main
-    main()
+    main(argv=sys.argv[1:])
+
+if __name__ == '__main__': run_cli()

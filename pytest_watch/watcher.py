@@ -184,10 +184,16 @@ def run_hook(cmd, *args):
         subprocess.call(command, shell=True)
 
 
-def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
+def watch(directories=None, ignore=None, extensions=None, beep_on_failure=True,
           auto_clear=False, wait=False, beforerun=None, afterrun=None,
           onpass=None, onfail=None, onexit=None, runner=None, spool=None,
-          poll=False, verbose=False, quiet=False, pytest_args=[]):
+          poll=False, verbose=False, quiet=False, pytest_args=None):
+
+    directories = [] if directories is None else directories
+    ignore = [] if ignore is None else ignore
+    extensions = [] if extensions is None else extensions
+    pytest_args = [] if pytest_args is None else pytest_args
+
     argv = _get_pytest_runner(runner) + (pytest_args or [])
 
     if not directories:

@@ -88,7 +88,13 @@ class TestCLIArguments(unittest.TestCase):
 
     @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_cause_error_for_invalid_spool_values(self, watch_callee):
-        self.assertEquals(2, main("--spool abc".split()), "Status code for not integer 'spool' argument should be 2")
-        self.assertEquals(2, main("--spool @".split()), "Status code for not integer 'spool' argument should be 2")
-        self.assertEquals(2, main("--spool []".split()), "Status code for not integer 'spool' argument should be 2")
+        self.assertEquals(2, main("--spool abc".split()),
+                          "Status code for not integer 'spool' " \
+                          "argument should be 2")
+        self.assertEquals(2, main("--spool @".split()),
+                          "Status code for not integer 'spool' " \
+                          "argument should be 2")
+        self.assertEquals(2, main("--spool []".split()),
+                          "Status code for not integer 'spool' " \
+                          "argument should be 2")
 
