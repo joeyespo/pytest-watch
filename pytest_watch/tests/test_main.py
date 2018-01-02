@@ -50,6 +50,9 @@ class TestCLIArguments(unittest.TestCase):
         watch_callee.assert_called_once()
         watch_callee.assert_called_once_with(**self._get_default_args())
 
+
+class TestSpoolArguments(unittest.TestCase):
+
     @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_zero_spool_value(self, watch_callee):
         main("--spool 0".split())
@@ -99,35 +102,33 @@ class TestCLIArguments(unittest.TestCase):
                           "argument should be 2")
 
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+class TestExtensionsArguments(unittest.TestCase):
+
     def test_default_extensions(self, watch_callee):
         main([])
         self.assertIn("extensions", watch_callee.call_args[1])
         self.assertListEqual([".py"], watch_callee.call_args[1]["extensions"])
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_single_without_dot_extensions(self, watch_callee):
         main("--ext py".split())
         self.assertIn("extensions", watch_callee.call_args[1])
         self.assertListEqual([".py"], watch_callee.call_args[1]["extensions"])
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_single_with_dot_extensions(self, watch_callee):
         main("--ext .py".split())
         self.assertIn("extensions", watch_callee.call_args[1])
         self.assertListEqual([".py"], watch_callee.call_args[1]["extensions"])
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_multiple_extensions(self, watch_callee):
         main("--ext .py,.html".split())
         self.assertIn("extensions", watch_callee.call_args[1])
         self.assertListEqual([".py", ".html"], watch_callee.call_args[1]["extensions"])
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_multiple_with_and_without_dots_extensions(self, watch_callee):
         main("--ext .py,html".split())
         self.assertIn("extensions", watch_callee.call_args[1])
@@ -142,6 +143,7 @@ class TestCLIArguments(unittest.TestCase):
         watch_callee.assert_called_once()
 
 
+@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
 class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
 
     def setUp(self):
@@ -150,7 +152,6 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.root_tmp)
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_no_directory_empty_pytest_arg(self, watch_callee):
         main(["--"])
 
@@ -158,7 +159,6 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         self.assertListEqual([], watch_callee.call_args[1]["pytest_args"])
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_no_directory_single_pytest_arg(self, watch_callee):
         main("-- --pdb".split())
 
@@ -166,7 +166,6 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         self.assertListEqual(["--pdb"], watch_callee.call_args[1]["pytest_args"])
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_no_directory_multiple_pytest_args(self, watch_callee):
         main("-- --pdb --cov=.".split())
 
@@ -174,7 +173,6 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         self.assertListEqual(["--pdb", "--cov=."], watch_callee.call_args[1]["pytest_args"])
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_multiple_directory_no_pytest_args(self, watch_callee):
         directories = [tempfile.mkdtemp(dir=self.root_tmp) for _ in range(2)]
 
@@ -194,7 +192,6 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         self.assertListEqual(fetched_directories, fetched_pytest_args)
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_single_directory_no_pytest_args(self, watch_callee):
         main([self.root_tmp, "--"])
 
@@ -207,7 +204,6 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         fetched_directories = watch_callee.call_args[1]["directories"]
         self.assertListEqual([self.root_tmp], fetched_directories)
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_single_directory_single_pytest_args(self, watch_callee):
         vargs = [self.root_tmp, "--", "--pdb"]
         main(vargs)
@@ -227,7 +223,6 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
 
         self.assertListEqual([self.root_tmp], fetched_directories)
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_single_directory_multiple_pytest_args(self, watch_callee):
         vargs = [self.root_tmp, "--", "--pdb", "--cov=."]
         main(vargs)
@@ -276,7 +271,7 @@ class TestDirectoriesArguments(unittest.TestCase):
         self._assert_directories(directories)
 
     def test_hundred_directory_values(self):
-        directories = [tempfile.mkdtemp(dir=self.root_tmp) for _ in range(100)]
+        directories = [tempfile.mkdtemp(dir=self.root_tmp) for _ in range(10)]
         self._assert_directories(directories)
 
     @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
