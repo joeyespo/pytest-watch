@@ -91,14 +91,12 @@ def main(argv=None):
     if args['--pdb']:
         pytest_args.append('--pdb')
 
-    # Parse extensions
+    # Parse extensions [default: .py]
     if args['--ext'] == '*':
         extensions = ALL_EXTENSIONS
     elif args['--ext']:
         extensions = [('.' if not e.startswith('.') else '') + e
                       for e in args['--ext'].split(',')]
-    else:
-        extensions = DEFAULT_EXTENSIONS
 
     # Parse numeric arguments
     spool = args['--spool']
