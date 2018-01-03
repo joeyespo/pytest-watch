@@ -51,6 +51,52 @@ class TestCLIArguments(unittest.TestCase):
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+class TestPdbArgument(unittest.TestCase):
+
+    def test_default_pdb_argument(self, watch_callee):
+        sys.argv[1:] = []
+
+        main()
+
+        self.assertFalse(watch_callee.call_args[1]["wait"])
+
+        self.assertNotIn("pdb", watch_callee.call_args[1])
+
+        self.assertNotIn("--pdb",
+                         watch_callee.call_args[1]["pytest_args"])
+
+    def test_pdb_argument(self, watch_callee):
+        main(["--pdb"])
+
+        self.assertTrue(watch_callee.call_args[1]["wait"])
+
+        self.assertNotIn("pdb", watch_callee.call_args[1])
+
+        self.assertIn("--pdb",
+                         watch_callee.call_args[1]["pytest_args"])
+
+    def test_pdb_and_wait_arguments(self, watch_callee):
+        main("--pdb --wait".split())
+
+        self.assertTrue(watch_callee.call_args[1]["wait"])
+
+        self.assertNotIn("pdb", watch_callee.call_args[1])
+
+        self.assertIn("--pdb",
+                         watch_callee.call_args[1]["pytest_args"])
+
+    def test_pdb_off_and_wait_on_arguments(self, watch_callee):
+        main("--wait".split())
+
+        self.assertTrue(watch_callee.call_args[1]["wait"])
+
+        self.assertNotIn("pdb", watch_callee.call_args[1])
+
+        self.assertNotIn("--pdb",
+                         watch_callee.call_args[1]["pytest_args"])
+
+
+@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
 class TestIgnoreArgument(unittest.TestCase):
 
     def setUp(self):
