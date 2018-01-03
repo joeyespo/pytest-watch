@@ -96,6 +96,32 @@ class TestPdbArgument(unittest.TestCase):
                          watch_callee.call_args[1]["pytest_args"])
 
 
+@patch("pytest_watch.command.merge_config", side_effect=lambda *args, **kwargs: True)
+@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+class TestConfigArgument(unittest.TestCase):
+    def test_default_config(self, watch_callee, merge_config_callee):
+        sys.argv[1:] = []
+
+        main()
+
+        self.assertNotIn("config", watch_callee.call_args[1])
+        self.assertNotIn("-c", watch_callee.call_args[1]["pytest_args"])
+
+    def test_config_argument(self, watch_callee, merge_config_callee):
+        self._assert_config_file(watch_callee, "pytest.ini")
+        watch_callee.reset_mock()
+        self._assert_config_file(watch_callee, "custom_config_file.txt")
+
+    def _assert_config_file(self, watch_callee, filename):
+        main(["--config", filename])
+
+        self.assertNotIn("config", watch_callee.call_args[1])
+
+        pytest_args = watch_callee.call_args[1]["pytest_args"]
+        self.assertIn("-c", pytest_args)
+        self.assertEqual(filename, pytest_args[pytest_args.index("-c")+1])
+
+
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
 class TestIgnoreArgument(unittest.TestCase):
 
