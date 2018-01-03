@@ -11,6 +11,7 @@ except ImportError:
 from pytest_watch.command import main
 
 
+@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
 class TestCLIArguments(unittest.TestCase):
 
     def _get_default_args(self):
@@ -34,14 +35,12 @@ class TestCLIArguments(unittest.TestCase):
                 pytest_args=[]
             )
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_default_parameters(self, watch_callee):
         main([])
 
         watch_callee.assert_called_once()
         watch_callee.assert_called_once_with(**self._get_default_args())
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_empty_argv(self, watch_callee):
         sys.argv[1:] = []
 
@@ -49,6 +48,78 @@ class TestCLIArguments(unittest.TestCase):
 
         watch_callee.assert_called_once()
         watch_callee.assert_called_once_with(**self._get_default_args())
+
+
+@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+class TestIgnoreArgument(unittest.TestCase):
+
+    def setUp(self):
+        self.root_tmp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.root_tmp)
+
+    def test_default_ignore_argument(self, watch_callee):
+        sys.argv[1:] = []
+
+        main()
+
+        self.assertListEqual([], watch_callee.call_args[1]["ignore"])
+
+        self.assertNotIn("--ignore",
+                         watch_callee.call_args[1]["pytest_args"])
+
+    def test_ignore_argument(self, watch_callee):
+        main(["--ignore", "pytest_watch"])
+
+        self.assertEqual(["pytest_watch"],
+                         watch_callee.call_args[1]["ignore"])
+
+        self.assertIn("--ignore",
+                         watch_callee.call_args[1]["pytest_args"])
+
+    def test_multiple_ignore_argument(self, watch_callee):
+        directories = []
+        argv = []
+
+        for _ in range(2):
+            new_dir = tempfile.mkdtemp(dir=self.root_tmp)
+            argv.append("--ignore")
+            argv.append(new_dir)
+            directories.append(new_dir)
+
+        main(argv)
+
+        self.assertEqual(directories,
+                         watch_callee.call_args[1]["ignore"])
+
+        pytest_args = watch_callee.call_args[1]["pytest_args"]
+        self.assertIn("--ignore", pytest_args)
+        ignore_idx = pytest_args.index("--ignore")
+        self.assertListEqual(argv, pytest_args)
+
+    def test_multiple_ignore_argument_conflict(self, watch_callee):
+        directories = []
+        argv = []
+
+        for _ in range(2):
+            new_dir = tempfile.mkdtemp(dir=self.root_tmp)
+            argv.append("--ignore")
+            argv.append(new_dir)
+            directories.append(new_dir)
+
+        argv.append("--")
+        argv.append("--ignore")
+        argv.append(tempfile.mkdtemp(dir=self.root_tmp))
+
+        main(argv)
+
+        self.assertEqual(directories,
+                         watch_callee.call_args[1]["ignore"])
+
+        pytest_args = watch_callee.call_args[1]["pytest_args"]
+        self.assertIn("--ignore", pytest_args)
+        self.assertEqual(3, pytest_args.count("--ignore"))
 
 
 class TestSpoolArguments(unittest.TestCase):
