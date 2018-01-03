@@ -9,6 +9,7 @@ except ImportError:
     from mock import patch
 
 from pytest_watch.command import main
+from pytest_watch.constants import ALL_EXTENSIONS
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
@@ -248,6 +249,14 @@ class TestExtensionsArguments(unittest.TestCase):
         main([])
         self.assertIn("extensions", watch_callee.call_args[1])
         self.assertListEqual([".py"], watch_callee.call_args[1]["extensions"])
+        watch_callee.assert_called_once()
+
+    def test_all_extensions(self, watch_callee):
+        main("--ext *".split())
+
+        self.assertEqual(object, type(watch_callee.call_args[1]["extensions"]))
+        self.assertIsNotNone(watch_callee.call_args[1]["extensions"])
+        self.assertEqual(ALL_EXTENSIONS, watch_callee.call_args[1]["extensions"])
         watch_callee.assert_called_once()
 
     def test_single_without_dot_extensions(self, watch_callee):
