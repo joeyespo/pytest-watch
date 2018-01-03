@@ -111,7 +111,7 @@ Options:
   --ignore <dir>        Ignore directory from being watched and during
                         collection (multi-allowed).
   --ext <exts>          Comma-separated list of file extensions that can
-                        trigger a new test run when changed (default: .py).
+                        trigger a new test run when changed [default: .py].
                         Use --ext=* to allow any file (including .pyc).
   --config <file>       Load configuration from `file` instead of trying to
                         locate one of the implicit configuration files.
