@@ -194,16 +194,15 @@ class TestIgnoreArgument(unittest.TestCase):
         self.assertEqual(3, pytest_args.count("--ignore"))
 
 
+@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
 class TestSpoolArguments(unittest.TestCase):
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_zero_spool_value(self, watch_callee):
         main("--spool 0".split())
         self.assertIn("spool", watch_callee.call_args[1])
         self.assertEqual(0, watch_callee.call_args[1]["spool"])
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_positive_spool_value(self, watch_callee):
         main("--spool 2000".split())
 
@@ -219,7 +218,6 @@ class TestSpoolArguments(unittest.TestCase):
         self.assertEqual(20, watch_callee.call_args[1]["spool"])
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_default_spool_value(self, watch_callee):
         main([])
 
@@ -227,12 +225,10 @@ class TestSpoolArguments(unittest.TestCase):
         self.assertEqual(200, watch_callee.call_args[1]["spool"])
         watch_callee.assert_called_once()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_cause_error_for_negative_spool_values(self, watch_callee):
         self.assertEqual(2, main("--spool -1".split()))
         watch_callee.assert_not_called()
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_cause_error_for_invalid_spool_values(self, watch_callee):
         self.assertEquals(2, main("--spool abc".split()),
                           "Status code for not integer 'spool' " \
