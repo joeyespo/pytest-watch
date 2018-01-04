@@ -1,0 +1,12 @@
+language: python
+python:
+  - "3.6.1"
+
+cache: pip
+
+install:
+  - pip install -r requirements.txt
+  - pip install -r requirements-tests.txt
+
+script:
+- python -m pytest --cov=src/ src/
