@@ -105,11 +105,14 @@ def main(argv=None):
     try:
         spool = int(spool)
     except ValueError:
-        sys.stderr.write('Error: Spool (--spool %s) must be an integer.\n' % spool)
+        sys.stderr.write('Error: Spool (--spool {}) must be an integer.\n'
+                         .format(spool))
         return 2
 
     if spool < 0:
-        sys.stderr.write("Error: Spool value(--spool %s) must be positive integer" % spool)
+        sys.stderr.write('Error: Spool value(--spool {}) must be positive'\
+                         ' integer\n'
+                         .format(spool))
         return 2
 
     # Run pytest and watch for changes

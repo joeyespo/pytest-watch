@@ -3,6 +3,11 @@ import unittest
 import shutil
 import tempfile
 
+if sys.version_info[0] < 3:
+    from io import BytesIO as io_mock
+else:
+    from io import StringIO as io_mock
+
 try:
     from unittest.mock import patch
 except ImportError:
@@ -97,7 +102,8 @@ class TestPdbArgument(unittest.TestCase):
                          watch_callee.call_args[1]["pytest_args"])
 
 
-@patch("pytest_watch.command.merge_config", side_effect=lambda *args, **kwargs: True)
+@patch("pytest_watch.command.merge_config",
+       side_effect=lambda *args, **kwargs: True)
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
 class TestConfigArgument(unittest.TestCase):
     def test_default_config(self, watch_callee, merge_config_callee):
@@ -226,20 +232,32 @@ class TestSpoolArguments(unittest.TestCase):
         self.assertEqual(200, watch_callee.call_args[1]["spool"])
         watch_callee.assert_called_once()
 
-    def test_cause_error_for_negative_spool_values(self, watch_callee):
-        self.assertEqual(2, main("--spool -1".split()))
+    def _assert_spool_error(self, watch_callee, value, err):
+        with patch("pytest_watch.command.sys.stderr", new=io_mock()) as out:
+            self.assertEqual(2, main(["--spool", value]))
+            assert err  == out.getvalue(), \
+                   "Status code for invalid 'spool' argument should be 2"
         watch_callee.assert_not_called()
 
+    def test_cause_error_for_negative_spool_values(self, watch_callee):
+        err = "Error: Spool value(--spool -1) must be positive integer\n"
+        self._assert_spool_error(watch_callee, value="-1", err=err)
+
     def test_cause_error_for_invalid_spool_values(self, watch_callee):
-        self.assertEquals(2, main("--spool abc".split()),
-                          "Status code for not integer 'spool' " \
-                          "argument should be 2")
-        self.assertEquals(2, main("--spool @".split()),
-                          "Status code for not integer 'spool' " \
-                          "argument should be 2")
-        self.assertEquals(2, main("--spool []".split()),
-                          "Status code for not integer 'spool' " \
-                          "argument should be 2")
+        value = "abc"
+        self._assert_spool_error(watch_callee, value=value,
+                                 err="Error: Spool (--spool {}) must be" \
+                                     " an integer.\n".format(value))
+
+        value = "@"
+        self._assert_spool_error(watch_callee, value=value,
+                                 err="Error: Spool (--spool {}) must be" \
+                                     " an integer.\n".format(value))
+
+        value = "[]"
+        self._assert_spool_error(watch_callee, value=value,
+                                 err="Error: Spool (--spool {}) must be" \
+                                     " an integer.\n".format(value))
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
