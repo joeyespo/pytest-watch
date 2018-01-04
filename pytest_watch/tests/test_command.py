@@ -272,9 +272,14 @@ class TestExtensionsArguments(unittest.TestCase):
     def test_all_extensions(self, watch_callee):
         main("--ext *".split())
 
-        self.assertEqual(object, type(watch_callee.call_args[1]["extensions"]))
+        self.assertEqual(object,
+                         type(watch_callee.call_args[1]["extensions"]))
+
         self.assertIsNotNone(watch_callee.call_args[1]["extensions"])
-        self.assertEqual(ALL_EXTENSIONS, watch_callee.call_args[1]["extensions"])
+
+        self.assertEqual(ALL_EXTENSIONS,
+                         watch_callee.call_args[1]["extensions"])
+
         watch_callee.assert_called_once()
 
     def test_single_without_dot_extensions(self, watch_callee):
@@ -292,20 +297,29 @@ class TestExtensionsArguments(unittest.TestCase):
     def test_multiple_extensions(self, watch_callee):
         main("--ext .py,.html".split())
         self.assertIn("extensions", watch_callee.call_args[1])
-        self.assertListEqual([".py", ".html"], watch_callee.call_args[1]["extensions"])
+
+        self.assertListEqual([".py", ".html"],
+                             watch_callee.call_args[1]["extensions"])
+
         watch_callee.assert_called_once()
 
     def test_multiple_with_and_without_dots_extensions(self, watch_callee):
         main("--ext .py,html".split())
         self.assertIn("extensions", watch_callee.call_args[1])
-        self.assertListEqual([".py", ".html"], watch_callee.call_args[1]["extensions"])
+
+        self.assertListEqual([".py", ".html"],
+                             watch_callee.call_args[1]["extensions"])
+
         watch_callee.assert_called_once()
 
         watch_callee.reset_mock()
 
         main("--ext py,.html".split())
         self.assertIn("extensions", watch_callee.call_args[1])
-        self.assertListEqual([".py", ".html"], watch_callee.call_args[1]["extensions"])
+
+        self.assertListEqual([".py", ".html"],
+                             watch_callee.call_args[1]["extensions"])
+
         watch_callee.assert_called_once()
 
 
@@ -329,14 +343,20 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         main("-- --pdb".split())
 
         self.assertIn("pytest_args", watch_callee.call_args[1])
-        self.assertListEqual(["--pdb"], watch_callee.call_args[1]["pytest_args"])
+
+        self.assertListEqual(["--pdb"],
+                             watch_callee.call_args[1]["pytest_args"])
+
         watch_callee.assert_called_once()
 
     def test_no_directory_multiple_pytest_args(self, watch_callee):
         main("-- --pdb --cov=.".split())
 
         self.assertIn("pytest_args", watch_callee.call_args[1])
-        self.assertListEqual(["--pdb", "--cov=."], watch_callee.call_args[1]["pytest_args"])
+
+        self.assertListEqual(["--pdb", "--cov=."],
+                             watch_callee.call_args[1]["pytest_args"])
+
         watch_callee.assert_called_once()
 
     def test_multiple_directory_no_pytest_args(self, watch_callee):
