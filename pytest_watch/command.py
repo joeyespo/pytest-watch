@@ -55,6 +55,8 @@ version = 'pytest-watch ' + __version__
 def main(argv=None):
     """
     The entry point of the application.
+
+    argv -- List of strings to parse. The default is taken from sys.argv[1:].
     """
     if argv is None:
         argv = sys.argv[1:]

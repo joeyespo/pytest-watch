@@ -16,6 +16,6 @@ def run_cli():
     sys.path.append(os.path.dirname(__file__))
 
     from pytest_watch.command import main
-    main(argv=sys.argv[1:])
+    main()
 
 if __name__ == '__main__': run_cli()
