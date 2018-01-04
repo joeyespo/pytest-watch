@@ -153,8 +153,10 @@ def _show_summary(argv, events, verbose=False):
 
 
 def _split_recursive(directories, ignore):
+    ignore = [] if ignore is None else ignore
+
     if not ignore:
-        return directories, []
+        return directories, ignore
 
     # TODO: Have this work recursively
 
