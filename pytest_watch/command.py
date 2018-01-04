@@ -44,7 +44,7 @@ from docopt import docopt
 
 from . import __version__
 from .config import merge_config
-from .constants import ALL_EXTENSIONS, DEFAULT_EXTENSIONS
+from .constants import ALL_EXTENSIONS
 from .watcher import watch
 
 
