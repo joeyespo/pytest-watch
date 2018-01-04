@@ -64,42 +64,38 @@ class TestPdbArgument(unittest.TestCase):
 
         main()
 
-        self.assertFalse(watch_callee.call_args[1]["wait"])
+        assert not watch_callee.call_args[1]["wait"]
 
-        self.assertNotIn("pdb", watch_callee.call_args[1])
+        assert "pdb" not in watch_callee.call_args[1]
 
-        self.assertNotIn("--pdb",
-                         watch_callee.call_args[1]["pytest_args"])
+        assert "--pdb" not in watch_callee.call_args[1]["pytest_args"]
 
     def test_pdb_argument(self, watch_callee):
         main(["--pdb"])
 
-        self.assertTrue(watch_callee.call_args[1]["wait"])
+        assert watch_callee.call_args[1]["wait"]
 
-        self.assertNotIn("pdb", watch_callee.call_args[1])
+        assert "pdb" not in watch_callee.call_args[1]
 
-        self.assertIn("--pdb",
-                         watch_callee.call_args[1]["pytest_args"])
+        assert "--pdb" in watch_callee.call_args[1]["pytest_args"]
 
     def test_pdb_and_wait_arguments(self, watch_callee):
         main("--pdb --wait".split())
 
-        self.assertTrue(watch_callee.call_args[1]["wait"])
+        assert watch_callee.call_args[1]["wait"]
 
-        self.assertNotIn("pdb", watch_callee.call_args[1])
+        assert "pdb" not in watch_callee.call_args[1]
 
-        self.assertIn("--pdb",
-                         watch_callee.call_args[1]["pytest_args"])
+        assert "--pdb" in watch_callee.call_args[1]["pytest_args"]
 
     def test_pdb_off_and_wait_on_arguments(self, watch_callee):
         main("--wait".split())
 
-        self.assertTrue(watch_callee.call_args[1]["wait"])
+        assert watch_callee.call_args[1]["wait"]
 
-        self.assertNotIn("pdb", watch_callee.call_args[1])
+        assert "pdb" not in watch_callee.call_args[1]
 
-        self.assertNotIn("--pdb",
-                         watch_callee.call_args[1]["pytest_args"])
+        assert "--pdb" not in watch_callee.call_args[1]["pytest_args"]
 
 
 @patch("pytest_watch.command.merge_config",
@@ -111,8 +107,8 @@ class TestConfigArgument(unittest.TestCase):
 
         main()
 
-        self.assertNotIn("config", watch_callee.call_args[1])
-        self.assertNotIn("-c", watch_callee.call_args[1]["pytest_args"])
+        assert "config" not in watch_callee.call_args[1]
+        assert "-c" not in watch_callee.call_args[1]["pytest_args"]
 
     def test_config_argument(self, watch_callee, merge_config_callee):
         self._assert_config_file(watch_callee, "pytest.ini")
@@ -122,11 +118,11 @@ class TestConfigArgument(unittest.TestCase):
     def _assert_config_file(self, watch_callee, filename):
         main(["--config", filename])
 
-        self.assertNotIn("config", watch_callee.call_args[1])
+        assert "config" not in watch_callee.call_args[1]
 
         pytest_args = watch_callee.call_args[1]["pytest_args"]
-        self.assertIn("-c", pytest_args)
-        self.assertEqual(filename, pytest_args[pytest_args.index("-c")+1])
+        assert "-c" in pytest_args
+        assert filename == pytest_args[pytest_args.index("-c")+1]
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
@@ -145,17 +141,14 @@ class TestIgnoreArgument(unittest.TestCase):
 
         self.assertListEqual([], watch_callee.call_args[1]["ignore"])
 
-        self.assertNotIn("--ignore",
-                         watch_callee.call_args[1]["pytest_args"])
+        assert "--ignore" not in watch_callee.call_args[1]["pytest_args"]
 
     def test_ignore_argument(self, watch_callee):
         main(["--ignore", "pytest_watch"])
 
-        self.assertEqual(["pytest_watch"],
-                         watch_callee.call_args[1]["ignore"])
+        assert ["pytest_watch"] == watch_callee.call_args[1]["ignore"]
 
-        self.assertIn("--ignore",
-                         watch_callee.call_args[1]["pytest_args"])
+        assert "--ignore" in watch_callee.call_args[1]["pytest_args"]
 
     def test_multiple_ignore_argument(self, watch_callee):
         directories = []
@@ -169,11 +162,12 @@ class TestIgnoreArgument(unittest.TestCase):
 
         main(argv)
 
-        self.assertEqual(directories,
-                         watch_callee.call_args[1]["ignore"])
+        assert directories == watch_callee.call_args[1]["ignore"]
 
         pytest_args = watch_callee.call_args[1]["pytest_args"]
-        self.assertIn("--ignore", pytest_args)
+
+        assert "--ignore" in pytest_args
+
         ignore_idx = pytest_args.index("--ignore")
         self.assertListEqual(argv, pytest_args)
 
@@ -193,12 +187,11 @@ class TestIgnoreArgument(unittest.TestCase):
 
         main(argv)
 
-        self.assertEqual(directories,
-                         watch_callee.call_args[1]["ignore"])
+        assert directories == watch_callee.call_args[1]["ignore"]
 
         pytest_args = watch_callee.call_args[1]["pytest_args"]
-        self.assertIn("--ignore", pytest_args)
-        self.assertEqual(3, pytest_args.count("--ignore"))
+        assert "--ignore" in pytest_args
+        assert 3 == pytest_args.count("--ignore")
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
@@ -206,35 +199,37 @@ class TestSpoolArguments(unittest.TestCase):
 
     def test_zero_spool_value(self, watch_callee):
         main("--spool 0".split())
-        self.assertIn("spool", watch_callee.call_args[1])
-        self.assertEqual(0, watch_callee.call_args[1]["spool"])
+
+        assert "spool" in watch_callee.call_args[1]
+        assert 0 == watch_callee.call_args[1]["spool"]
+
         watch_callee.assert_called_once()
 
     def test_positive_spool_value(self, watch_callee):
         main("--spool 2000".split())
 
-        self.assertIn("spool", watch_callee.call_args[1])
-        self.assertEqual(2000, watch_callee.call_args[1]["spool"])
+        assert "spool" in watch_callee.call_args[1]
+        assert 2000 == watch_callee.call_args[1]["spool"]
         watch_callee.assert_called_once()
 
         watch_callee.reset_mock()
 
         main("--spool 20".split())
 
-        self.assertIn("spool", watch_callee.call_args[1])
-        self.assertEqual(20, watch_callee.call_args[1]["spool"])
+        assert "spool" in watch_callee.call_args[1]
+        assert 20 == watch_callee.call_args[1]["spool"]
         watch_callee.assert_called_once()
 
     def test_default_spool_value(self, watch_callee):
         main([])
 
-        self.assertIn("spool", watch_callee.call_args[1])
-        self.assertEqual(200, watch_callee.call_args[1]["spool"])
+        assert "spool" in watch_callee.call_args[1]
+        assert 200 == watch_callee.call_args[1]["spool"]
         watch_callee.assert_called_once()
 
     def _assert_spool_error(self, watch_callee, value, err):
         with patch("pytest_watch.command.sys.stderr", new=io_mock()) as out:
-            self.assertEqual(2, main(["--spool", value]))
+            assert 2 == main(["--spool", value])
             assert err  == out.getvalue(), \
                    "Status code for invalid 'spool' argument should be 2"
         watch_callee.assert_not_called()
@@ -265,38 +260,46 @@ class TestExtensionsArguments(unittest.TestCase):
 
     def test_default_extensions(self, watch_callee):
         main([])
-        self.assertIn("extensions", watch_callee.call_args[1])
+
+        assert "extensions" in watch_callee.call_args[1]
+
         self.assertListEqual([".py"], watch_callee.call_args[1]["extensions"])
+
         watch_callee.assert_called_once()
 
     def test_all_extensions(self, watch_callee):
         main("--ext *".split())
 
-        self.assertEqual(object,
-                         type(watch_callee.call_args[1]["extensions"]))
+        assert object == type(watch_callee.call_args[1]["extensions"])
 
-        self.assertIsNotNone(watch_callee.call_args[1]["extensions"])
+        assert None != watch_callee.call_args[1]["extensions"]
 
-        self.assertEqual(ALL_EXTENSIONS,
-                         watch_callee.call_args[1]["extensions"])
+        assert ALL_EXTENSIONS == watch_callee.call_args[1]["extensions"]
 
         watch_callee.assert_called_once()
 
     def test_single_without_dot_extensions(self, watch_callee):
         main("--ext py".split())
-        self.assertIn("extensions", watch_callee.call_args[1])
+
+        assert "extensions" in watch_callee.call_args[1]
+
         self.assertListEqual([".py"], watch_callee.call_args[1]["extensions"])
+
         watch_callee.assert_called_once()
 
     def test_single_with_dot_extensions(self, watch_callee):
         main("--ext .py".split())
-        self.assertIn("extensions", watch_callee.call_args[1])
+
+        assert "extensions" in watch_callee.call_args[1]
+
         self.assertListEqual([".py"], watch_callee.call_args[1]["extensions"])
+
         watch_callee.assert_called_once()
 
     def test_multiple_extensions(self, watch_callee):
         main("--ext .py,.html".split())
-        self.assertIn("extensions", watch_callee.call_args[1])
+
+        assert "extensions" in watch_callee.call_args[1]
 
         self.assertListEqual([".py", ".html"],
                              watch_callee.call_args[1]["extensions"])
@@ -305,7 +308,8 @@ class TestExtensionsArguments(unittest.TestCase):
 
     def test_multiple_with_and_without_dots_extensions(self, watch_callee):
         main("--ext .py,html".split())
-        self.assertIn("extensions", watch_callee.call_args[1])
+
+        assert "extensions" in watch_callee.call_args[1]
 
         self.assertListEqual([".py", ".html"],
                              watch_callee.call_args[1]["extensions"])
@@ -315,7 +319,8 @@ class TestExtensionsArguments(unittest.TestCase):
         watch_callee.reset_mock()
 
         main("--ext py,.html".split())
-        self.assertIn("extensions", watch_callee.call_args[1])
+
+        assert "extensions" in watch_callee.call_args[1]
 
         self.assertListEqual([".py", ".html"],
                              watch_callee.call_args[1]["extensions"])
@@ -335,14 +340,14 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
     def test_no_directory_empty_pytest_arg(self, watch_callee):
         main(["--"])
 
-        self.assertIn("pytest_args", watch_callee.call_args[1])
+        assert "pytest_args" in watch_callee.call_args[1]
         self.assertListEqual([], watch_callee.call_args[1]["pytest_args"])
         watch_callee.assert_called_once()
 
     def test_no_directory_single_pytest_arg(self, watch_callee):
         main("-- --pdb".split())
 
-        self.assertIn("pytest_args", watch_callee.call_args[1])
+        assert "pytest_args" in watch_callee.call_args[1]
 
         self.assertListEqual(["--pdb"],
                              watch_callee.call_args[1]["pytest_args"])
@@ -352,7 +357,7 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
     def test_no_directory_multiple_pytest_args(self, watch_callee):
         main("-- --pdb --cov=.".split())
 
-        self.assertIn("pytest_args", watch_callee.call_args[1])
+        assert "pytest_args" in watch_callee.call_args[1]
 
         self.assertListEqual(["--pdb", "--cov=."],
                              watch_callee.call_args[1]["pytest_args"])
@@ -361,29 +366,31 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
 
     def test_multiple_directory_no_pytest_args(self, watch_callee):
         directories = [tempfile.mkdtemp(dir=self.root_tmp) for _ in range(2)]
-
         directories.append("--")
+
         main(directories)
 
-        self.assertIn("pytest_args", watch_callee.call_args[1])
-        self.assertIn("directories", watch_callee.call_args[1])
+        assert "pytest_args" in watch_callee.call_args[1]
+        assert "directories" in watch_callee.call_args[1]
 
         fetched_pytest_args = watch_callee.call_args[1]["pytest_args"]
         fetched_directories = watch_callee.call_args[1]["directories"]
 
         self.assertListEqual(directories[:-1], fetched_directories)
 
-        self.assertGreater(len(fetched_pytest_args), 1)
-        self.assertEqual(len(fetched_pytest_args), len(fetched_directories))
+        assert len(fetched_pytest_args) > 1
+        assert len(fetched_pytest_args) == len(fetched_directories)
         self.assertListEqual(fetched_directories, fetched_pytest_args)
         watch_callee.assert_called_once()
 
     def test_single_directory_no_pytest_args(self, watch_callee):
         main([self.root_tmp, "--"])
 
-        self.assertIn("pytest_args", watch_callee.call_args[1])
+        assert "pytest_args" in watch_callee.call_args[1]
+
         pytest_args = watch_callee.call_args[1]["pytest_args"]
-        self.assertGreater(len(pytest_args), 0)
+        assert len(pytest_args) > 0
+
         self.assertListEqual([self.root_tmp], pytest_args)
         watch_callee.assert_called_once()
 
@@ -392,10 +399,11 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
 
     def test_single_directory_single_pytest_args(self, watch_callee):
         vargs = [self.root_tmp, "--", "--pdb"]
+
         main(vargs)
 
-        self.assertIn("pytest_args", watch_callee.call_args[1])
-        self.assertIn("directories", watch_callee.call_args[1])
+        assert "pytest_args" in watch_callee.call_args[1]
+        assert "directories" in watch_callee.call_args[1]
 
         fetched_pytest_args = watch_callee.call_args[1]["pytest_args"]
         fetched_directories = watch_callee.call_args[1]["directories"]
@@ -403,7 +411,7 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         self.assertListEqual([vargs[0]], fetched_directories)
 
         pytest_args = watch_callee.call_args[1]["pytest_args"]
-        self.assertGreater(len(pytest_args), 0)
+        assert len(pytest_args) > 0
         self.assertListEqual([self.root_tmp, "--pdb"], pytest_args)
         watch_callee.assert_called_once()
 
@@ -411,10 +419,11 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
 
     def test_single_directory_multiple_pytest_args(self, watch_callee):
         vargs = [self.root_tmp, "--", "--pdb", "--cov=."]
+
         main(vargs)
 
-        self.assertIn("pytest_args", watch_callee.call_args[1])
-        self.assertIn("directories", watch_callee.call_args[1])
+        assert "pytest_args" in watch_callee.call_args[1]
+        assert "directories" in watch_callee.call_args[1]
 
         fetched_pytest_args = watch_callee.call_args[1]["pytest_args"]
         fetched_directories = watch_callee.call_args[1]["directories"]
@@ -422,8 +431,10 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         self.assertListEqual([vargs[0]], fetched_directories)
 
         pytest_args = watch_callee.call_args[1]["pytest_args"]
-        self.assertGreater(len(pytest_args), 0)
+        assert len(pytest_args) > 0
+
         self.assertListEqual([self.root_tmp, "--pdb", "--cov=."], pytest_args)
+
         watch_callee.assert_called_once()
 
         self.assertListEqual([self.root_tmp], fetched_directories)
@@ -443,9 +454,11 @@ class TestDirectoriesArguments(unittest.TestCase):
 
         main(directories)
 
-        self.assertIn("directories", watch_callee.call_args[1])
+        assert "directories" in watch_callee.call_args[1]
+
         fetched_directories = watch_callee.call_args[1]["directories"]
         self.assertListEqual(directories, fetched_directories)
+
         watch_callee.assert_called_once()
 
     def test_single_directory(self):
@@ -462,14 +475,15 @@ class TestDirectoriesArguments(unittest.TestCase):
 
     @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def _assert_directories(self, directories, watch_callee=None):
-        self.assertGreater(len(directories), 0, "Testing multiple directories")
+        assert len(directories) > 0, \
+               "Multiple directories should be declared for this test case"
 
         main(directories)
 
-        self.assertIn("directories", watch_callee.call_args[1])
+        assert "directories" in watch_callee.call_args[1]
 
         fetched_directories = watch_callee.call_args[1]["directories"]
-        self.assertEqual(len(directories), len(fetched_directories))
+        assert len(directories) == len(fetched_directories)
 
         self.assertListEqual(directories, fetched_directories)
         watch_callee.assert_called_once()
