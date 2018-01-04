@@ -1,12 +1,14 @@
 language: python
 python:
   - "3.6.1"
+  - "2.7.14"
 
 cache: pip
 
 install:
   - pip install -r requirements.txt
   - pip install -r requirements-test.txt
+  - pip install mock
 
 script:
-- python -m pytest --cov=src/ src/
+- python -m pytest --cov=pytest_watch pytest_watch
