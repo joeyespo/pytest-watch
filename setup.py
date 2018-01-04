@@ -19,6 +19,7 @@ setup(
     platforms='any',
     packages=find_packages(),
     install_requires=read('requirements.txt').splitlines(),
+    tests_require=read('requirements-test.txt').splitlines(),
     entry_points={
         'console_scripts': [
             'pytest-watch = pytest_watch:main',
