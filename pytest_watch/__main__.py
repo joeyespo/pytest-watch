@@ -18,4 +18,6 @@ def run_cli():
     from pytest_watch.command import main
     main()
 
-if __name__ == '__main__': run_cli()
+
+if __name__ == '__main__':
+    run_cli()
