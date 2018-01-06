@@ -153,25 +153,36 @@ def _show_summary(argv, events, verbose=False):
 
 
 def _split_recursive(directories, ignore):
-    ignore = [] if ignore is None else ignore
 
     if not ignore:
+        # If ignore list is empty, all directories should be included.
+        # Return all
+        ignore = ignore if type(ignore) is list else []
         return directories, ignore
 
     # TODO: Have this work recursively
 
     recursedirs, norecursedirs = [], []
     for directory in directories:
-        subdirs = [os.path.join(directory, d)
+        # Build subdirectories paths list
+        join = os.path.join
+        subdirs = [join(directory, d)
                    for d in os.listdir(directory)
-                   if os.path.isdir(d)]
+                   if os.path.isdir(join(directory, d))]
+
+        # Filter not ignored subdirs in current folder
         filtered = [subdir for subdir in subdirs
-                    if not any(samepath(os.path.join(directory, d), subdir)
-                               for d in ignore)]
+                    if not any(samepath(join(directory, ignore_name), subdir)
+                               for ignore_name in ignore)]
+
         if len(subdirs) == len(filtered):
+            # No subdirs were ignored
             recursedirs.append(directory)
         else:
+            # If any subdir is ignored, this folder will not be recursivelly
+            # observed
             norecursedirs.append(directory)
+            # But, non-ignored subdirs should be observed recursivelly
             recursedirs.extend(filtered)
 
     return sorted(set(recursedirs)), sorted(set(norecursedirs))
