@@ -3,7 +3,6 @@ import shutil
 import tempfile
 import unittest
 
-
 from pytest_watch.watcher import _split_recursive
 
 
@@ -35,7 +34,7 @@ class TestDirectoriesFiltering(unittest.TestCase):
         a_folder = tempfile.mkdtemp(dir=self.root_dir)
         b_folder = tempfile.mkdtemp(dir=self.root_dir)
 
-        ignore = [os.path.basename(a_folder), os.path.basename(b_folder)]
+        ignore = [a_folder, b_folder]
 
         assert ([], [self.root_dir]) == _split_recursive(dirs, ignore)
 
@@ -56,15 +55,14 @@ class TestDirectoriesFiltering(unittest.TestCase):
         included_folder = tempfile.mkdtemp(dir=self.root_dir)
         excluded_folder = tempfile.mkdtemp(dir=self.root_dir)
 
-        ignore = [os.path.basename(excluded_folder)]
+        ignore = [excluded_folder]
 
         assert ([included_folder], [self.root_dir]) == \
                 _split_recursive(dirs, ignore), \
-                "As folder {1} is ignored and is child of {0}, root {0} "\
-                "folder should not be recursivelly observed. In this case, "\
-                "folder {1} will be ignored, folder {2} should be "\
-                "observed recursivelly and root "\
-                "folder {0} should be not recursive."\
+                "Ignoring {1}, the following behavior is expected:\n"\
+                ". {0} should be loaded non-recursivelly;\n"\
+                ". {1} and its children will be excluded;\n"\
+                ". only {2} will be loaded recursivelly.\n"\
                 .format(self.root_dir, excluded_folder, included_folder)
 
     @unittest.skip("Depends on pytest_watch.watcher._split_recursive support"\
@@ -91,7 +89,7 @@ class TestDirectoriesFiltering(unittest.TestCase):
         subtree_folder = tempfile.mkdtemp(dir=tree_folder)
         sub_subtree_folder = tempfile.mkdtemp(dir=tree_folder)
 
-        ignore = [os.path.basename(subtree_folder)]
+        ignore = [subtree_folder]
 
         assert ([self.root_dir], [tree_folder]) == \
                 _split_recursive(dirs, ignore)
@@ -117,7 +115,7 @@ class TestDirectoriesFiltering(unittest.TestCase):
         subtree_folder = tempfile.mkdtemp(dir=tree_folder)
         sub_subtree_folder = tempfile.mkdtemp(dir=tree_folder)
 
-        ignore = [os.path.basename(subtree_folder)]
+        ignore = [subtree_folder]
 
         assert ([self.root_dir], [tree_folder]) == \
                 _split_recursive(dirs, ignore)
