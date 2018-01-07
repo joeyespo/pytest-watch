@@ -3,7 +3,12 @@ import shutil
 import tempfile
 import unittest
 
-from pytest_watch.watcher import _split_recursive
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
+
+from pytest_watch.watcher import _split_recursive, run_hook, watch
 
 
 class TestDirectoriesFiltering(unittest.TestCase):
@@ -119,3 +124,5 @@ class TestDirectoriesFiltering(unittest.TestCase):
 
         assert ([self.root_dir], [tree_folder]) == \
                 _split_recursive(dirs, ignore)
+
+
