@@ -163,9 +163,9 @@ def _split_recursive(directories, ignore):
     # TODO: Have this work recursively
 
     recursedirs, norecursedirs = [], []
+    join = os.path.join
     for directory in directories:
         # Build subdirectories paths list
-        join = os.path.join
         subdirs = [join(directory, d)
                    for d in os.listdir(directory)
                    if os.path.isdir(join(directory, d))]
