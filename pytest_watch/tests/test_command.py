@@ -464,7 +464,7 @@ class TestDirectoriesArguments(unittest.TestCase):
         directories = [tempfile.mkdtemp(dir=self.root_tmp) for _ in range(2)]
         self._assert_directories(directories)
 
-    def test_hundred_directory_values(self):
+    def test_ten_directory_values(self):
         directories = [tempfile.mkdtemp(dir=self.root_tmp) for _ in range(10)]
         self._assert_directories(directories)
 
