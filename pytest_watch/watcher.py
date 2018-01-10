@@ -45,7 +45,7 @@ class EventListener(FileSystemEventHandler):
     """
     Listens for changes to files and re-runs tests after each change.
     """
-    def __init__(self, extensions=[]):
+    def __init__(self, extensions=None):
         super(EventListener, self).__init__()
         self.event_queue = Queue()
         self.extensions = extensions or DEFAULT_EXTENSIONS
