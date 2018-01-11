@@ -217,7 +217,7 @@ def watch(directories=None, ignore=None, extensions=None, beep_on_failure=True,
     directories = [os.path.abspath(directory) for directory in directories]
     for directory in directories:
         if not os.path.isdir(directory):
-            raise ValueError('Directory not found: ' + directory)
+            raise FileNotFoundError('Directory not found: ' + directory)
 
     # Setup event handler
     event_listener = EventListener(extensions)
