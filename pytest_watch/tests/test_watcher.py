@@ -35,6 +35,16 @@ class TestDirectoriesFiltering(unittest.TestCase):
 
         assert (dirs, ignore) == _split_recursive(dirs, ignore)
 
+    def test_invalid_directories(self):
+        dirs = [self.root_dir]
+
+        fake_dir = os.path.join(self.root_dir, "atrocadocapacausti")
+
+        import pytest
+
+        with pytest.raises(FileNotFoundError):
+           watch(directories=[fake_dir])
+
     def test_ignore_all_subdirs(self):
         dirs = [self.root_dir]
 
