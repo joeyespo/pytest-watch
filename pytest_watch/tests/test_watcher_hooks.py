@@ -85,8 +85,8 @@ class TestRunHookCallbacks(unittest.TestCase):
     @mock.patch("pytest_watch.watcher.subprocess.call",
                 side_effect=assertion_wrapper(0, _subcall))
     def test_afterrun_for_keyboard_interruption(self, call_mock, keyb_int, popen_mock):
-        popen_config = {"poll.side_effect": raise_keyboard_interrupt,
-                        "wait.return_value": 0}
+        config = {"poll.side_effect": raise_keyboard_interrupt,
+                  "wait.return_value": 10}
         build_popen_mock(popen_mock, config)
 
         afterrun="python -c 'exit(0) #it is afterrun'"
@@ -97,7 +97,7 @@ class TestRunHookCallbacks(unittest.TestCase):
 
         call_mock.assert_called_once()
 
-        expected_cmd = afterrun + " 0" # should run with p.wait() arg
+        expected_cmd = afterrun + " 10" # should run with p.wait() arg
 
         call_mock.assert_called_once_with(expected_cmd, shell=True)
 
@@ -105,7 +105,7 @@ class TestRunHookCallbacks(unittest.TestCase):
     @mock.patch("pytest_watch.helpers.send_keyboard_interrupt")
     @mock.patch("pytest_watch.watcher.subprocess.call",
                 side_effect=assertion_wrapper(0, _subcall))
-    def test_afterrun_for_keyboard_interruption(self, call_mock, keyb_int, popen_mock):
+    def test_afterrun_without_keyboard_interruption(self, call_mock, keyb_int, popen_mock):
         config = {"poll.side_effect": lambda: 999}
         build_popen_mock(popen_mock, config)
 
