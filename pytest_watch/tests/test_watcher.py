@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 import tempfile
 import unittest
 
@@ -8,7 +9,8 @@ try:
 except ImportError:
     from mock import patch
 
-from pytest_watch.watcher import _split_recursive, run_hook, watch
+from pytest_watch.watcher import _split_recursive, run_hook, watch,\
+     _get_pytest_runner
 
 
 class TestDirectoriesFiltering(unittest.TestCase):
@@ -126,3 +128,35 @@ class TestDirectoriesFiltering(unittest.TestCase):
                 _split_recursive(dirs, ignore)
 
 
+class TestPytestRunner(unittest.TestCase):
+    DEFAULT_EXECUTABLE = [sys.executable, "-m", "pytest"]
+
+    def setUp(self):
+        self.virtual_env = os.getenv("VIRTUAL_ENV")
+        if "VIRTUAL_ENV" in os.environ:
+            del os.environ['VIRTUAL_ENV']
+
+    def tearDown(self):
+        if self.virtual_env:
+            os.putenv("VIRTUAL_ENV", self.virtual_env)
+
+    def test_default_sys_executable(self):
+        assert TestPytestRunner.DEFAULT_EXECUTABLE == _get_pytest_runner()
+
+    def test_empty_string_returns_sys_executable(self):
+        assert TestPytestRunner.DEFAULT_EXECUTABLE == _get_pytest_runner("")
+        assert TestPytestRunner.DEFAULT_EXECUTABLE == _get_pytest_runner(" ")
+        assert TestPytestRunner.DEFAULT_EXECUTABLE == _get_pytest_runner(" "*80)
+
+    def test_custom_sys_executable(self):
+        assert ["mypytest"] == _get_pytest_runner("mypytest")
+        assert ["mypytest", "runtest"] == _get_pytest_runner("mypytest runtest")
+
+    def test_virtualenv_executable(self):
+        os.environ["VIRTUAL_ENV"] = "/tmp/venv"
+
+        assert ["py.test"] == _get_pytest_runner()
+
+        del os.environ["VIRTUAL_ENV"]
+
+        assert TestPytestRunner.DEFAULT_EXECUTABLE == _get_pytest_runner()

@@ -1,3 +1,5 @@
+import tempfile
+
 try:
     from unittest import mock
 except:
@@ -6,11 +8,12 @@ except:
 from watchdog.events import FileModifiedEvent, FileMovedEvent, FileCreatedEvent, \
      FileDeletedEvent, FileCreatedEvent, DirModifiedEvent, FileSystemEvent
 
+from pytest_watch.constants import ALL_EXTENSIONS
 from pytest_watch.watcher import EventListener
 
 
-def _assert_watched_filesystem_event(event):
-    listener = EventListener()
+def _assert_watched_filesystem_event(event, event_listener=None):
+    listener = event_listener if event_listener else EventListener()
 
     assert listener.event_queue.empty()
     listener.on_any_event(event)
@@ -18,8 +21,8 @@ def _assert_watched_filesystem_event(event):
     assert not listener.event_queue.empty()
 
 
-def _assert_unwatched_filesystem_event(event):
-    listener = EventListener()
+def _assert_unwatched_filesystem_event(event, event_listener=None):
+    listener = event_listener if event_listener else EventListener()
 
     assert listener.event_queue.empty()
     listener.on_any_event(event)
@@ -56,9 +59,39 @@ def test_file_move_event(relpath):
     _assert_watched_filesystem_event(FileMovedEvent(src_path, dest_path))
 
     assert 2 == relpath.call_count, \
-           "os.path.relpath should be called twice (src_path, dest_path)"
+           "os.path.relpath should be called twice when file is moved src,dst"
 
     relpath.assert_any_call(src_path)
     relpath.assert_any_call(dest_path)
 
 
+import pytest
+import shutil
+
+
+@pytest.fixture()
+def tmpdir():
+    d = tempfile.mkdtemp()
+    yield d
+    shutil.rmtree(d)
+
+
+def test_event_over_all_extesions(tmpdir):
+    _, filename = tempfile.mkstemp(prefix=tmpdir, suffix=".py")
+    event = FileCreatedEvent(filename)
+    listener = EventListener(extensions=ALL_EXTENSIONS)
+    _assert_watched_filesystem_event(event, event_listener=listener)
+
+
+def test_event_over_observed_file(tmpdir):
+    _, filename = tempfile.mkstemp(prefix=tmpdir, suffix=".py")
+    event = FileCreatedEvent(filename)
+    listener = EventListener(extensions=[".py"])
+    _assert_watched_filesystem_event(event, event_listener=listener)
+
+
+def test_event_over_not_observed_file(tmpdir):
+    _, filename = tempfile.mkstemp(prefix=tmpdir, suffix=".pyc")
+    event = FileCreatedEvent(filename)
+    listener = EventListener(extensions=[".py"])
+    _assert_unwatched_filesystem_event(event, event_listener=listener)
