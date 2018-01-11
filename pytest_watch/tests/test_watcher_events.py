@@ -1,4 +1,6 @@
+import shutil
 import tempfile
+import unittest
 
 try:
     from unittest import mock
@@ -65,33 +67,30 @@ def test_file_move_event(relpath):
     relpath.assert_any_call(dest_path)
 
 
-import pytest
-import shutil
+class TestExtensionsMatch(unittest.TestCase):
+    def setUp(self):
+        self.root_dir = tempfile.mkdtemp()
 
+    def tearDown(self):
+        try:
+            shutil.rmtree(self.root_dir)
+        except:
+            pass
 
-@pytest.fixture()
-def tmpdir():
-    d = tempfile.mkdtemp()
-    yield d
-    shutil.rmtree(d)
+    def test_event_over_all_extesions(self):
+        _, filename = tempfile.mkstemp(dir=self.root_dir, suffix=".py")
+        event = FileCreatedEvent(filename)
+        listener = EventListener(extensions=ALL_EXTENSIONS)
+        _assert_watched_filesystem_event(event, event_listener=listener)
 
+    def test_event_over_observed_file(self):
+        _, filename = tempfile.mkstemp(dir=self.root_dir, suffix=".py")
+        event = FileCreatedEvent(filename)
+        listener = EventListener(extensions=[".py"])
+        _assert_watched_filesystem_event(event, event_listener=listener)
 
-def test_event_over_all_extesions(tmpdir):
-    _, filename = tempfile.mkstemp(prefix=tmpdir, suffix=".py")
-    event = FileCreatedEvent(filename)
-    listener = EventListener(extensions=ALL_EXTENSIONS)
-    _assert_watched_filesystem_event(event, event_listener=listener)
-
-
-def test_event_over_observed_file(tmpdir):
-    _, filename = tempfile.mkstemp(prefix=tmpdir, suffix=".py")
-    event = FileCreatedEvent(filename)
-    listener = EventListener(extensions=[".py"])
-    _assert_watched_filesystem_event(event, event_listener=listener)
-
-
-def test_event_over_not_observed_file(tmpdir):
-    _, filename = tempfile.mkstemp(prefix=tmpdir, suffix=".pyc")
-    event = FileCreatedEvent(filename)
-    listener = EventListener(extensions=[".py"])
-    _assert_unwatched_filesystem_event(event, event_listener=listener)
+    def test_event_over_not_observed_file(self):
+        _, filename = tempfile.mkstemp(dir=self.root_dir, suffix=".pyc")
+        event = FileCreatedEvent(filename)
+        listener = EventListener(extensions=[".py"])
+        _assert_unwatched_filesystem_event(event, event_listener=listener)
