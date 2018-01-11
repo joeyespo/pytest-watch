@@ -211,6 +211,7 @@ def watch(directories=None, ignore=None, extensions=None, beep_on_failure=True,
 
     argv = _get_pytest_runner(runner) + (pytest_args or [])
 
+    # Prepare directories
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
