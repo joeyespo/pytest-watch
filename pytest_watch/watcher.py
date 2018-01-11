@@ -78,11 +78,13 @@ class EventListener(FileSystemEventHandler):
         self.event_queue.put((type(event), src_path, dest_path))
 
 
-def _get_pytest_runner(custom):
-    if custom:
+def _get_pytest_runner(custom=None):
+    if custom and custom.strip():
         return custom.split(' ')
+
     if os.getenv('VIRTUAL_ENV'):
         return ['py.test']
+
     return [sys.executable, '-m', 'pytest']
 
 
