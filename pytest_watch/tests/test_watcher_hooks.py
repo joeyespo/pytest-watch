@@ -8,7 +8,9 @@ try:
 except ImportError:
     import mock
 
+
 from pytest_watch.watcher import watch, run_hook
+from pytest_watch.watcher import subprocess as wsubprocess
 
 
 def build_popen_mock(popen, config):
@@ -58,14 +60,12 @@ class TestRunHooksBasic(unittest.TestCase):
         call_mock.assert_called_once_with(cmd, shell=True)
 
 
-from pytest_watch.watcher import subprocess as wsubprocess
-
 
 class TestRunHookCallbacks(unittest.TestCase):
 
     @mock.patch.object(wsubprocess, "Popen")
     @mock.patch("pytest_watch.watcher.subprocess.call",
-           side_effect=assertion_wrapper(0, _subcall))
+                side_effect=assertion_wrapper(0, lambda *args, **kwargs: 0))
     def test_with_beforerun(self, call_mock, popen_mock):
         """
         Test if beforerun callback is called if it is passed as argument
@@ -74,7 +74,7 @@ class TestRunHookCallbacks(unittest.TestCase):
                   "wait.return_value": 0}
         build_popen_mock(popen_mock, config)
 
-        beforerun="python -c 'exit(0) #it is beforerun'"
+        beforerun="{} -c 'exit(0) #it is beforerun'".format(sys.executable)
 
         watch(beforerun=beforerun)
 
@@ -83,13 +83,13 @@ class TestRunHookCallbacks(unittest.TestCase):
     @mock.patch.object(wsubprocess, "Popen")
     @mock.patch("pytest_watch.helpers.send_keyboard_interrupt")
     @mock.patch("pytest_watch.watcher.subprocess.call",
-                side_effect=assertion_wrapper(0, _subcall))
+                side_effect=assertion_wrapper(0, lambda *args, **kwargs: 0))
     def test_afterrun_for_keyboard_interruption(self, call_mock, keyb_int, popen_mock):
         config = {"poll.side_effect": raise_keyboard_interrupt,
                   "wait.return_value": 10}
         build_popen_mock(popen_mock, config)
 
-        afterrun="python -c 'exit(0) #it is afterrun'"
+        afterrun="{} -m this".format(sys.executable)
 
         watch(afterrun=afterrun, wait=True)
 
@@ -104,12 +104,20 @@ class TestRunHookCallbacks(unittest.TestCase):
     @mock.patch.object(wsubprocess, "Popen")
     @mock.patch("pytest_watch.helpers.send_keyboard_interrupt")
     @mock.patch("pytest_watch.watcher.subprocess.call",
-                side_effect=assertion_wrapper(0, _subcall))
+                side_effect=assertion_wrapper(0, lambda *args, **kwargs: 0))
     def test_afterrun_without_keyboard_interruption(self, call_mock, keyb_int, popen_mock):
         config = {"poll.side_effect": lambda: 999}
         build_popen_mock(popen_mock, config)
 
-        afterrun="python -c 'exit(0) #it is afterrun'"
+        afterrun="{} -c 'exit(0) #it is afterrun'".format(sys.executable)
+
+        from pytest_watch import watcher
+        orig = watcher.run_hook
+        def run_hook_wrapper(cmd, *args):
+            orig(cmd, *args)
+            if cmd == afterrun:
+                raise StopIteration("Force this only for tests purpose")
+        watcher.run_hook = run_hook_wrapper
 
         watch(afterrun=afterrun, wait=True)
 
@@ -120,7 +128,6 @@ class TestRunHookCallbacks(unittest.TestCase):
         expected_cmd = afterrun + " 999" # should run with exit_code arg
 
         call_mock.assert_called_once_with(expected_cmd, shell=True)
-
 
 
 @unittest.skip("baby steps")
