@@ -61,11 +61,11 @@ class TestRunHooksBasic(unittest.TestCase):
 
 
 
+@mock.patch.object(wsubprocess, "Popen")
+@mock.patch("pytest_watch.watcher.subprocess.call",
+            side_effect=lambda *args, **kwargs: 0)
 class TestRunHookCallbacks(unittest.TestCase):
 
-    @mock.patch.object(wsubprocess, "Popen")
-    @mock.patch("pytest_watch.watcher.subprocess.call",
-                side_effect=assertion_wrapper(0, lambda *args, **kwargs: 0))
     def test_with_beforerun(self, call_mock, popen_mock):
         """
         Test if beforerun callback is called if it is passed as argument
@@ -80,11 +80,8 @@ class TestRunHookCallbacks(unittest.TestCase):
 
         call_mock.assert_called_once_with(beforerun, shell=True)
 
-    @mock.patch.object(wsubprocess, "Popen")
     @mock.patch("pytest_watch.helpers.send_keyboard_interrupt")
-    @mock.patch("pytest_watch.watcher.subprocess.call",
-                side_effect=assertion_wrapper(0, lambda *args, **kwargs: 0))
-    def test_afterrun_for_keyboard_interruption(self, call_mock, keyb_int, popen_mock):
+    def test_afterrun_on_keyboard_interruption(self, keyb_int, call_mock, popen_mock):
         config = {"poll.side_effect": raise_keyboard_interrupt,
                   "wait.return_value": 10}
         build_popen_mock(popen_mock, config)
@@ -101,11 +98,8 @@ class TestRunHookCallbacks(unittest.TestCase):
 
         call_mock.assert_called_once_with(expected_cmd, shell=True)
 
-    @mock.patch.object(wsubprocess, "Popen")
     @mock.patch("pytest_watch.helpers.send_keyboard_interrupt")
-    @mock.patch("pytest_watch.watcher.subprocess.call",
-                side_effect=assertion_wrapper(0, lambda *args, **kwargs: 0))
-    def test_afterrun_without_keyboard_interruption(self, call_mock, keyb_int, popen_mock):
+    def test_afterrun_without_keyboard_interruption(self, keyb_int, call_mock, popen_mock):
         config = {"poll.side_effect": lambda: 999}
         build_popen_mock(popen_mock, config)
 
@@ -139,11 +133,6 @@ class TestRunHooksSkiped(unittest.TestCase):
     def test_run_hook_without_args(self):
         assert False, "Not yet implemented"
 
-    def test_afterrun_on_keyboard_interruption(self):
-        assert False, "Not yet implemented."
-
-    def test_afterrun_with_exit_code(self):
-        assert False, "Not yet implemented."
 
     def test_onpass(self):
         assert False, "Not yet implemented."
