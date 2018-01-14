@@ -41,13 +41,45 @@ STYLE_BRIGHT = Fore.WHITE + Style.NORMAL + Style.BRIGHT
 STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
 
 
+class EventSingleFileListener(FileSystemEventHandler):
+    """
+    Listens for changes to a single file and re-runs tests after each change.
+    """
+    def __init__(self, path, event_queue=None):
+        super(EventSingleFileListener, self).__init__()
+        self.event_queue = event_queue or Queue()
+        self.path = path
+
+    def on_any_event(self, event):
+        """
+        Called when a file event occurs.
+        Note that this gets called on a worker thread.
+        """
+        # Filter for allowed event types
+        if not isinstance(event, WATCHED_EVENTS):
+            return
+
+        dest_path = None
+        if isinstance(event, FileMovedEvent):
+            dest_path = os.path.relpath(event.dest_path)
+        src_path = os.path.relpath(event.src_path)
+
+        # Filter everything but our specific file
+        if os.path.abspath(src_path) != self.path:
+            return
+        if dest_path and os.path.abspath(dest_path) != self.path:
+            return
+
+        self.event_queue.put((type(event), src_path, dest_path))
+
+
 class EventListener(FileSystemEventHandler):
     """
     Listens for changes to files and re-runs tests after each change.
     """
-    def __init__(self, extensions=[]):
+    def __init__(self, extensions=[], event_queue=None):
         super(EventListener, self).__init__()
-        self.event_queue = Queue()
+        self.event_queue = event_queue or Queue()
         self.extensions = extensions or DEFAULT_EXTENSIONS
 
     def on_any_event(self, event):
@@ -184,24 +216,36 @@ def run_hook(cmd, *args):
         subprocess.call(command, shell=True)
 
 
-def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
+def watch(entries=[], ignore=[], extensions=[], beep_on_failure=True,
           auto_clear=False, wait=False, beforerun=None, afterrun=None,
           onpass=None, onfail=None, onexit=None, runner=None, spool=None,
           poll=False, verbose=False, quiet=False, pytest_args=[]):
     argv = _get_pytest_runner(runner) + (pytest_args or [])
 
-    if not directories:
-        directories = ['.']
-    directories = [os.path.abspath(directory) for directory in directories]
-    for directory in directories:
-        if not os.path.isdir(directory):
-            raise ValueError('Directory not found: ' + directory)
+    if not entries:
+        entries = ['.']
+
+    files = []
+    directories = []
+    for entry in entries:
+        entry = os.path.abspath(entry)
+        if os.path.isfile(entry):
+            files.append(entry)
+        elif os.path.isdir(entry):
+            directories.append(entry)
+        else:
+            raise ValueError('Directory not found: ' + entry)
 
     # Setup event handler
     event_listener = EventListener(extensions)
 
     # Setup watchdog
     observer = PollingObserver() if poll else Observer()
+    for file in files:
+        single_file_listener = EventSingleFileListener(
+            file, event_queue=event_listener.event_queue)
+        observer.schedule(
+            single_file_listener, path=os.path.dirname(file), recursive=False)
     recursedirs, norecursedirs = _split_recursive(directories, ignore)
     for directory in recursedirs:
         observer.schedule(event_listener, path=directory, recursive=True)
