@@ -42,8 +42,10 @@ class TestDirectoriesFiltering(unittest.TestCase):
 
         import pytest
 
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(OSError) as err:
            watch(directories=[fake_dir])
+           import errno
+           assert err.errno == errno.ENOENT
 
     def test_ignore_all_subdirs(self):
         dirs = [self.root_dir]
