@@ -9,6 +9,7 @@ except ImportError:
     import mock
 
 
+from pytest_watch.constants import EXIT_NOTESTSCOLLECTED, EXIT_OK
 from pytest_watch.watcher import watch, run_hook
 from pytest_watch.watcher import subprocess as wsubprocess
 
@@ -60,6 +61,16 @@ class TestRunHooksBasic(unittest.TestCase):
         call_mock.assert_called_once_with(cmd, shell=True)
 
 
+from pytest_watch import watcher
+orig = watcher.run_hook
+
+def get_hook_stop_iteration(command_str):
+    def hook(cmd, *args):
+        orig(cmd, *args)
+        if cmd == command_str:
+            raise StopIteration("Force this only for tests purpose")
+    return hook
+
 
 @mock.patch.object(wsubprocess, "Popen")
 @mock.patch("pytest_watch.watcher.subprocess.call",
@@ -81,7 +92,8 @@ class TestRunHookCallbacks(unittest.TestCase):
         call_mock.assert_called_once_with(beforerun, shell=True)
 
     @mock.patch("pytest_watch.helpers.send_keyboard_interrupt")
-    def test_afterrun_on_keyboard_interruption(self, keyb_int, call_mock, popen_mock):
+    def test_afterrun_on_keyboard_interruption(self, keyb_int, call_mock,
+                                               popen_mock):
         config = {"poll.side_effect": raise_keyboard_interrupt,
                   "wait.return_value": 10}
         build_popen_mock(popen_mock, config)
@@ -99,19 +111,14 @@ class TestRunHookCallbacks(unittest.TestCase):
         call_mock.assert_called_once_with(expected_cmd, shell=True)
 
     @mock.patch("pytest_watch.helpers.send_keyboard_interrupt")
-    def test_afterrun_without_keyboard_interruption(self, keyb_int, call_mock, popen_mock):
+    def test_afterrun_without_keyboard_interruption(self, keyb_int, call_mock,
+                                                    popen_mock):
         config = {"poll.side_effect": lambda: 999}
         build_popen_mock(popen_mock, config)
 
         afterrun="{} -c 'exit(0) #it is afterrun'".format(sys.executable)
 
-        from pytest_watch import watcher
-        orig = watcher.run_hook
-        def run_hook_wrapper(cmd, *args):
-            orig(cmd, *args)
-            if cmd == afterrun:
-                raise StopIteration("Force this only for tests purpose")
-        watcher.run_hook = run_hook_wrapper
+        watcher.run_hook = get_hook_stop_iteration(afterrun)
 
         watch(afterrun=afterrun, wait=True)
 
@@ -123,6 +130,55 @@ class TestRunHookCallbacks(unittest.TestCase):
 
         call_mock.assert_called_once_with(expected_cmd, shell=True)
 
+    def test_onpass_on_exit(self, call_mock, popen_mock):
+        config = {"poll.side_effect": lambda: EXIT_OK}
+        build_popen_mock(popen_mock, config)
+
+        onpass="{} -c 'exit(0) #it is afterpass on exit'"\
+                .format(sys.executable)
+
+        watcher.run_hook = get_hook_stop_iteration(onpass)
+        watch(onpass=onpass, wait=True)
+
+        call_mock.assert_called_once_with(onpass, shell=True)
+
+    def test_onpass_on_not_tests_collected(self, call_mock, popen_mock):
+        config = {"poll.side_effect": lambda: EXIT_NOTESTSCOLLECTED}
+        build_popen_mock(popen_mock, config)
+
+        onpass="{} -c 'exit(0) #it is afterpass on not_tests_collected'"\
+                .format(sys.executable)
+        watcher.run_hook = get_hook_stop_iteration(onpass)
+        watch(onpass=onpass, wait=True)
+
+        call_mock.assert_called_once_with(onpass, shell=True)
+
+    @mock.patch("pytest_watch.watcher.beep")
+    def test_onfail_without_beep(self, beep_mock, call_mock, popen_mock):
+        config = {"poll.side_effect": lambda: -1000}
+        build_popen_mock(popen_mock, config)
+
+        onfail="{} -c 'exit(1) # failure happens'"\
+                .format(sys.executable)
+        watcher.run_hook = get_hook_stop_iteration(onfail)
+        watch(onfail=onfail, wait=True, beep_on_failure=False)
+
+        call_mock.assert_called_once_with(onfail, shell=True)
+        beep_mock.assert_not_called()
+
+    @mock.patch("pytest_watch.watcher.beep")
+    def test_onfail_without_beep(self, beep_mock, call_mock, popen_mock):
+        config = {"poll.side_effect": lambda: -1000}
+        build_popen_mock(popen_mock, config)
+
+        onfail="{} -c 'exit(1) # failure happens'"\
+                .format(sys.executable)
+        watcher.run_hook = get_hook_stop_iteration(onfail)
+        watch(onfail=onfail, wait=True, beep_on_failure=True)
+
+        call_mock.assert_called_once_with(onfail, shell=True)
+        beep_mock.assert_called_once()
+
 
 @unittest.skip("baby steps")
 class TestRunHooksSkiped(unittest.TestCase):
@@ -132,13 +188,6 @@ class TestRunHooksSkiped(unittest.TestCase):
 
     def test_run_hook_without_args(self):
         assert False, "Not yet implemented"
-
-
-    def test_onpass(self):
-        assert False, "Not yet implemented."
-
-    def test_onfail(self):
-        assert False, "Not yet implemented."
 
     def test_onexit(self):
         assert False, "Not yet implemented."
