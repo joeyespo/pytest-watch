@@ -154,7 +154,7 @@ class TestRunHookCallbacks(unittest.TestCase):
         call_mock.assert_called_once_with(onpass, shell=True)
 
     @mock.patch("pytest_watch.watcher.beep")
-    def test_onfail_without_beep(self, beep_mock, call_mock, popen_mock):
+    def test_onfail_beep_off(self, beep_mock, call_mock, popen_mock):
         config = {"poll.side_effect": lambda: -1000}
         build_popen_mock(popen_mock, config)
 
@@ -167,7 +167,7 @@ class TestRunHookCallbacks(unittest.TestCase):
         beep_mock.assert_not_called()
 
     @mock.patch("pytest_watch.watcher.beep")
-    def test_onfail_without_beep(self, beep_mock, call_mock, popen_mock):
+    def test_onfail_beep_on(self, beep_mock, call_mock, popen_mock):
         config = {"poll.side_effect": lambda: -1000}
         build_popen_mock(popen_mock, config)
 
