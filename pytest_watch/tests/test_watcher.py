@@ -1,3 +1,4 @@
+import errno
 import os
 import shutil
 import sys
@@ -5,9 +6,9 @@ import tempfile
 import unittest
 
 try:
-    from unittest.mock import patch
+    from unittest import mock
 except ImportError:
-    from mock import patch
+    import mock
 
 from pytest_watch.watcher import _split_recursive, run_hook, watch,\
      _get_pytest_runner
@@ -44,8 +45,7 @@ class TestDirectoriesFiltering(unittest.TestCase):
 
         with pytest.raises(OSError) as err:
            watch(directories=[fake_dir])
-           import errno
-           assert err.errno == errno.ENOENT
+        assert errno.ENOENT == err.value.errno
 
     def test_ignore_all_subdirs(self):
         dirs = [self.root_dir]
