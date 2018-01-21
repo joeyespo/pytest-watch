@@ -71,8 +71,8 @@ def _collect_config(pytest_args, silent=True):
         except (Exception, SystemExit):
             pass
         # Print message and run again without silencing
-        print('Error: Could not run --collect-only to handle the pytest config '
-              'file. Trying again without silencing output...',
+        print('Error: Could not run --collect-only to handle the pytest '
+              'config file. Trying again without silencing output...',
               file=sys.stderr)
 
     return _run_pytest_collect(pytest_args)

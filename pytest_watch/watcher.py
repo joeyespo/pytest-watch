@@ -119,10 +119,18 @@ def _reduce_events(events):
     return filtered
 
 
+def _bright(arg):
+    return STYLE_BRIGHT + arg + Style.RESET_ALL
+
+
+def _highlight(arg):
+    return STYLE_HIGHLIGHT + arg + Style.RESET_ALL
+
+
 def _show_summary(argv, events, verbose=False):
     command = ' '.join(argv)
-    bright = lambda arg: STYLE_BRIGHT + arg + Style.RESET_ALL
-    highlight = lambda arg: STYLE_HIGHLIGHT + arg + Style.RESET_ALL
+    bright = _bright
+    highlight = _highlight
 
     time_stamp = time.strftime("%c", time.localtime(time.time()))
     run_command_info = '[{}] Running: {}'.format(time_stamp,

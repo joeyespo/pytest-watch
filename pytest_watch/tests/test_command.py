@@ -3,11 +3,6 @@ import unittest
 import shutil
 import tempfile
 
-if sys.version_info[0] < 3:
-    from io import BytesIO as io_mock
-else:
-    from io import StringIO as io_mock
-
 try:
     from unittest.mock import patch
 except ImportError:
@@ -15,6 +10,12 @@ except ImportError:
 
 from pytest_watch.command import main
 from pytest_watch.constants import ALL_EXTENSIONS
+
+
+if sys.version_info[0] < 3:
+    from io import BytesIO as io_mock
+else:
+    from io import StringIO as io_mock
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
@@ -230,8 +231,8 @@ class TestSpoolArguments(unittest.TestCase):
     def _assert_spool_error(self, watch_callee, value, err):
         with patch("pytest_watch.command.sys.stderr", new=io_mock()) as out:
             assert 2 == main(["--spool", value])
-            assert err  == out.getvalue(), \
-                   "Status code for invalid 'spool' argument should be 2"
+            assert err == out.getvalue(), ("Status code for invalid 'spool'"
+                                           " argument should be 2")
         watch_callee.assert_not_called()
 
     def test_cause_error_for_negative_spool_values(self, watch_callee):
@@ -241,18 +242,18 @@ class TestSpoolArguments(unittest.TestCase):
     def test_cause_error_for_invalid_spool_values(self, watch_callee):
         value = "abc"
         self._assert_spool_error(watch_callee, value=value,
-                                 err="Error: Spool (--spool {}) must be" \
-                                     " an integer.\n".format(value))
+                                 err=str("Error: Spool (--spool {}) must be"
+                                         " an integer.\n").format(value))
 
         value = "@"
         self._assert_spool_error(watch_callee, value=value,
-                                 err="Error: Spool (--spool {}) must be" \
-                                     " an integer.\n".format(value))
+                                 err=str("Error: Spool (--spool {}) must be"
+                                         " an integer.\n").format(value))
 
         value = "[]"
         self._assert_spool_error(watch_callee, value=value,
-                                 err="Error: Spool (--spool {}) must be" \
-                                     " an integer.\n".format(value))
+                                 err=str("Error: Spool (--spool {}) must be"
+                                         " an integer.\n").format(value))
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
@@ -270,9 +271,9 @@ class TestExtensionsArguments(unittest.TestCase):
     def test_all_extensions(self, watch_callee):
         main("--ext *".split())
 
-        assert object == type(watch_callee.call_args[1]["extensions"])
+        assert isinstance(watch_callee.call_args[1]["extensions"], object)
 
-        assert None != watch_callee.call_args[1]["extensions"]
+        assert None is not watch_callee.call_args[1]["extensions"]
 
         assert ALL_EXTENSIONS == watch_callee.call_args[1]["extensions"]
 

@@ -12,6 +12,7 @@ except ImportError:
 from pytest_watch.constants import EXIT_NOTESTSCOLLECTED, EXIT_OK
 from pytest_watch.watcher import watch, run_hook
 from pytest_watch.watcher import subprocess as wsubprocess
+from pytest_watch import watcher
 
 
 def build_popen_mock(popen, config):
@@ -43,7 +44,7 @@ def assertion_wrapper(expected, callee, message=None):
 class TestRunHooksBasic(unittest.TestCase):
 
     @mock.patch("pytest_watch.watcher.subprocess.call",
-           side_effect=assertion_wrapper(0, _subcall))
+                side_effect=assertion_wrapper(0, _subcall))
     def test_run_hook_systemexit_0(self, call_mock):
         python_exec = sys.executable
         cmd_parts = [python_exec, "-c", "'exit(0)'"]
@@ -52,7 +53,7 @@ class TestRunHooksBasic(unittest.TestCase):
         call_mock.assert_called_once_with(cmd, shell=True)
 
     @mock.patch("pytest_watch.watcher.subprocess.call",
-           side_effect=assertion_wrapper(1, _subcall))
+                side_effect=assertion_wrapper(1, _subcall))
     def test_run_hook_systemexit_not_0(self, call_mock):
         python_exec = sys.executable
         cmd_parts = [python_exec, "-c", "'exit(1)'"]
@@ -61,8 +62,8 @@ class TestRunHooksBasic(unittest.TestCase):
         call_mock.assert_called_once_with(cmd, shell=True)
 
 
-from pytest_watch import watcher
 orig = watcher.run_hook
+
 
 def get_hook_stop_iteration(command_str):
     def hook(cmd, *args):
@@ -85,7 +86,7 @@ class TestRunHookCallbacks(unittest.TestCase):
                   "wait.return_value": 0}
         build_popen_mock(popen_mock, config)
 
-        beforerun="{} -c 'exit(0) #it is beforerun'".format(sys.executable)
+        beforerun = "{} -c 'exit(0) #it is beforerun'".format(sys.executable)
 
         watch(beforerun=beforerun)
 
@@ -98,7 +99,7 @@ class TestRunHookCallbacks(unittest.TestCase):
                   "wait.return_value": 10}
         build_popen_mock(popen_mock, config)
 
-        afterrun="{} -m this".format(sys.executable)
+        afterrun = "{} -m this".format(sys.executable)
 
         watch(afterrun=afterrun, wait=True)
 
@@ -106,7 +107,7 @@ class TestRunHookCallbacks(unittest.TestCase):
 
         call_mock.assert_called_once()
 
-        expected_cmd = afterrun + " 10" # should run with p.wait() arg
+        expected_cmd = afterrun + " 10"  # should run with p.wait() arg
 
         call_mock.assert_called_once_with(expected_cmd, shell=True)
 
@@ -116,7 +117,7 @@ class TestRunHookCallbacks(unittest.TestCase):
         config = {"poll.side_effect": lambda: 999}
         build_popen_mock(popen_mock, config)
 
-        afterrun="{} -c 'exit(0) #it is afterrun'".format(sys.executable)
+        afterrun = "{} -c 'exit(0) #it is afterrun'".format(sys.executable)
 
         watcher.run_hook = get_hook_stop_iteration(afterrun)
 
@@ -126,7 +127,7 @@ class TestRunHookCallbacks(unittest.TestCase):
 
         call_mock.assert_called_once()
 
-        expected_cmd = afterrun + " 999" # should run with exit_code arg
+        expected_cmd = afterrun + " 999"  # should run with exit_code arg
 
         call_mock.assert_called_once_with(expected_cmd, shell=True)
 
@@ -134,8 +135,8 @@ class TestRunHookCallbacks(unittest.TestCase):
         config = {"poll.side_effect": lambda: EXIT_OK}
         build_popen_mock(popen_mock, config)
 
-        onpass="{} -c 'exit(0) #it is afterpass on exit'"\
-                .format(sys.executable)
+        onpass = "{} -c 'exit(0) #it is afterpass on exit'" \
+                 .format(sys.executable)
 
         watcher.run_hook = get_hook_stop_iteration(onpass)
         watch(onpass=onpass, wait=True)
@@ -146,8 +147,8 @@ class TestRunHookCallbacks(unittest.TestCase):
         config = {"poll.side_effect": lambda: EXIT_NOTESTSCOLLECTED}
         build_popen_mock(popen_mock, config)
 
-        onpass="{} -c 'exit(0) #it is afterpass on not_tests_collected'"\
-                .format(sys.executable)
+        onpass = "{} -c 'exit(0) #it is afterpass on not_tests_collected'" \
+                 .format(sys.executable)
         watcher.run_hook = get_hook_stop_iteration(onpass)
         watch(onpass=onpass, wait=True)
 
@@ -158,8 +159,7 @@ class TestRunHookCallbacks(unittest.TestCase):
         config = {"poll.side_effect": lambda: -1000}
         build_popen_mock(popen_mock, config)
 
-        onfail="{} -c 'exit(1) # failure happens'"\
-                .format(sys.executable)
+        onfail = "{} -c 'exit(1) # failure happens'".format(sys.executable)
         watcher.run_hook = get_hook_stop_iteration(onfail)
         watch(onfail=onfail, wait=True, beep_on_failure=False)
 
@@ -171,8 +171,7 @@ class TestRunHookCallbacks(unittest.TestCase):
         config = {"poll.side_effect": lambda: -1000}
         build_popen_mock(popen_mock, config)
 
-        onfail="{} -c 'exit(1) # failure happens'"\
-                .format(sys.executable)
+        onfail = "{} -c 'exit(1) # failure happens'".format(sys.executable)
         watcher.run_hook = get_hook_stop_iteration(onfail)
         watch(onfail=onfail, wait=True, beep_on_failure=True)
 
