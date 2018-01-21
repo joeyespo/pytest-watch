@@ -110,7 +110,7 @@ def main(argv=None):
         return 2
 
     if spool < 0:
-        sys.stderr.write('Error: Spool value(--spool {}) must be positive'\
+        sys.stderr.write('Error: Spool value(--spool {}) must be positive'
                          ' integer\n'
                          .format(spool))
         return 2

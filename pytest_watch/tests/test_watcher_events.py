@@ -7,11 +7,13 @@ try:
 except:
     import mock
 
-from watchdog.events import FileModifiedEvent, FileMovedEvent, FileCreatedEvent, \
-     FileDeletedEvent, FileCreatedEvent, DirModifiedEvent, FileSystemEvent
+from watchdog.events import FileModifiedEvent, FileMovedEvent, \
+     FileCreatedEvent, FileDeletedEvent, FileCreatedEvent, DirModifiedEvent, \
+     FileSystemEvent
 
 from pytest_watch.constants import ALL_EXTENSIONS
 from pytest_watch.watcher import EventListener
+from pytest_watch.watcher import os as wos
 
 
 def _assert_watched_filesystem_event(event, event_listener=None):
@@ -49,9 +51,6 @@ def test_file_delete_event():
     _assert_watched_filesystem_event(FileDeletedEvent("/tmp/file.py"))
 
 
-from pytest_watch.watcher import os as wos
-
-
 @mock.patch.object(wos.path, "relpath")
 def test_file_move_event(relpath):
     relpath.side_effect = lambda *args, **kwargs: args[0]
@@ -60,8 +59,8 @@ def test_file_move_event(relpath):
 
     _assert_watched_filesystem_event(FileMovedEvent(src_path, dest_path))
 
-    assert 2 == relpath.call_count, \
-           "os.path.relpath should be called twice when file is moved src,dst"
+    assert 2 == relpath.call_count, str("os.path.relpath should be called "
+                                        "twice when file is moved src,dst")
 
     relpath.assert_any_call(src_path)
     relpath.assert_any_call(dest_path)

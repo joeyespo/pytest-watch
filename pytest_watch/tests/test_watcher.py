@@ -44,7 +44,7 @@ class TestDirectoriesFiltering(unittest.TestCase):
         import pytest
 
         with pytest.raises(OSError) as err:
-           watch(directories=[fake_dir])
+            watch(directories=[fake_dir])
         assert errno.ENOENT == err.value.errno
 
     def test_ignore_all_subdirs(self):
@@ -76,15 +76,17 @@ class TestDirectoriesFiltering(unittest.TestCase):
 
         ignore = [excluded_folder]
 
-        assert ([included_folder], [self.root_dir]) == \
-                _split_recursive(dirs, ignore), \
-                "Ignoring {1}, the following behavior is expected:\n"\
-                ". {0} should be loaded non-recursivelly;\n"\
-                ". {1} and its children will be excluded;\n"\
-                ". only {2} will be loaded recursivelly.\n"\
-                .format(self.root_dir, excluded_folder, included_folder)
+        fail_err = str("Ignoring {1}, the following behavior is expected:\n"
+                       ". {0} should be loaded non-recursivelly;\n"
+                       ". {1} and its children will be excluded;\n"
+                       ". only {2} will be loaded recursivelly.\n")
+        fail_msg = fail_err.format(self.root_dir, excluded_folder,
+                                   included_folder)
 
-    @unittest.skip("Depends on pytest_watch.watcher._split_recursive support"\
+        result = _split_recursive(dirs, ignore)
+        assert ([included_folder], [self.root_dir]) == result, fail_msg
+
+    @unittest.skip("Depends on pytest_watch.watcher._split_recursive support"
                    " for deep recursive navigation through directory tree")
     def test_ignore_deep_subtree_multichild(self):
         """
@@ -110,10 +112,10 @@ class TestDirectoriesFiltering(unittest.TestCase):
 
         ignore = [subtree_folder]
 
-        assert ([self.root_dir], [tree_folder]) == \
-                _split_recursive(dirs, ignore)
+        assert ([self.root_dir], [tree_folder]) == _split_recursive(dirs,
+                                                                    ignore)
 
-    @unittest.skip("Depends on pytest_watch.watcher._split_recursive support"\
+    @unittest.skip("Depends on pytest_watch.watcher._split_recursive support"
                    " for deep recursive navigation through directory tree")
     def test_ignore_deep_subtree_single(self):
         """
@@ -136,8 +138,8 @@ class TestDirectoriesFiltering(unittest.TestCase):
 
         ignore = [subtree_folder]
 
-        assert ([self.root_dir], [tree_folder]) == \
-                _split_recursive(dirs, ignore)
+        assert ([self.root_dir], [tree_folder]) == _split_recursive(dirs,
+                                                                    ignore)
 
 
 class TestPytestRunner(unittest.TestCase):
@@ -158,11 +160,11 @@ class TestPytestRunner(unittest.TestCase):
     def test_empty_string_returns_sys_executable(self):
         assert TestPytestRunner.DEFAULT_EXECUTABLE == _get_pytest_runner("")
         assert TestPytestRunner.DEFAULT_EXECUTABLE == _get_pytest_runner(" ")
-        assert TestPytestRunner.DEFAULT_EXECUTABLE == _get_pytest_runner(" "*80)
+        assert TestPytestRunner.DEFAULT_EXECUTABLE == _get_pytest_runner(" "*8)
 
     def test_custom_sys_executable(self):
         assert ["mypytest"] == _get_pytest_runner("mypytest")
-        assert ["mypytest", "runtest"] == _get_pytest_runner("mypytest runtest")
+        assert ["mpytest", "runtest"] == _get_pytest_runner("mpytest runtest")
 
     def test_virtualenv_executable(self):
         os.environ["VIRTUAL_ENV"] = "/tmp/venv"
