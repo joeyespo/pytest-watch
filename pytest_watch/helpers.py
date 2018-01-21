@@ -53,7 +53,7 @@ def dequeue_all(queue, spool=None):
 
 def samepath(left, right):
     """
-    Determines whether two paths are the same.
+    Determines whether two paths are the same based on their absolute paths.
     """
     return (os.path.abspath(os.path.normcase(left)) ==
             os.path.abspath(os.path.normcase(right)))

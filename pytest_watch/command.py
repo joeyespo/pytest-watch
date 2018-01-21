@@ -11,7 +11,7 @@ Options:
   --ignore <dir>        Ignore directory from being watched and during
                         collection (multi-allowed).
   --ext <exts>          Comma-separated list of file extensions that can
-                        trigger a new test run when changed (default: .py).
+                        trigger a new test run when changed [default: .py].
                         Use --ext=* to allow any file (including .pyc).
   --config <file>       Load configuration from `file` instead of trying to
                         locate one of the implicit configuration files.
@@ -29,7 +29,7 @@ Options:
   --pdb                 Start the interactive Python debugger on errors.
                         This also enables --wait to prevent pdb interruption.
   --spool <delay>       Re-run after a delay (in milliseconds), allowing for
-                        more file system events to queue up (default: 200 ms).
+                        more file system events to queue up [default: 200].
   -p --poll             Use polling instead of OS events (useful in VMs).
   -v --verbose          Increase verbosity of the output.
   -q --quiet            Decrease verbosity of the output (precedence over -v).
@@ -55,6 +55,8 @@ version = 'pytest-watch ' + __version__
 def main(argv=None):
     """
     The entry point of the application.
+
+    argv -- List of strings to parse. The default is taken from sys.argv[1:].
     """
     if argv is None:
         argv = sys.argv[1:]
@@ -68,6 +70,8 @@ def main(argv=None):
     # Get paths and initial pytest arguments
     directories = args['<directory>']
     pytest_args = list(directories)
+
+    # Merge pytest arguments and directories
     if '--' in directories:
         index = directories.index('--')
         directories = directories[:index]
@@ -76,6 +80,8 @@ def main(argv=None):
     # Adjust pytest and --collect-only args
     for ignore in args['--ignore']:
         pytest_args.extend(['--ignore', ignore])
+
+    # Set pytest config file
     if args['--config']:
         pytest_args.extend(['-c', args['--config']])
 
@@ -87,23 +93,27 @@ def main(argv=None):
     if args['--pdb']:
         pytest_args.append('--pdb')
 
-    # Parse extensions
+    # Parse extensions [default: .py]
     if args['--ext'] == '*':
         extensions = ALL_EXTENSIONS
     elif args['--ext']:
         extensions = [('.' if not e.startswith('.') else '') + e
                       for e in args['--ext'].split(',')]
-    else:
-        extensions = None
 
     # Parse numeric arguments
     spool = args['--spool']
-    if spool is not None:
-        try:
-            spool = int(spool)
-        except ValueError:
-            sys.stderr.write('Error: Spool must be an integer.\n')
-            return 2
+    try:
+        spool = int(spool)
+    except ValueError:
+        sys.stderr.write('Error: Spool (--spool {}) must be an integer.\n'
+                         .format(spool))
+        return 2
+
+    if spool < 0:
+        sys.stderr.write('Error: Spool value(--spool {}) must be positive'
+                         ' integer\n'
+                         .format(spool))
+        return 2
 
     # Run pytest and watch for changes
     return watch(directories=directories,

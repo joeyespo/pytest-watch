@@ -1,0 +1,16 @@
+language: python
+python:
+  - "3.6.1"
+  - "2.7.14"
+os:
+  - linux
+
+cache: pip
+
+install:
+  - pip install -r requirements.txt
+  - pip install -r requirements-test.txt
+  - if [[ $TRAVIS_PYTHON_VERSION == 2*  ]]; then pip install --allow-all-external mock; fi
+
+script:
+- python -m pytest --cov=pytest_watch pytest_watch

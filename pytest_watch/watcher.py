@@ -45,7 +45,7 @@ class EventListener(FileSystemEventHandler):
     """
     Listens for changes to files and re-runs tests after each change.
     """
-    def __init__(self, extensions=[]):
+    def __init__(self, extensions=None):
         super(EventListener, self).__init__()
         self.event_queue = Queue()
         self.extensions = extensions or DEFAULT_EXTENSIONS
@@ -78,11 +78,13 @@ class EventListener(FileSystemEventHandler):
         self.event_queue.put((type(event), src_path, dest_path))
 
 
-def _get_pytest_runner(custom):
-    if custom:
+def _get_pytest_runner(custom=None):
+    if custom and custom.strip():
         return custom.split(' ')
+
     if os.getenv('VIRTUAL_ENV'):
         return ['py.test']
+
     return [sys.executable, '-m', 'pytest']
 
 
@@ -117,10 +119,18 @@ def _reduce_events(events):
     return filtered
 
 
+def _bright(arg):
+    return STYLE_BRIGHT + arg + Style.RESET_ALL
+
+
+def _highlight(arg):
+    return STYLE_HIGHLIGHT + arg + Style.RESET_ALL
+
+
 def _show_summary(argv, events, verbose=False):
     command = ' '.join(argv)
-    bright = lambda arg: STYLE_BRIGHT + arg + Style.RESET_ALL
-    highlight = lambda arg: STYLE_HIGHLIGHT + arg + Style.RESET_ALL
+    bright = _bright
+    highlight = _highlight
 
     time_stamp = time.strftime("%c", time.localtime(time.time()))
     run_command_info = '[{}] Running: {}'.format(time_stamp,
@@ -153,23 +163,36 @@ def _show_summary(argv, events, verbose=False):
 
 
 def _split_recursive(directories, ignore):
+
     if not ignore:
-        return directories, []
+        # If ignore list is empty, all directories should be included.
+        # Return all
+        ignore = ignore if type(ignore) is list else []
+        return directories, ignore
 
     # TODO: Have this work recursively
 
     recursedirs, norecursedirs = [], []
+    join = os.path.join
     for directory in directories:
-        subdirs = [os.path.join(directory, d)
+        # Build subdirectories paths list
+        subdirs = [join(directory, d)
                    for d in os.listdir(directory)
-                   if os.path.isdir(d)]
+                   if os.path.isdir(join(directory, d))]
+
+        # Filter not ignored subdirs in current folder
         filtered = [subdir for subdir in subdirs
-                    if not any(samepath(os.path.join(directory, d), subdir)
-                               for d in ignore)]
+                    if not any(samepath(join(directory, ignore_name), subdir)
+                               for ignore_name in ignore)]
+
         if len(subdirs) == len(filtered):
+            # No subdirs were ignored
             recursedirs.append(directory)
         else:
+            # If any subdir is ignored, this folder will not be recursivelly
+            # observed
             norecursedirs.append(directory)
+            # But, non-ignored subdirs should be observed recursivelly
             recursedirs.extend(filtered)
 
     return sorted(set(recursedirs)), sorted(set(norecursedirs))
@@ -184,18 +207,26 @@ def run_hook(cmd, *args):
         subprocess.call(command, shell=True)
 
 
-def watch(directories=[], ignore=[], extensions=[], beep_on_failure=True,
+def watch(directories=None, ignore=None, extensions=None, beep_on_failure=True,
           auto_clear=False, wait=False, beforerun=None, afterrun=None,
           onpass=None, onfail=None, onexit=None, runner=None, spool=None,
-          poll=False, verbose=False, quiet=False, pytest_args=[]):
+          poll=False, verbose=False, quiet=False, pytest_args=None):
+
+    directories = [] if directories is None else directories
+    ignore = [] if ignore is None else ignore
+    extensions = [] if extensions is None else extensions
+    pytest_args = [] if pytest_args is None else pytest_args
+
     argv = _get_pytest_runner(runner) + (pytest_args or [])
 
+    # Prepare directories
     if not directories:
         directories = ['.']
     directories = [os.path.abspath(directory) for directory in directories]
     for directory in directories:
         if not os.path.isdir(directory):
-            raise ValueError('Directory not found: ' + directory)
+            import errno
+            raise OSError(errno.ENOENT, 'Directory not found: ' + directory)
 
     # Setup event handler
     event_listener = EventListener(extensions)
