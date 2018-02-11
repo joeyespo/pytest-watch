@@ -6,7 +6,6 @@ python:
   - 3.5.4
   - 3.6
   - pypy3.5-5.8.0
-  - 3.7-dev
 
 os:
   - linux
