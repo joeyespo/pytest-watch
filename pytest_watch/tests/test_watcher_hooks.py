@@ -105,7 +105,7 @@ class TestRunHookCallbacks(unittest.TestCase):
 
         keyb_int.assert_not_called()
 
-        call_mock.assert_called_once()
+        assert 1 == call_mock.call_count
 
         expected_cmd = afterrun + " 10"  # should run with p.wait() arg
 
@@ -125,7 +125,7 @@ class TestRunHookCallbacks(unittest.TestCase):
 
         keyb_int.assert_not_called()
 
-        call_mock.assert_called_once()
+        assert 1 == call_mock.call_count
 
         expected_cmd = afterrun + " 999"  # should run with exit_code arg
 
@@ -176,7 +176,7 @@ class TestRunHookCallbacks(unittest.TestCase):
         watch(onfail=onfail, wait=True, beep_on_failure=True)
 
         call_mock.assert_called_once_with(onfail, shell=True)
-        beep_mock.assert_called_once()
+        assert 1 == beep_mock.call_count
 
 
 @unittest.skip("baby steps")
