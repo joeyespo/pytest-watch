@@ -45,7 +45,7 @@ class TestCLIArguments(unittest.TestCase):
     def test_default_parameters(self, watch_callee):
         main([])
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
         watch_callee.assert_called_once_with(**self._get_default_args())
 
     def test_empty_argv(self, watch_callee):
@@ -53,7 +53,7 @@ class TestCLIArguments(unittest.TestCase):
 
         main()
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
         watch_callee.assert_called_once_with(**self._get_default_args())
 
 
@@ -204,14 +204,14 @@ class TestSpoolArguments(unittest.TestCase):
         assert "spool" in watch_callee.call_args[1]
         assert 0 == watch_callee.call_args[1]["spool"]
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_positive_spool_value(self, watch_callee):
         main("--spool 2000".split())
 
         assert "spool" in watch_callee.call_args[1]
         assert 2000 == watch_callee.call_args[1]["spool"]
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
         watch_callee.reset_mock()
 
@@ -219,14 +219,14 @@ class TestSpoolArguments(unittest.TestCase):
 
         assert "spool" in watch_callee.call_args[1]
         assert 20 == watch_callee.call_args[1]["spool"]
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_default_spool_value(self, watch_callee):
         main([])
 
         assert "spool" in watch_callee.call_args[1]
         assert 200 == watch_callee.call_args[1]["spool"]
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def _assert_spool_error(self, watch_callee, value, err):
         with patch("pytest_watch.command.sys.stderr", new=io_mock()) as out:
@@ -266,7 +266,7 @@ class TestExtensionsArguments(unittest.TestCase):
 
         assert [".py"] == watch_callee.call_args[1]["extensions"]
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_all_extensions(self, watch_callee):
         main("--ext *".split())
@@ -277,7 +277,7 @@ class TestExtensionsArguments(unittest.TestCase):
 
         assert ALL_EXTENSIONS == watch_callee.call_args[1]["extensions"]
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_single_without_dot_extensions(self, watch_callee):
         main("--ext py".split())
@@ -286,7 +286,7 @@ class TestExtensionsArguments(unittest.TestCase):
 
         assert [".py"] == watch_callee.call_args[1]["extensions"]
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_single_with_dot_extensions(self, watch_callee):
         main("--ext .py".split())
@@ -295,7 +295,7 @@ class TestExtensionsArguments(unittest.TestCase):
 
         assert [".py"] == watch_callee.call_args[1]["extensions"]
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_multiple_extensions(self, watch_callee):
         main("--ext .py,.html".split())
@@ -304,7 +304,7 @@ class TestExtensionsArguments(unittest.TestCase):
 
         assert [".py", ".html"] == watch_callee.call_args[1]["extensions"]
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_multiple_with_and_without_dots_extensions(self, watch_callee):
         main("--ext .py,html".split())
@@ -313,7 +313,7 @@ class TestExtensionsArguments(unittest.TestCase):
 
         assert [".py", ".html"] == watch_callee.call_args[1]["extensions"]
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
         watch_callee.reset_mock()
 
@@ -323,7 +323,7 @@ class TestExtensionsArguments(unittest.TestCase):
 
         assert [".py", ".html"] == watch_callee.call_args[1]["extensions"]
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
@@ -340,7 +340,7 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
 
         assert "pytest_args" in watch_callee.call_args[1]
         assert [] == watch_callee.call_args[1]["pytest_args"]
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_no_directory_single_pytest_arg(self, watch_callee):
         main("-- --pdb".split())
@@ -349,7 +349,7 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
 
         assert ["--pdb"] == watch_callee.call_args[1]["pytest_args"]
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_no_directory_multiple_pytest_args(self, watch_callee):
         main("-- --pdb --cov=.".split())
@@ -358,7 +358,7 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
 
         assert ["--pdb", "--cov=."] == watch_callee.call_args[1]["pytest_args"]
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_multiple_directory_no_pytest_args(self, watch_callee):
         directories = [tempfile.mkdtemp(dir=self.root_tmp) for _ in range(2)]
@@ -377,7 +377,7 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         assert len(fetched_pytest_args) > 1
         assert len(fetched_pytest_args) == len(fetched_directories)
         assert fetched_directories == fetched_pytest_args
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_single_directory_no_pytest_args(self, watch_callee):
         main([self.root_tmp, "--"])
@@ -388,7 +388,7 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         assert len(pytest_args) > 0
 
         assert [self.root_tmp] == pytest_args
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
         fetched_directories = watch_callee.call_args[1]["directories"]
         assert [self.root_tmp] == fetched_directories
@@ -409,7 +409,7 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         pytest_args = watch_callee.call_args[1]["pytest_args"]
         assert len(pytest_args) > 0
         assert [self.root_tmp, "--pdb"] == pytest_args
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
         assert [self.root_tmp] == fetched_directories
 
@@ -431,7 +431,7 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
 
         assert [self.root_tmp, "--pdb", "--cov=."] == pytest_args
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
         assert [self.root_tmp] == fetched_directories
 
@@ -455,7 +455,7 @@ class TestDirectoriesArguments(unittest.TestCase):
         fetched_directories = watch_callee.call_args[1]["directories"]
         assert directories == fetched_directories
 
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
 
     def test_single_directory(self):
         directories = [self.root_tmp]
@@ -482,4 +482,4 @@ class TestDirectoriesArguments(unittest.TestCase):
         assert len(directories) == len(fetched_directories)
 
         assert directories == fetched_directories
-        watch_callee.assert_called_once()
+        assert 1 == watch_callee.call_count
