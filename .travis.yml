@@ -1,7 +1,14 @@
 language: python
 python:
-  - "3.6.1"
-  - "2.7.14"
+  - 2.7
+  - pypy2.7-5.8.0
+  - 3.4
+  - 3.5
+  - 3.6
+  - 3.7-dev
+  - nightly
+  - pypy3.5-5.8.0
+
 os:
   - linux
 
