@@ -10,6 +10,8 @@ try:
 except ImportError:
     import mock
 
+import pytest
+
 from pytest_watch.watcher import _split_recursive, run_hook, watch,\
      _get_pytest_runner
 
@@ -40,8 +42,6 @@ class TestDirectoriesFiltering(unittest.TestCase):
         dirs = [self.root_dir]
 
         fake_dir = os.path.join(self.root_dir, "atrocadocapacausti")
-
-        import pytest
 
         with pytest.raises(OSError) as err:
             watch(directories=[fake_dir])
