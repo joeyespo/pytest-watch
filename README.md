@@ -152,7 +152,7 @@ addopts = --maxfail=2
 
 
 [pytest-watch]
-ignore = ./integration-tests
+ignore = ./integration-tests,./venv
 nobeep = True
 ```
 
