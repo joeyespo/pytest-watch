@@ -110,7 +110,12 @@ def merge_config(args, pytest_args, silent=True, verbose=False):
 
         # Merge config option using the expected type
         if isinstance(args[cli_name], list):
-            args[cli_name].append(config.get('pytest-watch', config_name))
+            # ignore needs to be csv in pytest.ini, can't duplicate keys
+            if cli_name == '--ignore':
+                for item in config.get('pytest-watch', config_name).split(','):
+                    args[cli_name].append(item)
+            else:
+                args[cli_name].append(config.get('pytest-watch', config_name))
         elif isinstance(args[cli_name], bool):
             args[cli_name] = config.getboolean('pytest-watch', config_name)
         else:
