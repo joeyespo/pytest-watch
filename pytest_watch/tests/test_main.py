@@ -1,6 +1,5 @@
 import os
 import sys
-import unittest
 
 try:
     from unittest.mock import patch

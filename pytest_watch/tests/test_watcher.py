@@ -3,7 +3,7 @@ import os
 import shutil
 import sys
 import tempfile
-import unittest
+from unittest import skip
 
 try:
     from unittest import mock
@@ -16,12 +16,12 @@ from pytest_watch.watcher import _split_recursive, run_hook, watch,\
      _get_pytest_runner
 
 
-class TestDirectoriesFiltering(unittest.TestCase):
+class TestDirectoriesFiltering():
 
-    def setUp(self):
+    def setup_method(self):
         self.root_dir = tempfile.mkdtemp()
 
-    def tearDown(self):
+    def teardown_method(self):
         try:
             shutil.rmtree(self.root_dir)
         except:
@@ -86,7 +86,7 @@ class TestDirectoriesFiltering(unittest.TestCase):
         result = _split_recursive(dirs, ignore)
         assert ([included_folder], [self.root_dir]) == result, fail_msg
 
-    @unittest.skip("Depends on pytest_watch.watcher._split_recursive support"
+    @skip("Depends on pytest_watch.watcher._split_recursive support"
                    " for deep recursive navigation through directory tree")
     def test_ignore_deep_subtree_multichild(self):
         """
@@ -115,7 +115,7 @@ class TestDirectoriesFiltering(unittest.TestCase):
         assert ([self.root_dir], [tree_folder]) == _split_recursive(dirs,
                                                                     ignore)
 
-    @unittest.skip("Depends on pytest_watch.watcher._split_recursive support"
+    @skip("Depends on pytest_watch.watcher._split_recursive support"
                    " for deep recursive navigation through directory tree")
     def test_ignore_deep_subtree_single(self):
         """
@@ -142,15 +142,15 @@ class TestDirectoriesFiltering(unittest.TestCase):
                                                                     ignore)
 
 
-class TestPytestRunner(unittest.TestCase):
+class TestPytestRunner():
     DEFAULT_EXECUTABLE = [sys.executable, "-m", "pytest"]
 
-    def setUp(self):
+    def setup_method(self):
         self.virtual_env = os.getenv("VIRTUAL_ENV")
         if "VIRTUAL_ENV" in os.environ:
             del os.environ['VIRTUAL_ENV']
 
-    def tearDown(self):
+    def teardown_method(self):
         if self.virtual_env:
             os.putenv("VIRTUAL_ENV", self.virtual_env)
 

@@ -1,6 +1,5 @@
 import shutil
 import tempfile
-import unittest
 
 try:
     from unittest import mock
@@ -66,11 +65,11 @@ def test_file_move_event(relpath):
     relpath.assert_any_call(dest_path)
 
 
-class TestExtensionsMatch(unittest.TestCase):
-    def setUp(self):
+class TestExtensionsMatch():
+    def setup_method(self):
         self.root_dir = tempfile.mkdtemp()
 
-    def tearDown(self):
+    def teardown_method(self):
         try:
             shutil.rmtree(self.root_dir)
         except:

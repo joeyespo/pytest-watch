@@ -1,13 +1,13 @@
 import subprocess
 from subprocess import call as _subcall
 import sys
-import unittest
 
 try:
     from unittest import mock
 except ImportError:
     import mock
 
+import pytest
 
 from pytest_watch.constants import EXIT_NOTESTSCOLLECTED, EXIT_OK
 from pytest_watch.watcher import watch, run_hook
@@ -41,7 +41,7 @@ def assertion_wrapper(expected, callee, message=None):
     return _wrapped
 
 
-class TestRunHooksBasic(unittest.TestCase):
+class TestRunHooksBasic():
 
     @mock.patch("pytest_watch.watcher.subprocess.call",
                 side_effect=assertion_wrapper(0, _subcall))
@@ -76,7 +76,7 @@ def get_hook_stop_iteration(command_str):
 @mock.patch.object(wsubprocess, "Popen")
 @mock.patch("pytest_watch.watcher.subprocess.call",
             side_effect=lambda *args, **kwargs: 0)
-class TestRunHookCallbacks(unittest.TestCase):
+class TestRunHookCallbacks():
 
     def test_with_beforerun(self, call_mock, popen_mock):
         """
@@ -179,8 +179,8 @@ class TestRunHookCallbacks(unittest.TestCase):
         assert 1 == beep_mock.call_count
 
 
-@unittest.skip("baby steps")
-class TestRunHooksSkiped(unittest.TestCase):
+@pytest.mark.skip("baby steps")
+class TestRunHooksSkiped():
 
     def test_run_hook_with_args(self):
         assert False, "Not yet implemented"
