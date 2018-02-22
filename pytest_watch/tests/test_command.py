@@ -1,5 +1,4 @@
 import sys
-import unittest
 import shutil
 import tempfile
 
@@ -19,7 +18,7 @@ else:
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
-class TestCLIArguments(unittest.TestCase):
+class TestCLIArguments():
 
     def _get_default_args(self):
         return dict(
@@ -58,7 +57,7 @@ class TestCLIArguments(unittest.TestCase):
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
-class TestPdbArgument(unittest.TestCase):
+class TestPdbArgument():
 
     def test_default_pdb_argument(self, watch_callee):
         sys.argv[1:] = []
@@ -102,7 +101,8 @@ class TestPdbArgument(unittest.TestCase):
 @patch("pytest_watch.command.merge_config",
        side_effect=lambda *args, **kwargs: True)
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
-class TestConfigArgument(unittest.TestCase):
+class TestConfigArgument():
+
     def test_default_config(self, watch_callee, merge_config_callee):
         sys.argv[1:] = []
 
@@ -127,12 +127,12 @@ class TestConfigArgument(unittest.TestCase):
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
-class TestIgnoreArgument(unittest.TestCase):
+class TestIgnoreArgument():
 
-    def setUp(self):
+    def setup_method(self):
         self.root_tmp = tempfile.mkdtemp()
 
-    def tearDown(self):
+    def teardown_method(self):
         shutil.rmtree(self.root_tmp)
 
     def test_default_ignore_argument(self, watch_callee):
@@ -196,7 +196,7 @@ class TestIgnoreArgument(unittest.TestCase):
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
-class TestSpoolArguments(unittest.TestCase):
+class TestSpoolArguments():
 
     def test_zero_spool_value(self, watch_callee):
         main("--spool 0".split())
@@ -257,7 +257,7 @@ class TestSpoolArguments(unittest.TestCase):
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
-class TestExtensionsArguments(unittest.TestCase):
+class TestExtensionsArguments():
 
     def test_default_extensions(self, watch_callee):
         main([])
@@ -327,12 +327,12 @@ class TestExtensionsArguments(unittest.TestCase):
 
 
 @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
-class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
+class TestDirectoriesAndPytestArgsArgumentsSplit():
 
-    def setUp(self):
+    def setup_method(self):
         self.root_tmp = tempfile.mkdtemp()
 
-    def tearDown(self):
+    def teardown_method(self):
         shutil.rmtree(self.root_tmp)
 
     def test_no_directory_empty_pytest_arg(self, watch_callee):
@@ -436,12 +436,12 @@ class TestDirectoriesAndPytestArgsArgumentsSplit(unittest.TestCase):
         assert [self.root_tmp] == fetched_directories
 
 
-class TestDirectoriesArguments(unittest.TestCase):
+class TestDirectoriesArguments():
 
-    def setUp(self):
+    def setup_method(self):
         self.root_tmp = tempfile.mkdtemp()
 
-    def tearDown(self):
+    def teardown_method(self):
         shutil.rmtree(self.root_tmp)
 
     @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
