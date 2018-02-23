@@ -1,6 +1,6 @@
+import pytest
 import sys
 import shutil
-import tempfile
 
 try:
     from unittest.mock import patch
@@ -17,7 +17,7 @@ else:
     from io import StringIO as io_mock
 
 
-@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+@pytest.mark.usefixtures("watch_callee")
 class TestCLIArguments():
 
     def _get_default_args(self):
@@ -56,7 +56,7 @@ class TestCLIArguments():
         watch_callee.assert_called_once_with(**self._get_default_args())
 
 
-@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+@pytest.mark.usefixtures("watch_callee")
 class TestPdbArgument():
 
     def test_default_pdb_argument(self, watch_callee):
@@ -98,9 +98,7 @@ class TestPdbArgument():
         assert "--pdb" not in watch_callee.call_args[1]["pytest_args"]
 
 
-@patch("pytest_watch.command.merge_config",
-       side_effect=lambda *args, **kwargs: True)
-@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+@pytest.mark.usefixtures("watch_callee", "merge_config_callee")
 class TestConfigArgument():
 
     def test_default_config(self, watch_callee, merge_config_callee):
@@ -126,15 +124,9 @@ class TestConfigArgument():
         assert filename == pytest_args[pytest_args.index("-c")+1]
 
 
-@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+
+@pytest.mark.usefixtures("watch_callee", "tmpdir_factory")
 class TestIgnoreArgument():
-
-    def setup_method(self):
-        self.root_tmp = tempfile.mkdtemp()
-
-    def teardown_method(self):
-        shutil.rmtree(self.root_tmp)
-
     def test_default_ignore_argument(self, watch_callee):
         sys.argv[1:] = []
 
@@ -144,6 +136,7 @@ class TestIgnoreArgument():
 
         assert "--ignore" not in watch_callee.call_args[1]["pytest_args"]
 
+
     def test_ignore_argument(self, watch_callee):
         main(["--ignore", "pytest_watch"])
 
@@ -151,12 +144,13 @@ class TestIgnoreArgument():
 
         assert "--ignore" in watch_callee.call_args[1]["pytest_args"]
 
-    def test_multiple_ignore_argument(self, watch_callee):
+
+    def test_multiple_ignore_argument(self, tmpdir_factory, watch_callee):
         directories = []
         argv = []
 
         for _ in range(2):
-            new_dir = tempfile.mkdtemp(dir=self.root_tmp)
+            new_dir = str(tmpdir_factory.mktemp("_"))
             argv.append("--ignore")
             argv.append(new_dir)
             directories.append(new_dir)
@@ -164,27 +158,26 @@ class TestIgnoreArgument():
         main(argv)
 
         assert directories == watch_callee.call_args[1]["ignore"]
-
         pytest_args = watch_callee.call_args[1]["pytest_args"]
-
         assert "--ignore" in pytest_args
 
         ignore_idx = pytest_args.index("--ignore")
         assert argv == pytest_args
 
-    def test_multiple_ignore_argument_conflict(self, watch_callee):
+
+    def test_multiple_ignore_argument_conflict(self, tmpdir_factory, watch_callee):
         directories = []
         argv = []
 
         for _ in range(2):
-            new_dir = tempfile.mkdtemp(dir=self.root_tmp)
+            new_dir = str(tmpdir_factory.mktemp("_"))
             argv.append("--ignore")
             argv.append(new_dir)
             directories.append(new_dir)
 
         argv.append("--")
         argv.append("--ignore")
-        argv.append(tempfile.mkdtemp(dir=self.root_tmp))
+        argv.append(str(tmpdir_factory.mktemp("_")))
 
         main(argv)
 
@@ -195,7 +188,7 @@ class TestIgnoreArgument():
         assert 3 == pytest_args.count("--ignore")
 
 
-@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+@pytest.mark.usefixtures("watch_callee")
 class TestSpoolArguments():
 
     def test_zero_spool_value(self, watch_callee):
@@ -256,7 +249,7 @@ class TestSpoolArguments():
                                          " an integer.\n").format(value))
 
 
-@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+@pytest.mark.usefixtures("watch_callee")
 class TestExtensionsArguments():
 
     def test_default_extensions(self, watch_callee):
@@ -326,14 +319,8 @@ class TestExtensionsArguments():
         assert 1 == watch_callee.call_count
 
 
-@patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
+@pytest.mark.usefixtures("watch_callee", "tmpdir")
 class TestDirectoriesAndPytestArgsArgumentsSplit():
-
-    def setup_method(self):
-        self.root_tmp = tempfile.mkdtemp()
-
-    def teardown_method(self):
-        shutil.rmtree(self.root_tmp)
 
     def test_no_directory_empty_pytest_arg(self, watch_callee):
         main(["--"])
@@ -360,8 +347,8 @@ class TestDirectoriesAndPytestArgsArgumentsSplit():
 
         assert 1 == watch_callee.call_count
 
-    def test_multiple_directory_no_pytest_args(self, watch_callee):
-        directories = [tempfile.mkdtemp(dir=self.root_tmp) for _ in range(2)]
+    def test_multiple_directory_no_pytest_args(self, tmpdir_factory, watch_callee):
+        directories = [str(tmpdir_factory.mktemp("_")) for _ in range(2)]
         directories.append("--")
 
         main(directories)
@@ -379,22 +366,25 @@ class TestDirectoriesAndPytestArgsArgumentsSplit():
         assert fetched_directories == fetched_pytest_args
         assert 1 == watch_callee.call_count
 
-    def test_single_directory_no_pytest_args(self, watch_callee):
-        main([self.root_tmp, "--"])
+    def test_single_directory_no_pytest_args(self, watch_callee, tmpdir):
+        root_tmp = str(tmpdir)
+
+        main([root_tmp, "--"])
 
         assert "pytest_args" in watch_callee.call_args[1]
 
         pytest_args = watch_callee.call_args[1]["pytest_args"]
         assert len(pytest_args) > 0
 
-        assert [self.root_tmp] == pytest_args
+        assert [root_tmp] == pytest_args
         assert 1 == watch_callee.call_count
 
         fetched_directories = watch_callee.call_args[1]["directories"]
-        assert [self.root_tmp] == fetched_directories
+        assert [root_tmp] == fetched_directories
 
-    def test_single_directory_single_pytest_args(self, watch_callee):
-        vargs = [self.root_tmp, "--", "--pdb"]
+    def test_single_directory_single_pytest_args(self, watch_callee, tmpdir):
+        root_tmp = str(tmpdir)
+        vargs = [root_tmp, "--", "--pdb"]
 
         main(vargs)
 
@@ -408,13 +398,14 @@ class TestDirectoriesAndPytestArgsArgumentsSplit():
 
         pytest_args = watch_callee.call_args[1]["pytest_args"]
         assert len(pytest_args) > 0
-        assert [self.root_tmp, "--pdb"] == pytest_args
+        assert [root_tmp, "--pdb"] == pytest_args
         assert 1 == watch_callee.call_count
 
-        assert [self.root_tmp] == fetched_directories
+        assert [root_tmp] == fetched_directories
 
-    def test_single_directory_multiple_pytest_args(self, watch_callee):
-        vargs = [self.root_tmp, "--", "--pdb", "--cov=."]
+    def test_single_directory_multiple_pytest_args(self, watch_callee, tmpdir):
+        root_tmp = str(tmpdir)
+        vargs = [root_tmp, "--", "--pdb", "--cov=."]
 
         main(vargs)
 
@@ -429,22 +420,16 @@ class TestDirectoriesAndPytestArgsArgumentsSplit():
         pytest_args = watch_callee.call_args[1]["pytest_args"]
         assert len(pytest_args) > 0
 
-        assert [self.root_tmp, "--pdb", "--cov=."] == pytest_args
+        assert [root_tmp, "--pdb", "--cov=."] == pytest_args
 
         assert 1 == watch_callee.call_count
 
-        assert [self.root_tmp] == fetched_directories
+        assert [root_tmp] == fetched_directories
 
 
+@pytest.mark.usefixtures("watch_callee", "tmpdir_factory")
 class TestDirectoriesArguments():
 
-    def setup_method(self):
-        self.root_tmp = tempfile.mkdtemp()
-
-    def teardown_method(self):
-        shutil.rmtree(self.root_tmp)
-
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
     def test_default_directories(self, watch_callee):
         directories = []
 
@@ -454,23 +439,22 @@ class TestDirectoriesArguments():
 
         fetched_directories = watch_callee.call_args[1]["directories"]
         assert directories == fetched_directories
-
         assert 1 == watch_callee.call_count
 
-    def test_single_directory(self):
-        directories = [self.root_tmp]
-        self._assert_directories(directories)
+    def test_single_directory(self, watch_callee, tmpdir):
+        root_tmp = str(tmpdir)
+        directories = [root_tmp]
+        self._assert_directories(directories, watch_callee)
 
-    def test_two_directory_values(self):
-        directories = [tempfile.mkdtemp(dir=self.root_tmp) for _ in range(2)]
-        self._assert_directories(directories)
+    def test_two_directory_values(self, tmpdir_factory, watch_callee):
+        directories = [str(tmpdir_factory.mktemp("_")) for _ in range(2)]
+        self._assert_directories(directories, watch_callee)
 
-    def test_ten_directory_values(self):
-        directories = [tempfile.mkdtemp(dir=self.root_tmp) for _ in range(10)]
-        self._assert_directories(directories)
+    def test_ten_directory_values(self, tmpdir_factory, watch_callee):
+        directories = [str(tmpdir_factory.mktemp("_")) for _ in range(10)]
+        self._assert_directories(directories, watch_callee)
 
-    @patch("pytest_watch.command.watch", side_effect=lambda *args, **kwargs: 0)
-    def _assert_directories(self, directories, watch_callee=None):
+    def _assert_directories(self, directories, watch_callee):
         assert len(directories) > 0, \
                "Multiple directories should be declared for this test case"
 
