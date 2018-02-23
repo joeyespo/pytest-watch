@@ -17,3 +17,6 @@ install:
 
 script:
 - python -m pytest --cov=pytest_watch pytest_watch
+
+after_success:
+  - codecov --token=$CODECOV_TOKEN
