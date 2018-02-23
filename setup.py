@@ -11,7 +11,7 @@ def read(filename):
 DEPS_MAIN = ["colorama>=0.3.3", "docopt>=0.6.2", "pytest>=2.6.4",
              "watchdog>=0.6.0"]
 DEPS_QA = ["pytest-cov>=2.5.1"]
-DEPS_TESTING = []
+DEPS_TESTING = ["pytest-mock>=1.7.0"]
 
 
 setup(
