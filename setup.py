@@ -8,13 +8,10 @@ def read(filename):
         return f.read()
 
 
-def get_test_requirements():
-    reqs = read('requirements-test.txt').splitlines()
-
-    if sys.version_info[0] < 3:
-        reqs.append("mock")
-
-    return reqs
+DEPS_MAIN = ["colorama>=0.3.3", "docopt>=0.6.2", "pytest>=2.6.4",
+             "watchdog>=0.6.0"]
+DEPS_QA = ["pytest-cov>=2.5.1"]
+DEPS_TESTING = []
 
 
 setup(
@@ -28,12 +25,20 @@ setup(
     license='MIT',
     platforms='any',
     packages=find_packages(),
-    install_requires=read('requirements.txt').splitlines(),
-    tests_require=get_test_requirements(),
+    install_requires=DEPS_MAIN,
+    tests_require=DEPS_TESTING,
     entry_points={
         'console_scripts': [
             'pytest-watch = pytest_watch:main',
             'ptw = pytest_watch:main',
         ]
+    },
+    extras_require={
+        'testing': DEPS_TESTING,
+        'dev': DEPS_TESTING + DEPS_QA + ['pdbpp', 'pytest-pdb'],
+        'qa': DEPS_QA,
+        'testing:python_version in "2.6, 2.7, 3.2"': ['mock'],
+        'dev:python_version in "2.6, 2.7, 3.2"': ['mock'],
+        'qa:python_version in "2.6, 2.7, 3.2"': ['mock'],
     },
 )
