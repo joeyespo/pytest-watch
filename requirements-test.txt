@@ -1,1 +1,2 @@
 pytest-cov>=2.5.1
+pytest-mock>=1.7.0
