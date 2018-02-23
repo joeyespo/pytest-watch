@@ -11,7 +11,6 @@ try:
 except ImportError:
     from Queue import Queue
 
-from colorama import Fore, Style
 from watchdog.events import (
     FileSystemEventHandler, FileModifiedEvent, FileCreatedEvent,
     FileMovedEvent, FileDeletedEvent)
@@ -22,6 +21,7 @@ from .constants import (
     ALL_EXTENSIONS, EXIT_NOTESTSCOLLECTED, EXIT_OK, DEFAULT_EXTENSIONS)
 from .helpers import (
     beep, clear, dequeue_all, is_windows, samepath, send_keyboard_interrupt)
+from .summary import show_summary
 
 
 EVENT_NAMES = {
@@ -37,8 +37,6 @@ VERBOSE_EVENT_NAMES = {
     FileDeletedEvent: 'Deleted:',
 }
 WATCHED_EVENTS = tuple(EVENT_NAMES)
-STYLE_BRIGHT = Fore.WHITE + Style.NORMAL + Style.BRIGHT
-STYLE_HIGHLIGHT = Fore.CYAN + Style.NORMAL + Style.BRIGHT
 
 
 class EventListener(FileSystemEventHandler):
@@ -86,80 +84,6 @@ def _get_pytest_runner(custom=None):
         return ['py.test']
 
     return [sys.executable, '-m', 'pytest']
-
-
-def _reduce_events(events):
-    # FUTURE: Reduce ['a -> b', 'b -> c'] renames to ['a -> c']
-
-    creates = []
-    moves = []
-    for event, src, dest in events:
-        if event == FileCreatedEvent:
-            creates.append(dest)
-        if event == FileMovedEvent:
-            moves.append(dest)
-
-    seen = []
-    filtered = []
-    for event, src, dest in events:
-        # Skip 'modified' event during 'created'
-        if src in creates and event != FileCreatedEvent:
-            continue
-
-        # Skip 'modified' event during 'moved'
-        if src in moves:
-            continue
-
-        # Skip duplicate events
-        if src in seen:
-            continue
-        seen.append(src)
-
-        filtered.append((event, src, dest))
-    return filtered
-
-
-def _bright(arg):
-    return STYLE_BRIGHT + arg + Style.RESET_ALL
-
-
-def _highlight(arg):
-    return STYLE_HIGHLIGHT + arg + Style.RESET_ALL
-
-
-def _show_summary(argv, events, verbose=False):
-    command = ' '.join(argv)
-    bright = _bright
-    highlight = _highlight
-
-    time_stamp = time.strftime("%c", time.localtime(time.time()))
-    run_command_info = '[{}] Running: {}'.format(time_stamp,
-                                                 highlight(command))
-    if not events:
-        print(run_command_info)
-        return
-
-    events = _reduce_events(events)
-    if verbose:
-        lines = ['Changes detected:']
-        m = max(map(len, map(lambda e: VERBOSE_EVENT_NAMES[e[0]], events)))
-        for event, src, dest in events:
-            event = VERBOSE_EVENT_NAMES[event].ljust(m)
-            lines.append('  {} {}'.format(
-                event,
-                highlight(src + (' -> ' + dest if dest else ''))))
-        lines.append('')
-        lines.append(run_command_info)
-    else:
-        lines = []
-        for event, src, dest in events:
-            lines.append('{} detected: {}'.format(
-                EVENT_NAMES[event],
-                bright(src + (' -> ' + dest if dest else ''))))
-        lines.append('')
-        lines.append(run_command_info)
-
-    print('\n'.join(lines))
 
 
 def _split_recursive(directories, ignore):
@@ -252,7 +176,7 @@ def watch(directories=None, ignore=None, extensions=None, beep_on_failure=True,
 
             # Show event summary
             if not quiet:
-                _show_summary(argv, events, verbose)
+                show_summary(argv, events, verbose)
 
             # Run custom command
             run_hook(beforerun)
