@@ -28,11 +28,10 @@ def test_linux_process_kill_is_called(mocker, python_version_proc):
     kill_mock = mocker.patch.object(os_mock, "kill",
                                     side_effect=lambda pid, s: pid)
 
-    with python_version_proc as proc, kill_mock:
-        helpers.send_keyboard_interrupt(proc)
+    helpers.send_keyboard_interrupt(python_version_proc)
 
     assert 1 == kill_mock.call_count
-    assert (proc.pid, signal.SIGINT) == kill_mock.call_args[0]
+    assert (python_version_proc.pid, signal.SIGINT) == kill_mock.call_args[0]
 
 
 def test_windows_process_kill_for_python26upper_is_called(mocker,
@@ -50,9 +49,8 @@ def test_windows_process_kill_for_python26upper_is_called(mocker,
     kill_mock = mocker.patch.object(os_mock, "kill",
                                     side_effect=lambda pid, s: pid)
 
-    with kill_mock, windows_ctrlc_mock, python_version_proc as proc:
-        mocker.patch.object(proc, "wait", side_effect=print)
-        helpers.send_keyboard_interrupt(proc)
+    mocker.patch.object(python_version_proc, "wait")
+    helpers.send_keyboard_interrupt(python_version_proc)
 
     assert 0 == windows_ctrlc_mock.call_count
     assert 1 == kill_mock.call_count
@@ -74,9 +72,8 @@ def test_windows_process_kill_for_python26_is_called(mocker,
     kill_mock = mocker.patch.object(os_mock, "kill",
                                     side_effect=AttributeError)
 
-    with kill_mock, windows_ctrlc_mock, python_version_proc as proc:
-        mocker.patch.object(proc, "wait", side_effect=print)
-        helpers.send_keyboard_interrupt(proc)
+    mocker.patch.object(python_version_proc, "wait")
+    helpers.send_keyboard_interrupt(python_version_proc)
 
     assert 1 == windows_ctrlc_mock.call_count
     assert (0, 0) == windows_ctrlc_mock.call_args[0]
