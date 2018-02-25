@@ -87,7 +87,7 @@ class TestDirectoriesFiltering():
         assert ([included_folder], [self.root_dir]) == result, fail_msg
 
     @skip("Depends on pytest_watch.watcher._split_recursive support"
-                   " for deep recursive navigation through directory tree")
+          " for deep recursive navigation through directory tree")
     def test_ignore_deep_subtree_multichild(self):
         """
         This test runs over the following tree structure:
@@ -116,7 +116,7 @@ class TestDirectoriesFiltering():
                                                                     ignore)
 
     @skip("Depends on pytest_watch.watcher._split_recursive support"
-                   " for deep recursive navigation through directory tree")
+          " for deep recursive navigation through directory tree")
     def test_ignore_deep_subtree_single(self):
         """
         This test runs over the following tree structure:
