@@ -1,3 +1,4 @@
+import ctypes
 import os
 import signal
 import subprocess
@@ -70,7 +71,6 @@ def send_keyboard_interrupt(proc):
                 os.kill(0, signal.CTRL_C_EVENT)
             except AttributeError:
                 # Python 2.6 and below
-                import ctypes
                 ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, 0)
             # Immediately throws KeyboardInterrupt from the simulated CTRL-C
             proc.wait()
