@@ -11,5 +11,5 @@ def merge_config_callee(mocker):
 @pytest.fixture
 def watch_callee(mocker):
     watch_mock = mocker.patch("pytest_watch.command.watch")
-    watch_mock.return_value.side_effect=lambda *args, **kwargs: 0
+    watch_mock.return_value.side_effect = lambda *args, **kwargs: 0
     return watch_mock

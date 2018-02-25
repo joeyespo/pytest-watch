@@ -124,7 +124,6 @@ class TestConfigArgument():
         assert filename == pytest_args[pytest_args.index("-c")+1]
 
 
-
 @pytest.mark.usefixtures("watch_callee", "tmpdir_factory")
 class TestIgnoreArgument():
     def test_default_ignore_argument(self, watch_callee):
@@ -136,14 +135,12 @@ class TestIgnoreArgument():
 
         assert "--ignore" not in watch_callee.call_args[1]["pytest_args"]
 
-
     def test_ignore_argument(self, watch_callee):
         main(["--ignore", "pytest_watch"])
 
         assert ["pytest_watch"] == watch_callee.call_args[1]["ignore"]
 
         assert "--ignore" in watch_callee.call_args[1]["pytest_args"]
-
 
     def test_multiple_ignore_argument(self, tmpdir_factory, watch_callee):
         directories = []
@@ -164,8 +161,8 @@ class TestIgnoreArgument():
         ignore_idx = pytest_args.index("--ignore")
         assert argv == pytest_args
 
-
-    def test_multiple_ignore_argument_conflict(self, tmpdir_factory, watch_callee):
+    def test_multiple_ignore_argument_conflict(self, tmpdir_factory,
+                                               watch_callee):
         directories = []
         argv = []
 
@@ -347,7 +344,8 @@ class TestDirectoriesAndPytestArgsArgumentsSplit():
 
         assert 1 == watch_callee.call_count
 
-    def test_multiple_directory_no_pytest_args(self, tmpdir_factory, watch_callee):
+    def test_multiple_directory_no_pytest_args(self, tmpdir_factory,
+                                               watch_callee):
         directories = [str(tmpdir_factory.mktemp("_")) for _ in range(2)]
         directories.append("--")
 
