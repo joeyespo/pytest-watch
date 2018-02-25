@@ -15,7 +15,7 @@ def windows_ctrlc_mock(mocker):
 
 @pytest.fixture
 def python_version_proc():
-    return subprocess.Popen(f"{sys.executable}",
+    return subprocess.Popen(sys.executable,
                             shell=helpers.is_windows)
 
 
