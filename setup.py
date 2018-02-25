@@ -35,7 +35,7 @@ setup(
     },
     extras_require={
         'testing': DEPS_TESTING,
-        'dev': DEPS_TESTING + DEPS_QA + ['pdbpp', 'pytest-pdb'],
+        'dev': DEPS_TESTING + DEPS_QA,
         'qa': DEPS_QA,
         'testing:python_version in "2.6, 2.7, 3.2"': ['mock'],
         'dev:python_version in "2.6, 2.7, 3.2"': ['mock'],
