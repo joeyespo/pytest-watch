@@ -9,7 +9,8 @@ from pytest_watch import helpers
 @pytest.fixture
 def windows_ctrlc_mock(mocker):
     k32_mock = mocker.patch("pytest_watch.helpers.ctypes")
-    ctrlc_mock = mocker.patch.object(k32_mock.windll.kernel32, "GenerateConsoleCtrlEvent")
+    ctrlc_mock = mocker.patch.object(k32_mock.windll.kernel32,
+                                     "GenerateConsoleCtrlEvent")
     return ctrlc_mock
 
 
