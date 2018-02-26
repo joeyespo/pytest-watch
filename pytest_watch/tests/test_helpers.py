@@ -163,6 +163,18 @@ def test_samepath_for_non_existent_file_without_errors(tmpdir):
     assert not helpers.samepath(file1.strpath, file2.strpath)
 
 
+def test_samepath_for_name_spaced_symbolic_link(tmpdir):
+    samedir = tmpdir.mkdir("samepath")
+    file1 = samedir.join("file1.txt")
+    with open(file1.strpath, "w") as f:
+        f.write(".")
+    symlink = samedir.join("Symbolic Link.txt")
+    symlink.mksymlinkto(file1)
+
+    assert os.path.islink(symlink.strpath)
+    assert helpers.samepath(file1.strpath, symlink.strpath)
+
+
 def test_samepath_for_symbolic_link(tmpdir):
     samedir = tmpdir.mkdir("samepath")
     file1 = samedir.join("file1.txt")
