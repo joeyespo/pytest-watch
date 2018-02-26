@@ -1,6 +1,13 @@
+import os
 import signal
 import subprocess
 import sys
+from time import sleep
+
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 
 import pytest
 from pytest_watch import helpers
@@ -104,3 +111,77 @@ def test_windows_process_kill_for_python26_is_called(mocker,
 
     assert 1 == windows_ctrlc_mock.call_count
     assert (0, 0) == windows_ctrlc_mock.call_args[0]
+
+
+def test_dequeall_from_an_empty_queue_with_no_spool():
+    q = Queue()
+    assert [] == helpers.dequeue_all(q, 0)
+
+
+def test_dequeall_from_a_single_queue_with_no_spool():
+    q = Queue()
+    q.put("element 1")
+    assert ["element 1"] == helpers.dequeue_all(q, 0)
+
+
+def test_dequeall_from_multi_queue_with_no_spool():
+    q = Queue()
+    q.put("element 1")
+    assert ["element 1"] == helpers.dequeue_all(q, 0)
+    q.put("element 2")
+    q.put("element 3")
+    assert ["element 2", "element 3"] == helpers.dequeue_all(q, 0)
+
+
+def test_dequeall_from_multi_with_spool_200(mocker):
+    def _is_first_empty():
+        empty = False
+        yield empty
+
+    sleep_mock = mocker.patch("pytest_watch.helpers.sleep", wrap=sleep)
+    q = Queue()
+    mocker.patch.object(q, "empty", side_effect=_is_first_empty)
+    q.put("element 1")
+    q.put("element 2")
+    dequeued = helpers.dequeue_all(q)
+    sleep(.3)
+    q.put("element 3")
+    assert (.2,) == sleep_mock.call_args[0]
+    assert ["element 1", "element 2"] == dequeued
+    assert ["element 3"] == helpers.dequeue_all(q, 0)
+
+
+def test_samepath_for_non_existent_file_without_errors(tmpdir):
+    samedir = tmpdir.mkdir("samepath")
+    file1 = samedir.join("file1.txt")
+    with open(file1.strpath, "w") as f:
+        f.write(".")
+    file2 = samedir.join("inexistent.txt")
+
+    assert file1.exists()
+    assert not file2.exists()
+    assert not helpers.samepath(file1.strpath, file2.strpath)
+
+
+def test_samepath_for_symbolic_link(tmpdir):
+    samedir = tmpdir.mkdir("samepath")
+    file1 = samedir.join("file1.txt")
+    with open(file1.strpath, "w") as f:
+        f.write(".")
+    symlink = samedir.join("symlink1.txt")
+    symlink.mksymlinkto(file1)
+
+    assert os.path.islink(symlink.strpath)
+    assert helpers.samepath(file1.strpath, symlink.strpath)
+
+
+def test_samepath_for_same_file(tmpdir):
+    samedir = tmpdir.mkdir("samepath")
+    file1 = samedir.join("file1.txt")
+    assert helpers.samepath(file1.strpath, file1.strpath)
+
+
+def test_samepath_fail_for_different_absolute_path(tmpdir):
+    samedir = tmpdir.mkdir("samepath")
+    assert not helpers.samepath(samedir.join("file1.txt").strpath,
+                                samedir.join("file2.txt").strpath)

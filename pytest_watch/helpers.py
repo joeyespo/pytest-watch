@@ -52,12 +52,15 @@ def dequeue_all(queue, spool=None):
     return items
 
 
+def canonize_path(path):
+    return os.path.realpath(path)
+
+
 def samepath(left, right):
     """
     Determines whether two paths are the same based on their absolute paths.
     """
-    return (os.path.abspath(os.path.normcase(left)) ==
-            os.path.abspath(os.path.normcase(right)))
+    return canonize_path(left) == canonize_path(right)
 
 
 def send_keyboard_interrupt(proc):
