@@ -20,6 +20,32 @@ def python_version_proc():
                             shell=helpers.is_windows)
 
 
+def test_linux_clear_with_clear_command(mocker):
+    is_windows = mocker.patch.dict("pytest_watch.helpers.__dict__",
+                                   {"is_windows": False})
+
+    call_mock = mocker.patch("pytest_watch.helpers.subprocess.call")
+
+    helpers.clear()
+
+    assert 1 == call_mock.call_count
+    assert ("clear",) == call_mock.call_args[0]
+    assert dict(shell=True) == call_mock.call_args[1]
+
+
+def test_windows_clear_with_cls_command(mocker):
+    is_windows = mocker.patch.dict("pytest_watch.helpers.__dict__",
+                                   {"is_windows": True})
+
+    call_mock = mocker.patch("pytest_watch.helpers.subprocess.call")
+
+    helpers.clear()
+
+    assert 1 == call_mock.call_count
+    assert ("cls",) == call_mock.call_args[0]
+    assert dict(shell=True) == call_mock.call_args[1]
+
+
 def test_linux_process_kill_is_called(mocker, python_version_proc):
     is_windows = mocker.patch.dict("pytest_watch.helpers.__dict__",
                                    {"is_windows": False})
@@ -48,7 +74,7 @@ def test_windows_process_kill_for_python26upper_is_called(mocker,
     os_mock = mocker.patch("pytest_watch.helpers.os")
 
     kill_mock = mocker.patch.object(os_mock, "kill",
-                                    side_effect=lambda pid, s: pid)
+                                    side_effect=KeyboardInterrupt)
 
     mocker.patch.object(python_version_proc, "wait")
     helpers.send_keyboard_interrupt(python_version_proc)
