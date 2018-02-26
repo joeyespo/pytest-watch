@@ -9,6 +9,11 @@ def merge_config_callee(mocker):
 
 
 @pytest.fixture
+def beep_mock(mocker):
+    return mocker.patch("pytest_watch.helpers.beep")
+
+
+@pytest.fixture
 def watch_callee(mocker):
     watch_mock = mocker.patch("pytest_watch.command.watch")
     watch_mock.return_value.side_effect = lambda *args, **kwargs: 0
