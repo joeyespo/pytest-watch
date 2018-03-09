@@ -26,6 +26,7 @@ setup(
     platforms='any',
     packages=find_packages(),
     install_requires=DEPS_MAIN,
+    setup_requires=['pytest-runner',],
     tests_require=DEPS_TESTING,
     entry_points={
         'console_scripts': [
