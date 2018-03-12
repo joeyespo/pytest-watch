@@ -316,7 +316,7 @@ class TestExtensionsArguments():
         assert 1 == watch_callee.call_count
 
 
-@pytest.mark.usefixtures("watch_callee", "tmpdir")
+@pytest.mark.usefixtures("watch_callee", "tmpdir", "merge_config_callee")
 class TestDirectoriesAndPytestArgsArgumentsSplit():
 
     def test_no_directory_empty_pytest_arg(self, watch_callee):
@@ -335,8 +335,10 @@ class TestDirectoriesAndPytestArgsArgumentsSplit():
 
         assert 1 == watch_callee.call_count
 
-    def test_no_directory_multiple_pytest_args(self, watch_callee):
+    def test_no_directory_multiple_pytest_args(self, watch_callee, merge_config_callee):
         main("-- --pdb --cov=.".split())
+		
+        assert 1 == merge_config_callee.call_count
 
         assert "pytest_args" in watch_callee.call_args[1]
 

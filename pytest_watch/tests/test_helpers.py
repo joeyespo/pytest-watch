@@ -163,6 +163,8 @@ def test_samepath_for_non_existent_file_without_errors(tmpdir):
     assert not helpers.samepath(file1.strpath, file2.strpath)
 
 
+@pytest.mark.skipif(sys.platform == 'win32',
+                    reason="does not run on windows. System doesnt support symlinks")
 def test_samepath_for_name_spaced_symbolic_link(tmpdir):
     samedir = tmpdir.mkdir("samepath")
     file1 = samedir.join("file1.txt")
@@ -175,6 +177,8 @@ def test_samepath_for_name_spaced_symbolic_link(tmpdir):
     assert helpers.samepath(file1.strpath, symlink.strpath)
 
 
+@pytest.mark.skipif(sys.platform == 'win32',
+                    reason="does not run on windows. System doesnt support symlinks")
 def test_samepath_for_symbolic_link(tmpdir):
     samedir = tmpdir.mkdir("samepath")
     file1 = samedir.join("file1.txt")
