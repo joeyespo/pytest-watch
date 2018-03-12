@@ -1,3 +1,4 @@
+import os
 import subprocess
 from subprocess import call as _subcall
 import sys
@@ -10,6 +11,7 @@ except ImportError:
 import pytest
 
 from pytest_watch.constants import EXIT_NOTESTSCOLLECTED, EXIT_OK
+from pytest_watch.helpers import is_windows
 from pytest_watch.watcher import watch, run_hook
 from pytest_watch.watcher import subprocess as wsubprocess
 from pytest_watch import watcher
@@ -40,13 +42,20 @@ def assertion_wrapper(expected, callee, message=None):
             assert expected == callee(*args, **kwargs)
     return _wrapped
 
+    
+def get_sys_path(p):
+    p = os.path.normpath(p)
+    if is_windows:
+        p = '"%s"'%p
+    return p
+
 
 class TestRunHooksBasic():
 
     @mock.patch("pytest_watch.watcher.subprocess.call",
                 side_effect=assertion_wrapper(0, _subcall))
     def test_run_hook_systemexit_0(self, call_mock):
-        python_exec = sys.executable
+        python_exec = get_sys_path(sys.executable)
         cmd_parts = [python_exec, "-c", "'exit(0)'"]
         cmd = " ".join(cmd_parts)
         run_hook(cmd)
@@ -55,7 +64,7 @@ class TestRunHooksBasic():
     @mock.patch("pytest_watch.watcher.subprocess.call",
                 side_effect=assertion_wrapper(1, _subcall))
     def test_run_hook_systemexit_not_0(self, call_mock):
-        python_exec = sys.executable
+        python_exec = get_sys_path(sys.executable)
         cmd_parts = [python_exec, "-c", "'exit(1)'"]
         cmd = " ".join(cmd_parts)
         run_hook(cmd)
