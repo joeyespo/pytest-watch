@@ -10,6 +10,7 @@ except ImportError:
 
 import pytest
 
+import pytest_watch
 from pytest_watch.constants import EXIT_NOTESTSCOLLECTED, EXIT_OK
 from pytest_watch.helpers import is_windows
 from pytest_watch.watcher import watch, run_hook
@@ -44,31 +45,41 @@ def assertion_wrapper(expected, callee, message=None):
 
     
 def get_sys_path(p):
-    p = os.path.normpath(p)
+    #p = os.path.normpath(p)
     if is_windows:
         p = '"%s"'%p
     return p
 
 
-class TestRunHooksBasic():
+@pytest.fixture
+def subp_call_mock(mocker):
+    return mocker.patch.object(pytest_watch.watcher.subprocess, "call")
+ 
 
-    @mock.patch("pytest_watch.watcher.subprocess.call",
-                side_effect=assertion_wrapper(0, _subcall))
-    def test_run_hook_systemexit_0(self, call_mock):
-        python_exec = get_sys_path(sys.executable)
-        cmd_parts = [python_exec, "-c", "'exit(0)'"]
-        cmd = " ".join(cmd_parts)
-        run_hook(cmd)
-        call_mock.assert_called_once_with(cmd, shell=True)
+def test_run_hook_systemexit_0(subp_call_mock):
+    subp_call_mock.side_effect = side_effect=assertion_wrapper(0, _subcall)
 
-    @mock.patch("pytest_watch.watcher.subprocess.call",
-                side_effect=assertion_wrapper(1, _subcall))
-    def test_run_hook_systemexit_not_0(self, call_mock):
-        python_exec = get_sys_path(sys.executable)
-        cmd_parts = [python_exec, "-c", "'exit(1)'"]
-        cmd = " ".join(cmd_parts)
-        run_hook(cmd)
-        call_mock.assert_called_once_with(cmd, shell=True)
+    python_exec = get_sys_path(sys.executable)
+    cmd_parts = [python_exec, "-c", "'exit(0)'"]
+    cmd = " ".join(cmd_parts)
+    run_hook(cmd)
+    
+    assert 1 == subp_call_mock.call_count
+    assert (cmd,) == subp_call_mock.call_args[0]
+    assert dict(shell=True) == subp_call_mock.call_args[1]
+
+
+def test_run_hook_systemexit_not_0(subp_call_mock):
+    subp_call_mock.side_effect = side_effect=assertion_wrapper(1, _subcall)
+
+    python_exec = get_sys_path(sys.executable)
+    cmd_parts = [python_exec, "-c", "'raise Exception(\'force error\')'"]
+    cmd = " ".join(cmd_parts)
+    run_hook(cmd)
+    
+    assert 1 == subp_call_mock.call_count
+    assert (cmd,) == subp_call_mock.call_args[0]
+    assert dict(shell=True) == subp_call_mock.call_args[1]
 
 
 orig = watcher.run_hook
