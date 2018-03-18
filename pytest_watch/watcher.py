@@ -124,7 +124,12 @@ def _split_recursive(directories, ignore):
 
 def run_hook(cmd, *args):
     """
-    Runs a command hook, if specified.
+    Runs a command hook as subprocess of current process.
+    
+    If cmd is not specified, nothing is executed.
+    
+    cmd  -- executable file path
+    args -- list of command line arguments appended to executable call
     """
     if cmd:
         command = ' '.join(map(str, (cmd,) + args))
