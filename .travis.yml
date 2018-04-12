@@ -1,0 +1,22 @@
+language: python
+python:
+  - 2.7
+  - pypy2.7-5.8.0
+  - 3.4
+  - 3.5.4
+  - 3.6
+  - pypy3.5-5.8.0
+
+os:
+  - linux
+
+cache: pip
+
+install:
+  - pip install -e ".[qa]"
+
+script:
+- python -m pytest --cov=pytest_watch --cov-report=term-missing -v pytest_watch
+
+after_success:
+  - codecov --token=$CODECOV_TOKEN

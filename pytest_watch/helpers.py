@@ -1,3 +1,4 @@
+import ctypes
 import os
 import signal
 import subprocess
@@ -51,12 +52,15 @@ def dequeue_all(queue, spool=None):
     return items
 
 
+def canonize_path(path):
+    return os.path.realpath(path)
+
+
 def samepath(left, right):
     """
-    Determines whether two paths are the same.
+    Determines whether two paths are the same based on their absolute paths.
     """
-    return (os.path.abspath(os.path.normcase(left)) ==
-            os.path.abspath(os.path.normcase(right)))
+    return canonize_path(left) == canonize_path(right)
 
 
 def send_keyboard_interrupt(proc):
@@ -70,7 +74,6 @@ def send_keyboard_interrupt(proc):
                 os.kill(0, signal.CTRL_C_EVENT)
             except AttributeError:
                 # Python 2.6 and below
-                import ctypes
                 ctypes.windll.kernel32.GenerateConsoleCtrlEvent(0, 0)
             # Immediately throws KeyboardInterrupt from the simulated CTRL-C
             proc.wait()

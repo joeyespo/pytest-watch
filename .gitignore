@@ -9,8 +9,14 @@ env
 .cache
 *.so
 *.py[cod]
+.eggs
+.coverage
+.coverage.*
+.pytest_cache
+.python-version
 
 # OS-specific files
 .DS_Store
 Desktop.ini
 Thumbs.db
+coverage.xml

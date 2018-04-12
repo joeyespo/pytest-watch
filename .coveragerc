@@ -1,0 +1,2 @@
+[run]
+source=pytest_watch
