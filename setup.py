@@ -32,7 +32,8 @@ setup(
         'console_scripts': [
             'pytest-watch = pytest_watch:main',
             'ptw = pytest_watch:main',
-        ]
+        ],
+        #'pytest11': ["watch = pytest_watch:main"]
     },
     extras_require={
         'testing': DEPS_TESTING,
@@ -42,4 +43,7 @@ setup(
         'dev:python_version in "2.6, 2.7, 3.2"': ['mock'],
         'qa:python_version in "2.6, 2.7, 3.2"': ['mock'],
     },
+    classifiers=[
+        "Framework :: Pytest",
+    ]
 )
