@@ -41,7 +41,7 @@ class CollectConfig(object):
             inifile = config.inicfg.config.path
         if inifile:
             self.path = str(inifile)
-        raise StopCollect()
+            raise StopCollect()
 
 
 def _run_pytest_collect(pytest_args):
