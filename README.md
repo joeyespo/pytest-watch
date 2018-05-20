@@ -2,10 +2,7 @@ pytest-watch -- Continuous pytest runner
 ========================================
 
 [![Current version on PyPI](http://img.shields.io/pypi/v/pytest-watch.svg)][pypi]
-[![Downloads/month on PyPI](http://img.shields.io/pypi/dm/pytest-watch.svg)][pypi]
-<a href="https://gratipay.com/pytest-watch/" title="Thank you!" target="_blank">
-  <img src="https://img.shields.io/gratipay/pytest-watch.svg" alt="Thank you!">
-</a>
+[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/joeyespo)
 
 **pytest-watch** a zero-config CLI tool that runs [pytest][], and re-runs it
 when a file in your project changes. It beeps on failures and can run arbitrary
@@ -179,11 +176,8 @@ Contributing
 
 If your PR has been waiting a while, feel free to [ping me on Twitter][twitter].
 
-Use this software often? Please consider [supporting pytest-watch][support].
-
-<a href="https://gratipay.com/pytest-watch/" title="Thank you!" target="_blank">
-  <img src="https://img.shields.io/gratipay/pytest-watch.svg" align="center" alt="Thank you!">
-</a>
+Use this software often? <a href="https://saythanks.io/to/joeyespo" target="_blank"><img src="https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg" align="center" alt="Say Thanks!"></a>
+:smiley:
 
 
 [pypi]: http://pypi.python.org/pypi/pytest-watch/
@@ -197,4 +191,3 @@ Use this software often? Please consider [supporting pytest-watch][support].
 [nose]: http://nose.readthedocs.org/en/latest/
 [authors.md]: ./AUTHORS.md
 [twitter]: https://twitter.com/joeyespo
-[support]: https://gratipay.com/pytest-watch/
