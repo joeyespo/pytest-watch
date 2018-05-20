@@ -106,7 +106,7 @@ def main(argv=None):
             return 2
 
     # Run pytest and watch for changes
-    return watch(directories=directories,
+    return watch(entries=directories,
                  ignore=args['--ignore'],
                  extensions=extensions,
                  beep_on_failure=not args['--nobeep'],
