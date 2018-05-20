@@ -35,7 +35,7 @@ Usage
     $ ptw
      * Watching /path/to/myproject
 
-*Note: It can also be run using its full name ``py.test.watch``.*
+*Note: It can also be run using its full name ``pytest-watch``.*
 
 Now develop normally and check the terminal every now and then to see if
 any tests are broken. Alternatively, pytest-watch can **notify you**
