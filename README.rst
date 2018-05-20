@@ -1,7 +1,8 @@
 pytest-watch – Continuous pytest runner
 =======================================
 
-|Current version on PyPI| |Downloads/month on PyPI|
+`Current version on PyPI <http://pypi.python.org/pypi/pytest-watch/>`__
+`Say Thanks! <https://saythanks.io/to/joeyespo>`__
 
 **pytest-watch** a zero-config CLI tool that runs
 `pytest <http://pytest.org/>`__, and re-runs it when a file in your
@@ -24,16 +25,16 @@ Installation
 
 .. code:: bash
 
-    $ pip install pytest-watch
+   $ pip install pytest-watch
 
 Usage
 -----
 
 .. code:: bash
 
-    $ cd myproject
-    $ ptw
-     * Watching /path/to/myproject
+   $ cd myproject
+   $ ptw
+    * Watching /path/to/myproject
 
 *Note: It can also be run using its full name ``pytest-watch``.*
 
@@ -47,8 +48,8 @@ when tests pass or fail:
 
    .. code:: bash
 
-       $ ptw --onpass "growlnotify -m \"All tests passed!\"" \
-             --onfail "growlnotify -m \"Tests failed\""
+      $ ptw --onpass "growlnotify -m \"All tests passed!\"" \
+            --onfail "growlnotify -m \"Tests failed\""
 
    using `GrowlNotify <http://growl.info/downloads#generaldownloads>`__.
 
@@ -56,7 +57,7 @@ when tests pass or fail:
 
    .. code:: bat
 
-       > ptw --onfail flash
+      > ptw --onfail flash
 
    using `Console Flash <http://github.com/joeyespo/console-flash>`__
 
@@ -65,74 +66,74 @@ database:
 
 .. code:: bash
 
-    $ ptw --beforerun init_db.py
+   $ ptw --beforerun init_db.py
 
 Or after they finish, e.g. deleting a sqlite file. Note that this script
 receives the exit code of ``py.test`` as an argument.
 
 .. code:: bash
 
-    $ ptw --afterrun cleanup_db.py
+   $ ptw --afterrun cleanup_db.py
 
 You can also use a custom runner script for full ``py.test`` control:
 
 .. code:: bash
 
-    $ ptw --runner "python custom_pytest_runner.py"
+   $ ptw --runner "python custom_pytest_runner.py"
 
 Here’s an minimal runner script that runs ``py.test`` and prints its
 exit code:
 
 .. code:: py
 
-    # custom_pytest_runner.py
+   # custom_pytest_runner.py
 
-    import sys
-    import pytest
+   import sys
+   import pytest
 
-    print('py.test exited with code:', pytest.main(sys.argv[1:]))
+   print('py.test exited with code:', pytest.main(sys.argv[1:]))
 
 Need to exclude directories from being observed or collected for tests?
 
 .. code:: bash
 
-    $ ptw --ignore ./deep-directory --ignore ./integration_tests
+   $ ptw --ignore ./deep-directory --ignore ./integration_tests
 
 See the full list of options:
 
 ::
 
-    $ ptw --help
-    Usage: ptw [options] [--ignore <dir>...] [<directory>...] [-- <pytest-args>...]
+   $ ptw --help
+   Usage: ptw [options] [--ignore <dir>...] [<directory>...] [-- <pytest-args>...]
 
-    Options:
-      --ignore <dir>        Ignore directory from being watched and during
-                            collection (multi-allowed).
-      --ext <exts>          Comma-separated list of file extensions that can
-                            trigger a new test run when changed (default: .py).
-                            Use --ext=* to allow any file (including .pyc).
-      --config <file>       Load configuration from `file` instead of trying to
-                            locate one of the implicit configuration files.
-      -c --clear            Clear the screen before each run.
-      -n --nobeep           Do not beep on failure.
-      -w --wait             Waits for all tests to complete before re-running.
-                            Otherwise, tests are interrupted on filesystem events.
-      --beforerun <cmd>     Run arbitrary command before tests are run.
-      --afterrun <cmd>      Run arbitrary command on completion or interruption.
-                            The exit code of "py.test" is passed as an argument.
-      --onpass <cmd>        Run arbitrary command on pass.
-      --onfail <cmd>        Run arbitrary command on failure.
-      --onexit <cmd>        Run arbitrary command when exiting pytest-watch.
-      --runner <cmd>        Run a custom command instead of "py.test".
-      --pdb                 Start the interactive Python debugger on errors.
-                            This also enables --wait to prevent pdb interruption.
-      --spool <delay>       Re-run after a delay (in milliseconds), allowing for
-                            more file system events to queue up (default: 200 ms).
-      -p --poll             Use polling instead of OS events (useful in VMs).
-      -v --verbose          Increase verbosity of the output.
-      -q --quiet            Decrease verbosity of the output (precedence over -v).
-      -V --version          Print version and exit.
-      -h --help             Print help and exit.
+   Options:
+     --ignore <dir>        Ignore directory from being watched and during
+                           collection (multi-allowed).
+     --ext <exts>          Comma-separated list of file extensions that can
+                           trigger a new test run when changed (default: .py).
+                           Use --ext=* to allow any file (including .pyc).
+     --config <file>       Load configuration from `file` instead of trying to
+                           locate one of the implicit configuration files.
+     -c --clear            Clear the screen before each run.
+     -n --nobeep           Do not beep on failure.
+     -w --wait             Waits for all tests to complete before re-running.
+                           Otherwise, tests are interrupted on filesystem events.
+     --beforerun <cmd>     Run arbitrary command before tests are run.
+     --afterrun <cmd>      Run arbitrary command on completion or interruption.
+                           The exit code of "py.test" is passed as an argument.
+     --onpass <cmd>        Run arbitrary command on pass.
+     --onfail <cmd>        Run arbitrary command on failure.
+     --onexit <cmd>        Run arbitrary command when exiting pytest-watch.
+     --runner <cmd>        Run a custom command instead of "py.test".
+     --pdb                 Start the interactive Python debugger on errors.
+                           This also enables --wait to prevent pdb interruption.
+     --spool <delay>       Re-run after a delay (in milliseconds), allowing for
+                           more file system events to queue up (default: 200 ms).
+     -p --poll             Use polling instead of OS events (useful in VMs).
+     -v --verbose          Increase verbosity of the output.
+     -q --quiet            Decrease verbosity of the output (precedence over -v).
+     -V --version          Print version and exit.
+     -h --help             Print help and exit.
 
 Configuration
 -------------
@@ -143,15 +144,15 @@ persist them in your project. For example:
 
 .. code:: ini
 
-    # pytest.ini
+   # pytest.ini
 
-    [pytest]
-    addopts = --maxfail=2
+   [pytest]
+   addopts = --maxfail=2
 
 
-    [pytest-watch]
-    ignore = ./integration-tests
-    nobeep = True
+   [pytest-watch]
+   ignore = ./integration-tests
+   nobeep = True
 
 Alternatives
 ------------
@@ -176,13 +177,15 @@ Contributing
    `Authors.md <./AUTHORS.md>`__
 3. Send a pull request
 
+If you want to edit the README, be sure to make your changes to
+``README.md`` and run the following to regenerate the ``README.rst``
+file:
+
+.. code:: bash
+
+   $ pandoc -t rst -o README.rst README.md
+
 If your PR has been waiting a while, feel free to `ping me on
 Twitter <https://twitter.com/joeyespo>`__.
 
-Use this software often? Please consider `supporting
-pytest-watch <https://gratipay.com/pytest-watch/>`__.
-
-.. |Current version on PyPI| image:: http://img.shields.io/pypi/v/pytest-watch.svg
-   :target: http://pypi.python.org/pypi/pytest-watch/
-.. |Downloads/month on PyPI| image:: http://img.shields.io/pypi/dm/pytest-watch.svg
-   :target: http://pypi.python.org/pypi/pytest-watch/
+Use this software often? :smiley:

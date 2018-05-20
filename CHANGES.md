@@ -2,10 +2,21 @@ pytest-watch Changelog
 ======================
 
 
-Version 4.2.0 (dev)
--------------------
+Version 4.2.0 (2018-05-20)
+--------------------------
 
+- Enhancement: Show timestamp before running py.test ([#66](https://github.com/joeyespo/pytest-watch/pull/66) - thanks, [@xsteve][]!)
+- Enhancement: Add watch single file feature ([#80](https://github.com/joeyespo/pytest-watch/pull/80) - thanks, [@touilleMan][]!)
+- Bugfix: Add more common cache directories to `.gitignore`
+- Bugfix: Handle SystemExit also when calling _run_pytest_collect ([#60](https://github.com/joeyespo/pytest-watch/pull/60) - thanks, [@blueyed][]!)
+- Bugfix: Wait for pdb if it's passed to `pytest_args` ([#64](https://github.com/joeyespo/pytest-watch/pull/64) - thanks, [@remcohaszing][]!)
 - Bugfix: Use the same Python interpreter for `pytest` when `ptw` is run outside of an activated virtual environment ([#72](https://github.com/joeyespo/pytest-watch/pull/72) - thanks, [@jacebrowning][]!)
+- Bugfix: Fix `TypeError: can only concatenate tuple (not "list") to tuple`
+- Bugfix: Show output when pytest is interrupted on config collection (dac01e9e585176c1da55b5588bdf86c8dd016c22) and document pytest exit code ([#90](https://github.com/joeyespo/pytest-watch/pull/90) - thanks, [@asford][]!)
+- Readme: Add full command-line usage
+- Readme: Add `README.rst` for better-looking README on PyPI ([#83](https://github.com/joeyespo/pytest-watch/pull/83) - thanks, [@apast][]!)
+- Readme: Remove Gratipay :frowning_face: ([Article](https://gratipay.news/the-end-cbfba8f50981))
+- Readme: Add [Say Thanks](http://saythanks.io/) badge :smiley:
 
 
 Version 4.1.0 (2016-04-08)
@@ -151,4 +162,9 @@ First public preview release.
 [@ColtonProvias]: https://github.com/ColtonProvias
 [@bendtherules]: https://github.com/bendtherules
 [@lukaszb]: https://github.com/lukaszb
+[@remcohaszing]: https://github.com/remcohaszing
+[@xsteve]: https://github.com/xsteve
 [@jacebrowning]: https://github.com/jacebrowning
+[@touilleMan]: https://github.com/touilleMan
+[@asford]: https://github.com/asford
+[@apast]: https://github.com/apast

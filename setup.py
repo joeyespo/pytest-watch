@@ -5,13 +5,13 @@ from setuptools import setup, find_packages
 
 def read(filename):
     filepath = os.path.join(os.path.dirname(__file__), filename)
-    with io.open(filepath, mode="r", encoding="utf-8") as f:
+    with io.open(filepath, mode='r', encoding='utf-8') as f:
         return f.read()
 
 
 setup(
     name='pytest-watch',
-    version='4.1.0',
+    version='4.2.0',
     description='Local continuous test runner with pytest and watchdog.',
     long_description=read('README.rst'),
     author='Joe Esposito',
