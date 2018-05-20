@@ -3,6 +3,9 @@
 dist
 
 # Environment files
+__pycache__
+.cache
+.pytest_cache
 site-packages
 build
 env
