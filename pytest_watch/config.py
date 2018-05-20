@@ -41,7 +41,7 @@ class CollectConfig(object):
             inifile = config.inicfg.config.path
         if inifile:
             self.path = str(inifile)
-            raise StopCollect()
+        raise StopCollect()
 
 
 def _run_pytest_collect(pytest_args):
@@ -54,6 +54,7 @@ def _run_pytest_collect(pytest_args):
         return collect_config_plugin.path
 
     if exit_code == EXIT_INTERRUPTED:
+        # pytest raises EXIT_INTERRUPTED on *both* keyboard error and parse errors
         raise KeyboardInterrupt()
     if exit_code not in [EXIT_OK, EXIT_NOTESTSCOLLECTED]:
         raise CollectError()
