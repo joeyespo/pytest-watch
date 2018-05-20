@@ -174,6 +174,13 @@ Contributing
 2. Fork the repository, make your changes, and add yourself to [Authors.md][]
 3. Send a pull request
 
+If you want to edit the README, be sure to make your changes to `README.md` and
+run the following to regenerate the `README.rst` file:
+
+```bash
+$ pandoc -t rst -o README.rst README.md
+```
+
 If your PR has been waiting a while, feel free to [ping me on Twitter][twitter].
 
 Use this software often? <a href="https://saythanks.io/to/joeyespo" target="_blank"><img src="https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg" align="center" alt="Say Thanks!"></a>
