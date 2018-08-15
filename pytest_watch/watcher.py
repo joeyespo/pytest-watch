@@ -19,7 +19,8 @@ from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
 
 from .constants import (
-    ALL_EXTENSIONS, EXIT_NOTESTSCOLLECTED, EXIT_OK, DEFAULT_EXTENSIONS)
+    ALL_EXTENSIONS, EXIT_INTERRUPTED, EXIT_NOTESTSCOLLECTED, EXIT_OK,
+    DEFAULT_EXTENSIONS)
 from .helpers import (
     beep, clear, dequeue_all, is_windows, samepath, send_keyboard_interrupt)
 
@@ -297,7 +298,7 @@ def watch(entries=[], ignore=[], extensions=[], beep_on_failure=True,
             # Run dependent commands
             if exit_code in [EXIT_OK, EXIT_NOTESTSCOLLECTED]:
                 run_hook(onpass)
-            else:
+            elif exit_code != EXIT_INTERRUPTED:
                 if beep_on_failure:
                     beep()
                 run_hook(onfail)
