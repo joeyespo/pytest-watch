@@ -4,6 +4,8 @@ import os
 import sys
 import subprocess
 import time
+import re
+
 from traceback import format_exc
 
 try:
@@ -77,10 +79,11 @@ class EventListener(FileSystemEventHandler):
     """
     Listens for changes to files and re-runs tests after each change.
     """
-    def __init__(self, extensions=[], event_queue=None):
+    def __init__(self, extensions=[], event_queue=None, dont_watch_files=None):
         super(EventListener, self).__init__()
         self.event_queue = event_queue or Queue()
         self.extensions = extensions or DEFAULT_EXTENSIONS
+        self.dont_watch_files = dont_watch_files
 
     def on_any_event(self, event):
         """
@@ -100,6 +103,14 @@ class EventListener(FileSystemEventHandler):
         if not event.is_directory and self.extensions != ALL_EXTENSIONS:
             src_ext = os.path.splitext(src_path)[1].lower()
             src_included = src_ext in self.extensions
+
+            if src_included and self.dont_watch_files:
+                base = os.path.basename(src_path)
+                p = re.compile( self.dont_watch_files)
+                if p.match( base):
+                    print( 'File event matched --dont-watch-files pattern:', self.dont_watch_files, src_path)
+                    src_included = False
+
             dest_included = False
             if dest_path:
                 dest_ext = os.path.splitext(dest_path)[1].lower()
@@ -216,7 +227,7 @@ def run_hook(cmd, *args):
         subprocess.call(command, shell=True)
 
 
-def watch(entries=[], ignore=[], extensions=[], beep_on_failure=True,
+def watch(entries=[], ignore=[], extensions=[], dont_watch_files=None, beep_on_failure=True,
           auto_clear=False, wait=False, beforerun=None, afterrun=None,
           onpass=None, onfail=None, onexit=None, runner=None, spool=None,
           poll=False, verbose=False, quiet=False, pytest_args=[]):
@@ -237,7 +248,7 @@ def watch(entries=[], ignore=[], extensions=[], beep_on_failure=True,
             raise ValueError('Directory not found: ' + entry)
 
     # Setup event handler
-    event_listener = EventListener(extensions)
+    event_listener = EventListener(extensions,dont_watch_files=dont_watch_files)
 
     # Setup watchdog
     observer = PollingObserver() if poll else Observer()

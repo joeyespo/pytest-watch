@@ -30,6 +30,7 @@ Options:
                         This also enables --wait to prevent pdb interruption.
   --spool <delay>       Re-run after a delay (in milliseconds), allowing for
                         more file system events to queue up (default: 200 ms).
+  --dont-watch-files <str>  Regular expression for excluding files from being watched
   -p --poll             Use polling instead of OS events (useful in VMs).
   -v --verbose          Increase verbosity of the output.
   -q --quiet            Decrease verbosity of the output (precedence over -v).
@@ -109,6 +110,7 @@ def main(argv=None):
     return watch(entries=directories,
                  ignore=args['--ignore'],
                  extensions=extensions,
+                 dont_watch_files=args['--dont-watch-files'],
                  beep_on_failure=not args['--nobeep'],
                  auto_clear=args['--clear'],
                  wait=args['--wait'] or '--pdb' in pytest_args,
