@@ -98,6 +98,12 @@ Need to exclude directories from being observed or collected for tests?
 $ ptw --ignore ./deep-directory --ignore ./integration_tests
 ```
 
+Need to exclude watching files that match a particular regular expression (e.g., emacs lock files)?
+
+```bash
+$ ptw --dont-watch-files '^\.#'
+```
+
 See the full list of options:
 
 ```
@@ -127,6 +133,7 @@ Options:
                         This also enables --wait to prevent pdb interruption.
   --spool <delay>       Re-run after a delay (in milliseconds), allowing for
                         more file system events to queue up (default: 200 ms).
+  --dont-watch-files <str>  Regular expression for excluding files from being watched
   -p --poll             Use polling instead of OS events (useful in VMs).
   -v --verbose          Increase verbosity of the output.
   -q --quiet            Decrease verbosity of the output (precedence over -v).
