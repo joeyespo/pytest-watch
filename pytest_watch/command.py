@@ -30,7 +30,9 @@ Options:
                         This also enables --wait to prevent pdb interruption.
   --spool <delay>       Re-run after a delay (in milliseconds), allowing for
                         more file system events to queue up (default: 200 ms).
+  --pattern <str>       Regular expression for excluding based on basename
   -p --poll             Use polling instead of OS events (useful in VMs).
+  -e --emacs            Ignore emacs lockfiles; same as --pattern '^.#\S+$'
   -v --verbose          Increase verbosity of the output.
   -q --quiet            Decrease verbosity of the output (precedence over -v).
   -V --version          Print version and exit.
@@ -96,6 +98,15 @@ def main(argv=None):
     else:
         extensions = None
 
+    # Emacs flag
+    if args['--emacs']:
+        pattern = r'^\.#\S+$'
+    else:
+        pattern = None
+
+    if args['--pattern'] is not None:
+        pattern = args['--pattern']
+
     # Parse numeric arguments
     spool = args['--spool']
     if spool is not None:
@@ -109,6 +120,7 @@ def main(argv=None):
     return watch(entries=directories,
                  ignore=args['--ignore'],
                  extensions=extensions,
+                 pattern=pattern,
                  beep_on_failure=not args['--nobeep'],
                  auto_clear=args['--clear'],
                  wait=args['--wait'] or '--pdb' in pytest_args,
