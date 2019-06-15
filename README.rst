@@ -15,7 +15,7 @@ Motivation
 Whether or not you use the test-driven development method, running tests
 continuously is far more productive than waiting until you’re finished
 programming to test your code. Additionally, manually running
-``py.test`` each time you want to see if any tests were broken has more
+``pytest`` each time you want to see if any tests were broken has more
 wait-time and cognitive overhead than merely listening for a
 notification. This could be a crucial difference when debugging a
 complex problem or on a tight deadline.
@@ -69,19 +69,19 @@ database:
    $ ptw --beforerun init_db.py
 
 Or after they finish, e.g. deleting a sqlite file. Note that this script
-receives the exit code of ``py.test`` as an argument.
+receives the exit code of ``pytest`` as an argument.
 
 .. code:: bash
 
    $ ptw --afterrun cleanup_db.py
 
-You can also use a custom runner script for full ``py.test`` control:
+You can also use a custom runner script for full ``pytest`` control:
 
 .. code:: bash
 
    $ ptw --runner "python custom_pytest_runner.py"
 
-Here’s an minimal runner script that runs ``py.test`` and prints its
+Here’s an minimal runner script that runs ``pytest`` and prints its
 exit code:
 
 .. code:: py
@@ -91,7 +91,7 @@ exit code:
    import sys
    import pytest
 
-   print('py.test exited with code:', pytest.main(sys.argv[1:]))
+   print('pytest exited with code:', pytest.main(sys.argv[1:]))
 
 Need to exclude directories from being observed or collected for tests?
 
@@ -120,11 +120,11 @@ See the full list of options:
                            Otherwise, tests are interrupted on filesystem events.
      --beforerun <cmd>     Run arbitrary command before tests are run.
      --afterrun <cmd>      Run arbitrary command on completion or interruption.
-                           The exit code of "py.test" is passed as an argument.
+                           The exit code of "pytest" is passed as an argument.
      --onpass <cmd>        Run arbitrary command on pass.
      --onfail <cmd>        Run arbitrary command on failure.
      --onexit <cmd>        Run arbitrary command when exiting pytest-watch.
-     --runner <cmd>        Run a custom command instead of "py.test".
+     --runner <cmd>        Run a custom command instead of "pytest".
      --pdb                 Start the interactive Python debugger on errors.
                            This also enables --wait to prevent pdb interruption.
      --spool <delay>       Re-run after a delay (in milliseconds), allowing for
@@ -162,7 +162,7 @@ Alternatives
    This instead re-runs only those tests which have failed until you
    make them pass. This can be a speed advantage when trying to get all
    tests passing, but leaves out the discovery of new failures until
-   then. It also drops the colors outputted by py.test, whereas
+   then. It also drops the colors outputted by pytest, whereas
    pytest-watch doesn’t.
 -  `Nosey <http://github.com/joeyespo/nosey>`__ is the original codebase
    this was forked from. Nosey runs
