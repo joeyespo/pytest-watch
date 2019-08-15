@@ -154,7 +154,7 @@ def _show_summary(argv, events, verbose=False):
     bright = lambda arg: STYLE_BRIGHT + arg + Style.RESET_ALL
     highlight = lambda arg: STYLE_HIGHLIGHT + arg + Style.RESET_ALL
 
-    time_stamp = time.strftime("%c", time.localtime(time.time()))
+    time_stamp = time.strftime('%c', time.localtime(time.time()))
     run_command_info = '[{}] Running: {}'.format(time_stamp,
                                                  highlight(command))
     if not events:
@@ -219,7 +219,8 @@ def run_hook(cmd, *args):
 def watch(entries=[], ignore=[], extensions=[], beep_on_failure=True,
           auto_clear=False, wait=False, beforerun=None, afterrun=None,
           onpass=None, onfail=None, onexit=None, runner=None, spool=None,
-          poll=False, verbose=False, quiet=False, pytest_args=[]):
+          poll=False, verbose=False, quiet=False, pytest_args=[],
+          ignore_regex=None):
     argv = _get_pytest_runner(runner) + (pytest_args or [])
 
     if not entries:
@@ -229,7 +230,9 @@ def watch(entries=[], ignore=[], extensions=[], beep_on_failure=True,
     directories = []
     for entry in entries:
         entry = os.path.abspath(entry)
-        if os.path.isfile(entry):
+
+        ignore_path = ignore_regex and ignore_regex.match(entry)
+        if os.path.isfile(entry) and not ignore_path:
             files.append(entry)
         elif os.path.isdir(entry):
             directories.append(entry)

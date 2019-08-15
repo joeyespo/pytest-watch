@@ -10,6 +10,8 @@ Usage: ptw [options] [--ignore <dir>...] [<directory>...] [-- <pytest-args>...]
 Options:
   --ignore <dir>        Ignore directory from being watched and during
                         collection (multi-allowed).
+  --ignore-re <pattern> Ignore paths from being watched that match pattern
+                        during collection.
   --ext <exts>          Comma-separated list of file extensions that can
                         trigger a new test run when changed (default: .py).
                         Use --ext=* to allow any file (including .pyc).
@@ -37,6 +39,7 @@ Options:
   -h --help             Print help and exit.
 """
 
+import re
 import sys
 
 import colorama
@@ -96,6 +99,12 @@ def main(argv=None):
     else:
         extensions = None
 
+    # Parse path ignore regex
+    if args['--ignore-re'].strip():
+        ignore_regex = re.compile(args['--ignore-re'])
+    else:
+        ignore_regex = None
+
     # Parse numeric arguments
     spool = args['--spool']
     if spool is not None:
@@ -122,4 +131,5 @@ def main(argv=None):
                  poll=args['--poll'],
                  verbose=args['--verbose'],
                  quiet=args['--quiet'],
-                 pytest_args=pytest_args)
+                 pytest_args=pytest_args,
+                 ignore_regex=ignore_regex)
