@@ -77,10 +77,11 @@ class EventListener(FileSystemEventHandler):
     """
     Listens for changes to files and re-runs tests after each change.
     """
-    def __init__(self, extensions=[], event_queue=None):
+    def __init__(self, extensions=[], event_queue=None, ignore_regex=None):
         super(EventListener, self).__init__()
         self.event_queue = event_queue or Queue()
         self.extensions = extensions or DEFAULT_EXTENSIONS
+        self.ignore_regex = ignore_regex
 
     def on_any_event(self, event):
         """
@@ -105,6 +106,11 @@ class EventListener(FileSystemEventHandler):
                 dest_ext = os.path.splitext(dest_path)[1].lower()
                 dest_included = dest_ext in self.extensions
             if not src_included and not dest_included:
+                return
+
+        # Filter files that match the ignored path regex
+        if not event.is_directory and self.ignore_regex:
+            if self.ignore_regex.match(src_path):
                 return
 
         self.event_queue.put((type(event), src_path, dest_path))
@@ -154,7 +160,7 @@ def _show_summary(argv, events, verbose=False):
     bright = lambda arg: STYLE_BRIGHT + arg + Style.RESET_ALL
     highlight = lambda arg: STYLE_HIGHLIGHT + arg + Style.RESET_ALL
 
-    time_stamp = time.strftime("%c", time.localtime(time.time()))
+    time_stamp = time.strftime('%c', time.localtime(time.time()))
     run_command_info = '[{}] Running: {}'.format(time_stamp,
                                                  highlight(command))
     if not events:
@@ -219,7 +225,8 @@ def run_hook(cmd, *args):
 def watch(entries=[], ignore=[], extensions=[], beep_on_failure=True,
           auto_clear=False, wait=False, beforerun=None, afterrun=None,
           onpass=None, onfail=None, onexit=None, runner=None, spool=None,
-          poll=False, verbose=False, quiet=False, pytest_args=[]):
+          poll=False, verbose=False, quiet=False, pytest_args=[],
+          ignore_regex=None):
     argv = _get_pytest_runner(runner) + (pytest_args or [])
 
     if not entries:
@@ -229,7 +236,11 @@ def watch(entries=[], ignore=[], extensions=[], beep_on_failure=True,
     directories = []
     for entry in entries:
         entry = os.path.abspath(entry)
-        if os.path.isfile(entry):
+
+        ignore_path = ignore_regex and ignore_regex.match(entry)
+
+        # Skip entry if file matches ignored path regex
+        if os.path.isfile(entry) and not ignore_path:
             files.append(entry)
         elif os.path.isdir(entry):
             directories.append(entry)
@@ -237,7 +248,7 @@ def watch(entries=[], ignore=[], extensions=[], beep_on_failure=True,
             raise ValueError('Directory not found: ' + entry)
 
     # Setup event handler
-    event_listener = EventListener(extensions)
+    event_listener = EventListener(extensions, ignore_regex=ignore_regex)
 
     # Setup watchdog
     observer = PollingObserver() if poll else Observer()

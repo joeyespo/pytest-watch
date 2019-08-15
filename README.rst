@@ -1,8 +1,7 @@
-pytest-watch – Continuous pytest runner
-=======================================
+pytest-watch -- Continuous pytest runner
+========================================
 
-`Current version on PyPI <http://pypi.python.org/pypi/pytest-watch/>`__
-`Say Thanks! <https://saythanks.io/to/joeyespo>`__
+|Current version on PyPI| |Say Thanks!|
 
 **pytest-watch** a zero-config CLI tool that runs
 `pytest <http://pytest.org/>`__, and re-runs it when a file in your
@@ -13,28 +12,28 @@ Motivation
 ----------
 
 Whether or not you use the test-driven development method, running tests
-continuously is far more productive than waiting until you’re finished
-programming to test your code. Additionally, manually running
-``pytest`` each time you want to see if any tests were broken has more
-wait-time and cognitive overhead than merely listening for a
-notification. This could be a crucial difference when debugging a
-complex problem or on a tight deadline.
+continuously is far more productive than waiting until you're finished
+programming to test your code. Additionally, manually running ``pytest``
+each time you want to see if any tests were broken has more wait-time
+and cognitive overhead than merely listening for a notification. This
+could be a crucial difference when debugging a complex problem or on a
+tight deadline.
 
 Installation
 ------------
 
 .. code:: bash
 
-   $ pip install pytest-watch
+    $ pip install pytest-watch
 
 Usage
 -----
 
 .. code:: bash
 
-   $ cd myproject
-   $ ptw
-    * Watching /path/to/myproject
+    $ cd myproject
+    $ ptw
+     * Watching /path/to/myproject
 
 *Note: It can also be run using its full name ``pytest-watch``.*
 
@@ -44,96 +43,93 @@ when tests pass or fail:
 
 -  **OSX**
 
-   ``$ ptw --onpass "say passed" --onfail "say failed"``
+``$ ptw --onpass "say passed" --onfail "say failed"``
 
-   .. code:: bash
+``bash   $ ptw --onpass "growlnotify -m \"All tests passed!\"" \         --onfail "growlnotify -m \"Tests failed\""``
 
-      $ ptw --onpass "growlnotify -m \"All tests passed!\"" \
-            --onfail "growlnotify -m \"Tests failed\""
-
-   using `GrowlNotify <http://growl.info/downloads#generaldownloads>`__.
+using `GrowlNotify <http://growl.info/downloads#generaldownloads>`__.
 
 -  **Windows**
 
-   .. code:: bat
+``bat   > ptw --onfail flash``
 
-      > ptw --onfail flash
+using `Console Flash <http://github.com/joeyespo/console-flash>`__
 
-   using `Console Flash <http://github.com/joeyespo/console-flash>`__
-
-You can also run a command before the tests run, e.g. seeding your test
+You can also run a command before the tests run, e.g. seeding your test
 database:
 
 .. code:: bash
 
-   $ ptw --beforerun init_db.py
+    $ ptw --beforerun init_db.py
 
-Or after they finish, e.g. deleting a sqlite file. Note that this script
+Or after they finish, e.g. deleting a sqlite file. Note that this script
 receives the exit code of ``pytest`` as an argument.
 
 .. code:: bash
 
-   $ ptw --afterrun cleanup_db.py
+    $ ptw --afterrun cleanup_db.py
 
 You can also use a custom runner script for full ``pytest`` control:
 
 .. code:: bash
 
-   $ ptw --runner "python custom_pytest_runner.py"
+    $ ptw --runner "python custom_pytest_runner.py"
 
-Here’s an minimal runner script that runs ``pytest`` and prints its
-exit code:
+Here's an minimal runner script that runs ``pytest`` and prints its exit
+code:
 
 .. code:: py
 
-   # custom_pytest_runner.py
+    # custom_pytest_runner.py
 
-   import sys
-   import pytest
+    import sys
+    import pytest
 
-   print('pytest exited with code:', pytest.main(sys.argv[1:]))
+    print('pytest exited with code:', pytest.main(sys.argv[1:]))
 
 Need to exclude directories from being observed or collected for tests?
 
 .. code:: bash
 
-   $ ptw --ignore ./deep-directory --ignore ./integration_tests
+    $ ptw --ignore ./deep-directory --ignore ./integration_tests
 
 See the full list of options:
 
 ::
 
-   $ ptw --help
-   Usage: ptw [options] [--ignore <dir>...] [<directory>...] [-- <pytest-args>...]
+    $ ptw --help
+    Usage: ptw [options] [--ignore <dir>...] [<directory>...] [-- <pytest-args>...]
 
-   Options:
-     --ignore <dir>        Ignore directory from being watched and during
-                           collection (multi-allowed).
-     --ext <exts>          Comma-separated list of file extensions that can
-                           trigger a new test run when changed (default: .py).
-                           Use --ext=* to allow any file (including .pyc).
-     --config <file>       Load configuration from `file` instead of trying to
-                           locate one of the implicit configuration files.
-     -c --clear            Clear the screen before each run.
-     -n --nobeep           Do not beep on failure.
-     -w --wait             Waits for all tests to complete before re-running.
-                           Otherwise, tests are interrupted on filesystem events.
-     --beforerun <cmd>     Run arbitrary command before tests are run.
-     --afterrun <cmd>      Run arbitrary command on completion or interruption.
-                           The exit code of "pytest" is passed as an argument.
-     --onpass <cmd>        Run arbitrary command on pass.
-     --onfail <cmd>        Run arbitrary command on failure.
-     --onexit <cmd>        Run arbitrary command when exiting pytest-watch.
-     --runner <cmd>        Run a custom command instead of "pytest".
-     --pdb                 Start the interactive Python debugger on errors.
-                           This also enables --wait to prevent pdb interruption.
-     --spool <delay>       Re-run after a delay (in milliseconds), allowing for
-                           more file system events to queue up (default: 200 ms).
-     -p --poll             Use polling instead of OS events (useful in VMs).
-     -v --verbose          Increase verbosity of the output.
-     -q --quiet            Decrease verbosity of the output (precedence over -v).
-     -V --version          Print version and exit.
-     -h --help             Print help and exit.
+    Options:
+      --ignore <dir>        Ignore directory from being watched and during
+                            collection (multi-allowed).
+      --ignore-re <pattern> Ignore paths from being watched that match pattern
+                            during collection.
+      --ext <exts>          Comma-separated list of file extensions that can
+                            trigger a new test run when changed (default: .py).
+                            Use --ext=* to allow any file (including .pyc).
+      --config <file>       Load configuration from `file` instead of trying to
+                            locate one of the implicit configuration files.
+      -c --clear            Clear the screen before each run.
+      -n --nobeep           Do not beep on failure.
+      -w --wait             Waits for all tests to complete before re-running.
+                            Otherwise, tests are interrupted on filesystem events.
+      --beforerun <cmd>     Run arbitrary command before tests are run.
+      --afterrun <cmd>      Run arbitrary command on completion or interruption.
+                            The exit code of "pytest" is passed as an argument.
+      --onpass <cmd>        Run arbitrary command on pass.
+      --onfail <cmd>        Run arbitrary command on failure.
+      --onexit <cmd>        Run arbitrary command when exiting pytest-watch.
+      --runner <cmd>        Run a custom command instead of "pytest".
+      --pdb                 Start the interactive Python debugger on errors.
+                            This also enables --wait to prevent pdb interruption.
+      --spool <delay>       Re-run after a delay (in milliseconds), allowing for
+                            more file system events to queue up (default: 200 ms).
+      -p --poll             Use polling instead of OS events (useful in VMs).
+      -v --verbose          Increase verbosity of the output.
+      -q --quiet            Decrease verbosity of the output (precedence over -v).
+      -V --version          Print version and exit.
+      -h --help             Print help and exit.
 
 Configuration
 -------------
@@ -144,15 +140,15 @@ persist them in your project. For example:
 
 .. code:: ini
 
-   # pytest.ini
+    # pytest.ini
 
-   [pytest]
-   addopts = --maxfail=2
+    [pytest]
+    addopts = --maxfail=2
 
 
-   [pytest-watch]
-   ignore = ./integration-tests
-   nobeep = True
+    [pytest-watch]
+    ignore = ./integration-tests
+    nobeep = True
 
 Alternatives
 ------------
@@ -163,7 +159,7 @@ Alternatives
    make them pass. This can be a speed advantage when trying to get all
    tests passing, but leaves out the discovery of new failures until
    then. It also drops the colors outputted by pytest, whereas
-   pytest-watch doesn’t.
+   pytest-watch doesn't.
 -  `Nosey <http://github.com/joeyespo/nosey>`__ is the original codebase
    this was forked from. Nosey runs
    `nose <http://nose.readthedocs.org/en/latest/>`__ instead of pytest.
@@ -183,9 +179,14 @@ file:
 
 .. code:: bash
 
-   $ pandoc -t rst -o README.rst README.md
+    $ pandoc -t rst -o README.rst README.md
 
 If your PR has been waiting a while, feel free to `ping me on
 Twitter <https://twitter.com/joeyespo>`__.
 
 Use this software often? :smiley:
+
+.. |Current version on PyPI| image:: http://img.shields.io/pypi/v/pytest-watch.svg
+   :target: http://pypi.python.org/pypi/pytest-watch/
+.. |Say Thanks!| image:: https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg
+   :target: https://saythanks.io/to/joeyespo
