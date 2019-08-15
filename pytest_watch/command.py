@@ -100,7 +100,7 @@ def main(argv=None):
         extensions = None
 
     # Parse path ignore regex
-    if args['--ignore-re'].strip():
+    if args['--ignore-re']:
         ignore_regex = re.compile(args['--ignore-re'])
     else:
         ignore_regex = None
