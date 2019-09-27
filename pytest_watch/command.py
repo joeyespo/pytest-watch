@@ -13,6 +13,9 @@ Options:
   --ext <exts>          Comma-separated list of file extensions that can
                         trigger a new test run when changed (default: .py).
                         Use --ext=* to allow any file (including .pyc).
+  --skip <glob>         A glob, all events matching the mask will be ignored.
+                        Multiple masks are supported, comma separated (no space).
+                        Use --skip .#*.py,flycheck_*.py to ignore Emacs temp files.
   --config <file>       Load configuration from `file` instead of trying to
                         locate one of the implicit configuration files.
   -c --clear            Clear the screen before each run.
@@ -79,6 +82,10 @@ def main(argv=None):
     if args['--config']:
         pytest_args.extend(['-c', args['--config']])
 
+    skip_masks = []
+    if args['--skip']:
+        skip_masks = args['--skip'].split(',')
+
     # Merge config file options
     if not merge_config(args, pytest_args, verbose=args['--verbose']):
         return 0
@@ -109,6 +116,7 @@ def main(argv=None):
     return watch(entries=directories,
                  ignore=args['--ignore'],
                  extensions=extensions,
+                 skip_masks=skip_masks,
                  beep_on_failure=not args['--nobeep'],
                  auto_clear=args['--clear'],
                  wait=args['--wait'] or '--pdb' in pytest_args,
