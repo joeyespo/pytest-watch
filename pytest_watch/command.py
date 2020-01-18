@@ -65,13 +65,16 @@ def main(argv=None):
     # Parse CLI arguments
     args = docopt(doc, argv=argv, version=version)
 
-    # Get paths and initial pytest arguments
-    directories = args['<directory>']
-    pytest_args = list(directories)
+    # Get paths from the command
+    directories = args['<directory>'] or []
     if '--' in directories:
         index = directories.index('--')
+        pytest_args = directories[index + 1:]
         directories = directories[:index]
-        del pytest_args[index]
+    else:
+        pytest_args = []
+    args['--testpaths'] = directories
+    args['--watchpaths'] = list(directories)
 
     # Adjust pytest and --collect-only args
     for ignore in args['--ignore'] or []:
@@ -82,6 +85,7 @@ def main(argv=None):
     # Merge config file options
     if not merge_config(args, pytest_args, verbose=args['--verbose']):
         return 0
+    pytest_args = args['--testpaths'] + pytest_args
 
     # Adjust pytest args
     if args['--pdb']:
@@ -106,7 +110,7 @@ def main(argv=None):
             return 2
 
     # Run pytest and watch for changes
-    return watch(entries=directories,
+    return watch(entries=args['--watchpaths'] or args['--testpaths'],
                  ignore=args['--ignore'],
                  extensions=extensions,
                  beep_on_failure=not args['--nobeep'],
