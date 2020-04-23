@@ -11,7 +11,7 @@ def read(filename):
 
 setup(
     name='pytest-watch',
-    version='4.2.0',
+    version='4.3.0-fork',
     description='Local continuous test runner with pytest and watchdog.',
     long_description=read('README.rst'),
     author='Joe Esposito',
