@@ -6,6 +6,8 @@ import pytest
 
 from .util import silence
 
+import toml
+
 try:
     from configparser import ConfigParser
 except ImportError:
@@ -79,6 +81,20 @@ def _collect_config(pytest_args, silent=True):
     return _run_pytest_collect(pytest_args)
 
 
+def _parse_toml_config(path):
+    config = toml.load(path).get('tool', {}).get('pytest-watch', {})
+    stringify = lambda v: ','.join(v) if isinstance(v, list) else str(v)
+    return {k: stringify(v) for k, v in config.items()}
+
+
+def _parse_ini_config(path):
+    config = ConfigParser()
+    config.read(path)
+    if config.has_section('pytest-watch'):
+        return dict(config.items('pytest-watch'))
+    return {}
+
+
 def merge_config(args, pytest_args, silent=True, verbose=False):
     if verbose:
         print('Locating inifile...')
@@ -91,9 +107,14 @@ def merge_config(args, pytest_args, silent=True, verbose=False):
     if not config_path:
         return True
 
-    config = ConfigParser()
-    config.read(config_path)
-    if not config.has_section('pytest-watch'):
+    if config_path.endswith('.toml'):
+        config = _parse_toml_config(config_path)
+    elif config_path.endswith('.ini'):
+        config = _parse_ini_config(config_path)
+    else:
+        config = {}
+
+    if not config:
         return True
 
     for cli_name in args:
@@ -106,15 +127,15 @@ def merge_config(args, pytest_args, silent=True, verbose=False):
             continue
 
         # Find config option
-        if not config.has_option('pytest-watch', config_name):
+        if not config_name in config:
             continue
 
         # Merge config option using the expected type
         if isinstance(args[cli_name], list):
-            args[cli_name].append(config.get('pytest-watch', config_name))
+            args[cli_name].append(config.get(config_name))
         elif isinstance(args[cli_name], bool):
-            args[cli_name] = config.getboolean('pytest-watch', config_name)
+            args[cli_name] = config.get(config_name).lower() != 'false'
         else:
-            args[cli_name] = config.get('pytest-watch', config_name)
+            args[cli_name] = config.get(config_name)
 
     return True

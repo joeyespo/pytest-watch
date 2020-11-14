@@ -151,8 +151,23 @@ addopts = --maxfail=2
 [pytest-watch]
 ignore = ./integration-tests
 nobeep = True
+ext = .py,.txt
 ```
 
+CLI options can also be added to a `[tool.pytest-watch]` section in your
+[pyproject.toml file](https://pytest.org/en/stable/customize.html#pyproject-toml):
+
+```toml
+# pyproject.toml
+
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+
+[tool.pytest-watch]
+ignore = "./integration-tests"
+nobeep = true
+ext = [ ".py", ".txt" ]
+```
 
 Alternatives
 ------------
