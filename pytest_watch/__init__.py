@@ -8,7 +8,7 @@ Local continuous test runner with pytest and watchdog.
 :license: MIT, see LICENSE for more details.
 """
 
-__version__ = '4.3.0-fork'
+__version__ = '2021.01.29'
 
 
 from .command import main, doc, version
