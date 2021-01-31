@@ -139,7 +139,7 @@ Configuration
 -------------
 
 CLI options can be added to a `[pytest-watch]` section in your
-[pytest.ini file][pytest.ini] to persist them in your project. For example:
+*pytest.ini* or *setup.cfg* file to persist them in your project. For example:
 
 ```ini
 # pytest.ini
@@ -153,6 +153,23 @@ ignore = ./integration-tests
 nobeep = True
 ```
 
+The `[pytest-watch]` section may additionally provide the `testpaths` and/or
+the `watchpaths` options. These options are only considered when no directories
+were provided in the command. When both `testpaths` and `watchpaths` are
+provided then the former are provided to pytest while the latter are watched.
+When only the `testpaths` are provided then these are both watched and passed
+to pytest. When only the `watchpaths` are provided then these paths are
+watched but not passed to pytest, allowing it to pick up the `testpaths`
+provided in the `[pytest]` section. For example:
+
+```ini
+[pytest]
+addopts = --maxfail=2
+testpaths = ./tests
+
+[pytest-watch]
+watchpaths = ./lib ./tests
+```
 
 Alternatives
 ------------

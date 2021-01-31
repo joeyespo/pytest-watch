@@ -110,7 +110,10 @@ def merge_config(args, pytest_args, silent=True, verbose=False):
             continue
 
         # Merge config option using the expected type
-        if isinstance(args[cli_name], list):
+        if cli_name == '--testpaths' or cli_name == '--watchpaths':
+            paths = config.get('pytest-watch', config_name).split()
+            args[cli_name].extend(paths)
+        elif isinstance(args[cli_name], list):
             args[cli_name].append(config.get('pytest-watch', config_name))
         elif isinstance(args[cli_name], bool):
             args[cli_name] = config.getboolean('pytest-watch', config_name)
