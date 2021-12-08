@@ -33,8 +33,11 @@ class CollectConfig(object):
         self.path = None
 
     def pytest_cmdline_main(self, config):
-        if hasattr(config, 'inifile'):
-            # pytest >= 2.7.0
+        if hasattr(config, 'inipath'):
+            # pytest >= 7
+            inifile = config.inipath
+        elif hasattr(config, 'inifile'):
+            # pytest 2.7.0 - 6
             inifile = config.inifile
         else:
             # pytest < 2.7.0
