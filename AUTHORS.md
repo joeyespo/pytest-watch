@@ -18,5 +18,6 @@ along with the following contributors:
 - Emmanuel Leblond ([@touilleMan](https://github.com/touilleMan))
 - Alex Ford ([@asford](https://github.com/asford))
 - And Past ([@apast](https://github.com/apast))
+- Sohang Chopra ([@sohang3112](https://github.com/sohang3112))
 
 [home]: README.md
